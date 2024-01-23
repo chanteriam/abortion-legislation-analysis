@@ -31,14 +31,27 @@ repos:
       - id: python-no-eval
       - id: python-no-log-warn
 
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.7.1
+    hooks:
+      - id: nbqa-ruff
+        exclude: data/
+        args:
+          - --fix
+          - --ignore=E721,E722
+      - id: nbqa-black
+        exclude: data/
+      - id: nbqa-isort
+        exclude: data/
+
+
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:
       - id: isort
         name: Run isort to sort imports
-        files: \.py$
-        # To keep consistent with the global isort skip config defined in setup.cfg
-        exclude: ^build/.*$|^.tox/.*$|^venv/.*$
+        types_or: [python, pyi]
+        exclude: ^build/.*$|^.tox/.*$|^venv/.*$|data/
         args:
           - --lines-after-imports=2
           - --profile=black
@@ -48,7 +61,8 @@ repos:
     rev: v0.0.286
     hooks:
       - id: ruff
-        types_or: [python, pyi, jupyter]
+        types_or: [python, pyi]
+        exclude: data/
         args:
           - --fix
           - --target-version=py311
@@ -59,6 +73,7 @@ repos:
     rev: 6.0.0
     hooks:
       - id: flake8
+        exclude: data/
         args:
           - --ignore=E203,E402,E501,E800,W503,W391,E261
           - --select=B,C,E,F,W,T4,B9
@@ -67,7 +82,3 @@ repos:
     rev: 23.7.0
     hooks:
       - id: black
-        args:
-          - --safe
-          - --target-version=py311
-          - --line-length=80
