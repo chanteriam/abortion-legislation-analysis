@@ -10,4 +10,4 @@ create-requirements:
 
 .PHONY: run
 run:
-	python -m project
+	python -m legislation_analysis

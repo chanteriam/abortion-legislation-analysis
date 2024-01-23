@@ -82,3 +82,5 @@ repos:
     rev: 23.7.0
     hooks:
       - id: black
+        args:
+          - --target-version=py311
