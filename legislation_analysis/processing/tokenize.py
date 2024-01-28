@@ -4,20 +4,14 @@ Also sentences the text.
 """
 
 import os
-import re
-import nltk
+
 import pandas as pd
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize, sent_tokenize
-from nltk.stem import WordNetLemmatizer
-import spacy
 
 # constants
 from abortion_legislation_content_analysis.utils.constants import (
-    TOKENIZED_DATA_PATH,
     CONGRESS_CLEANED_DATA_FILE,
     SCOTUS_CLEANED_DATA_FILE,
+    TOKENIZED_DATA_PATH,
 )
 
 # functions

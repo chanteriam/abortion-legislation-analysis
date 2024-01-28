@@ -7,25 +7,26 @@ Search results derived from https://www.congress.gov/advanced-search/legislation
 """
 # imports
 import os
-import requests
-import bs4
-import urllib.parse
-import pandas as pd
-import time
 import re
-import numpy as np
+import time
+import urllib.parse
 
-# functions
-from legislation_analysis.utils.functions import extract_pdf_text
+import bs4
+import numpy as np
+import pandas as pd
+import requests
 
 # constants
 from legislation_analysis.utils.constants import (
+    API_DATA_PATH,
     CONGRESS_API_KEY,
     CONGRESS_API_ROOT,
-    RAW_DATA_PATH,
-    API_DATA_PATH,
     CONGRESS_ROOT,
+    RAW_DATA_PATH,
 )
+
+# functions
+from legislation_analysis.utils.functions import extract_pdf_text
 
 
 class CongressAPI:
@@ -234,8 +235,10 @@ class CongressAPI:
         )
 
         # remove rows with null text values
-        self.processed_df = self.processed_df.loc[~self.processed_df.loc[:, "text"].isna(), :].copy()
-        self.processed_df.rename(columns={'text': 'raw_text'}, inplace=True)
+        self.processed_df = self.processed_df.loc[
+            ~self.processed_df.loc[:, "text"].isna(), :
+        ].copy()
+        self.processed_df.rename(columns={"text": "raw_text"}, inplace=True)
 
 
 def main(verbose=True):

@@ -4,18 +4,19 @@ Develops a data cleaner class for the abortion legislation content analysis proj
 
 # imports
 import os
-import pandas as pd
 import re
 
-# functions
-from abortion_legislation_content_analysis.utils.functions import save
+import pandas as pd
 
 # constants
 from abortion_legislation_content_analysis.utils.constants import (
+    CLEANED_DATA_PATH,
     CONGRESS_DATA_FILE,
     SCOTUS_DATA_FILE,
-    CLEANED_DATA_PATH,
 )
+
+# functions
+from abortion_legislation_content_analysis.utils.functions import save
 
 
 class Cleaner:

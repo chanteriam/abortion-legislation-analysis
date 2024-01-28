@@ -5,6 +5,7 @@ import argparse
 from legislation_analysis.api import congress, scotus
 from legislation_analysis.processing import clean, tokenize
 
+
 def main():
     """
     Collects and runs command-line arguments.
@@ -52,10 +53,10 @@ def main():
 
     if args.clean:
         clean.main(args.verbose)
-    
+
     if args.tokenize:
         tokenize.main(args.verbose)
 
+
 if __name__ == "__main__":
-    print("oh, what up?")
     main()

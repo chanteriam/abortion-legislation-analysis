@@ -1,7 +1,8 @@
-import requests
-from io import BytesIO
-from PyPDF2 import PdfReader
 import time
+from io import BytesIO
+
+import requests
+from PyPDF2 import PdfReader
 
 
 def extract_pdf_text(pdf_url, verbose=True):

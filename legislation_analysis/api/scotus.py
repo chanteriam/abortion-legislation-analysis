@@ -4,20 +4,21 @@ Script for pulling legislation text from abortion-related SCOTS decisions.
 
 # imports
 import os
-import pandas as pd
-import requests
-import bs4
 import time
 
-# functions
-from legislation_analysis.utils.functions import extract_pdf_text
+import bs4
+import pandas as pd
+import requests
 
 # constants
 from legislation_analysis.utils.constants import (
     API_DATA_PATH,
-    SCOTUS_ROOT,
     SCOTUS_DATA,
+    SCOTUS_ROOT,
 )
+
+# functions
+from legislation_analysis.utils.functions import extract_pdf_text
 
 
 class SCOTUSDataExtractor:

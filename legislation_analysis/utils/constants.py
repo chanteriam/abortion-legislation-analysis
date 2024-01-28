@@ -1,5 +1,6 @@
 import os
 
+
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
 API_DATA_PATH = os.path.join(PROJECT_PATH, "data", "api")
@@ -11,8 +12,8 @@ CONGRESS_API_ROOT = "https://api.congress.gov/v3/bill/"
 CONGRESS_ROOT = "https://congress.gov/"
 CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY")
 
-SCOTUS_DATA = 'https://supreme.justia.com/cases-by-topic/abortion-reproductive-rights/'
-SCOTUS_ROOT = 'https://supreme.justia.com'
+SCOTUS_DATA = "https://supreme.justia.com/cases-by-topic/abortion-reproductive-rights/"
+SCOTUS_ROOT = "https://supreme.justia.com"
 
 # data files
 CONGRESS_DATA_FILE = os.path.join(
