@@ -1,6 +1,7 @@
 """
 Script for pulling legislation text or pdfs from api.congress.gov.
-Search results derived from https://www.congress.gov/advanced-search/legislation using the following search terms:
+Search results derived from https://www.congress.gov/advanced-search/legislation
+using the following search terms:
     - abortion
     - reproduction
     - reproductive health
@@ -43,15 +44,18 @@ class CongressAPI:
         self.processed_df = None
         self.df = None
 
-    def extract_legislation_details(self, df):
+    @staticmethod
+    def extract_legislation_details(df: pd.DataFrame):
         """
-        Extracts the congress number, bill type, and bill number for each piece of legislation.
+        Extracts the congress number, bill type, and bill number for each piece
+        of legislation.
 
         parameters:
             df (pd.DataFrame): dataframe of legislation search results.
 
         returns:
-            df (pd.DataFrame): dataframe of legislation search results with congress number, bill type, and bill number extracted.
+            df (pd.DataFrame): dataframe of legislation search results with
+            congress number, bill type, and bill number extracted.
         """
         new_df = df.copy()
         new_df.loc[:, "congress_num"] = new_df.loc[:, "congress"].apply(
@@ -68,7 +72,10 @@ class CongressAPI:
 
         return new_df
 
-    def get_api_url(self, congress_num, bill_type, bill_num, verbose=True):
+    @staticmethod
+    def get_api_url(
+        congress_num: int, bill_type: str, bill_num: int, verbose: bool = True
+    ):
         """
         Builds the api url for a given piece of legislation.
 
@@ -83,11 +90,13 @@ class CongressAPI:
 
         url = urllib.parse.urljoin(
             CONGRESS_API_ROOT,
-            f"{congress_num}/{bill_type}/{bill_num}/text?format=xml&api_key={CONGRESS_API_KEY}",
+            f"{congress_num}/{bill_type}/{bill_num}/text?"
+            f"format=xml&api_key={CONGRESS_API_KEY}",
         )
         return url
 
-    def extract_text_url(self, api_url, verbose=True):
+    @staticmethod
+    def extract_text_url(api_url: str, verbose: bool = True):
         """
         Extracts the url for the text of a given piece of legislation.
 
@@ -117,7 +126,8 @@ class CongressAPI:
 
         return None
 
-    def build_text_url(self, congress_num, bill_type, bill_num, verbose=True):
+    @staticmethod
+    def build_text_url(congress_num, bill_type, bill_num, verbose=True):
         """
         Builds the url for the text of a given piece of legislation.
 
@@ -131,7 +141,8 @@ class CongressAPI:
         """
         url = urllib.parse.urljoin(
             CONGRESS_ROOT,
-            f"{congress_num}/bills/{bill_type}{bill_num}/BILLS-{congress_num}{bill_type}{bill_num}is.xml",
+            f"{congress_num}/bills/{bill_type}{bill_num}/BILLS-"
+            f"{congress_num}{bill_type}{bill_num}is.xml",
         )
         return url
 
@@ -154,7 +165,7 @@ class CongressAPI:
 
         return text
 
-    def process(self, filepath, filename, verbose=True):
+    def process(self, file_path: str, file_name: str, verbose: bool = True):
         """
         Processing function for extracting text from legislation search results.
 
@@ -163,13 +174,14 @@ class CongressAPI:
             verbose (bool): whether to print status updates.
 
         returns:
-            df (pd.DataFrame): dataframe of legislation search results with text extracted.
+            df (pd.DataFrame): dataframe of legislation search results with
+            text extracted.
         """
 
         # load data
         if verbose:
-            print(f"Loading data from {filepath}...")
-        df = pd.read_csv(filepath)
+            print(f"Loading data from {file_path}...")
+        df = pd.read_csv(file_path)
 
         # get header row
         first_col = df.iloc[:, 0]
@@ -199,8 +211,10 @@ class CongressAPI:
         )
 
         # intermediary saving
-        savepath = os.path.join(os.path.dirname(filepath), f"{filename}_api_url.csv")
-        self.processed_df.to_csv(savepath, index=False)
+        save_path = os.path.join(
+            os.path.dirname(file_path), f"{file_name}_api_url.csv"
+        )
+        self.processed_df.to_csv(save_path, index=False)
 
         # extract legislation text url
         if verbose:
@@ -220,8 +234,10 @@ class CongressAPI:
             lambda x: self.extract_text(x, verbose)
         )
 
-        savepath = os.path.join(os.path.dirname(filepath), f"{filename}_htm-text.csv")
-        self.processed_df.to_csv(savepath, index=False)
+        save_path = os.path.join(
+            os.path.dirname(file_path), f"{file_name}_htm-text.csv"
+        )
+        self.processed_df.to_csv(save_path, index=False)
 
         # extract pdf text
         self.processed_df.loc[
@@ -241,10 +257,10 @@ class CongressAPI:
         self.processed_df.rename(columns={"text": "raw_text"}, inplace=True)
 
 
-def main(verbose=True):
+def main(verbose: bool = True):
     """
-    Iterates through legislation csv search results and extracts the text of each bill.
-    Saves the results to a new csv titled filename_text.csv.
+    Iterates through legislation csv search results and extracts the text of
+    each bill. Saves the results to a new csv titled filename_text.csv.
 
     parameters:
         filepath (str): filepath to csv of legislation search results.
@@ -252,16 +268,16 @@ def main(verbose=True):
     returns:
         True (bool): whether the function ran successfully.
     """
-    filepath = os.path.join(RAW_DATA_PATH, "congress_abortion_legislation.csv")
-    filename = os.path.basename(filepath).split(".")[0]
+    file_path = os.path.join(RAW_DATA_PATH, "congress_abortion_legislation.csv")
+    file_name = os.path.basename(file_path).split(".")[0]
 
-    cleaner = CongressAPI(filepath)
+    cleaner = CongressAPI(file_path)
 
     # process legislation data
-    cleaner.process(filepath, filename, verbose)
+    cleaner.process(file_path, file_name, verbose)
 
     # save to csv
-    savepath = os.path.join(API_DATA_PATH, f"{filename}_full-text.csv")
-    cleaner.processed_df.to_csv(savepath, index=False)
+    save_path = os.path.join(API_DATA_PATH, f"{file_name}_full-text.csv")
+    cleaner.processed_df.to_csv(save_path, index=False)
 
     return True

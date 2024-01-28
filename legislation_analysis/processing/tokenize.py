@@ -1,21 +1,18 @@
 """
-Processes legislation text by stemming/lemmatizing, removing stop words, and removing punctuation.
-Also sentences the text.
+Processes legislation text by stemming/lemmatizing, removing stop words, and
+removing punctuation. Also sentences the text.
 """
 
 import os
 
 import pandas as pd
 
-# constants
-from abortion_legislation_content_analysis.utils.constants import (
+from legislation_analysis.utils.constants import (
     CONGRESS_CLEANED_DATA_FILE,
     SCOTUS_CLEANED_DATA_FILE,
     TOKENIZED_DATA_PATH,
 )
-
-# functions
-from abortion_legislation_content_analysis.utils.functions import save
+from legislation_analysis.utils.functions import save
 
 
 class Tokenizer:
@@ -29,13 +26,13 @@ class Tokenizer:
 
     def __init__(
         self,
-        filepath=CONGRESS_CLEANED_DATA_FILE,
-        filename="congress_legislation_tokenized.csv",
+        file_path: str = CONGRESS_CLEANED_DATA_FILE,
+        file_name: str = "congress_legislation_tokenized.csv",
     ):
-        self.df = pd.read_csv(filepath)
-        self.filename = filename
+        self.df = pd.read_csv(file_path)
+        self.file_name = file_name
         self.tokenized_df = None
-        self.savepath = os.path.join(TOKENIZED_DATA_PATH, self.filename)
+        self.save_path = os.path.join(TOKENIZED_DATA_PATH, self.file_name)
 
     def process(self):
         """
@@ -47,7 +44,7 @@ class Tokenizer:
         pass
 
 
-def main(verbose=True):
+def main(verbose: bool = True) -> None:
     """
     Runs data tokenizer.
 
@@ -60,12 +57,12 @@ def main(verbose=True):
     congress_tokenizer = Tokenizer(
         CONGRESS_CLEANED_DATA_FILE, "congress_legislation_tokenized.csv"
     )
-    scotus_tokenizer = Tokenizer(SCOTUS_CLEANED_DATA_FILE, "scotus_cases_tokenized.csv")
+    scotus_tokenizer = Tokenizer(
+        SCOTUS_CLEANED_DATA_FILE, "scotus_cases_tokenized.csv"
+    )
 
     congress_tokenizer.process(verbose)
     scotus_tokenizer.process(verbose)
 
-    save(congress_tokenizer.cleaned_df, congress_tokenizer.savepath)
-    save(scotus_tokenizer.cleaned_df, scotus_tokenizer.savepath)
-
-    return True
+    save(congress_tokenizer.cleaned_df, congress_tokenizer.save_path)
+    save(scotus_tokenizer.cleaned_df, scotus_tokenizer.save_path)

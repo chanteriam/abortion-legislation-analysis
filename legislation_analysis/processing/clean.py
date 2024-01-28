@@ -1,22 +1,19 @@
 """
-Develops a data cleaner class for the abortion legislation content analysis project.
+Develops a data cleaner class for the abortion legislation content analysis
+project.
 """
 
-# imports
 import os
 import re
 
 import pandas as pd
 
-# constants
-from abortion_legislation_content_analysis.utils.constants import (
+from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
     CONGRESS_DATA_FILE,
     SCOTUS_DATA_FILE,
 )
-
-# functions
-from abortion_legislation_content_analysis.utils.functions import save
+from legislation_analysis.utils.functions import save
 
 
 class Cleaner:
@@ -29,14 +26,17 @@ class Cleaner:
     """
 
     def __init__(
-        self, filepath=CONGRESS_DATA_FILE, filename="congress_legislation_cleaned.csv"
+        self,
+        file_path=CONGRESS_DATA_FILE,
+        file_name="congress_legislation_cleaned.csv",
     ):
-        self.df = pd.read_csv(filepath)
-        self.filename = filename
+        self.df = pd.read_csv(file_path)
+        self.file_name = file_name
         self.cleaned_df = None
-        self.savepath = os.path.join(CLEANED_DATA_PATH, self.filename)
+        self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
 
-    def clean_text(self, text):
+    @staticmethod
+    def clean_text(text: str) -> str:
         """
         Cleans text.
 
@@ -54,7 +54,8 @@ class Cleaner:
             r"\n", " ", text
         )  # replace any new line characters with spaces
 
-        cleaned_text = re.sub(r"\<.*?\>", "", cleaned_text)  # remove html tags
+        # remove html tags
+        cleaned_text = re.sub(r"\<.*?\>", "", cleaned_text)
 
         cleaned_text = re.sub(
             r"\([0-9]+\)", "", cleaned_text
@@ -66,13 +67,14 @@ class Cleaner:
 
         cleaned_text = re.sub(
             r"[\-\_]+", " ", cleaned_text
-        )  # remove underscors and hyphens
+        )  # remove underscores and hyphens
 
-        cleaned_text = re.sub(r"\s+", " ", cleaned_text)  # remove extra whitespace
+        # remove extra whitespace
+        cleaned_text = re.sub(r"\s+", " ", cleaned_text)
 
         return cleaned_text
 
-    def process(self, verbose=True):
+    def process(self, verbose: bool = True) -> None:
         """
         Processes the legislation text.
 
@@ -94,12 +96,14 @@ class Cleaner:
         )
 
         # clean text
-        df["cleaned_text"] = df["cleaned_text"].apply(lambda x: self.clean_text(x))
+        df["cleaned_text"] = df["cleaned_text"].apply(
+            lambda x: self.clean_text(x)
+        )
 
         self.cleaned_df = df
 
 
-def main(verbose=True):
+def main(verbose: bool = True):
     """
     Runs data cleaner.
 
@@ -109,13 +113,13 @@ def main(verbose=True):
     returns:
         True (bool): whether the data cleaner ran successfully.
     """
-    congress_cleaner = Cleaner(CONGRESS_DATA_FILE, "congress_legislation_cleaned.csv")
+    congress_cleaner = Cleaner(
+        CONGRESS_DATA_FILE, "congress_legislation_cleaned.csv"
+    )
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.csv")
 
     congress_cleaner.process(verbose)
     scotus_cleaner.process(verbose)
 
-    save(congress_cleaner.cleaned_df, congress_cleaner.savepath)
-    save(scotus_cleaner.cleaned_df, scotus_cleaner.savepath)
-
-    return True
+    save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
+    save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)

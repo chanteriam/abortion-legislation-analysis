@@ -6,7 +6,7 @@ from legislation_analysis.api import congress, scotus
 from legislation_analysis.processing import clean, tokenize
 
 
-def main():
+def main() -> None:
     """
     Collects and runs command-line arguments.
     """

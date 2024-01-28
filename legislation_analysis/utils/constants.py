@@ -12,7 +12,9 @@ CONGRESS_API_ROOT = "https://api.congress.gov/v3/bill/"
 CONGRESS_ROOT = "https://congress.gov/"
 CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY")
 
-SCOTUS_DATA = "https://supreme.justia.com/cases-by-topic/abortion-reproductive-rights/"
+SCOTUS_DATA = (
+    "https://supreme.justia.com/cases-by-topic/abortion-reproductive-rights/"
+)
 SCOTUS_ROOT = "https://supreme.justia.com"
 
 # data files
@@ -24,4 +26,6 @@ CONGRESS_CLEANED_DATA_FILE = os.path.join(
 )
 
 SCOTUS_DATA_FILE = os.path.join(API_DATA_PATH, "scotus_cases_full-text.csv")
-SCOTUS_CLEANED_DATA_FILE = os.path.join(CLEANED_DATA_PATH, "scotus_cases_cleaned")
+SCOTUS_CLEANED_DATA_FILE = os.path.join(
+    CLEANED_DATA_PATH, "scotus_cases_cleaned"
+)

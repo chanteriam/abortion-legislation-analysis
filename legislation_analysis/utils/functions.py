@@ -1,11 +1,12 @@
 import time
 from io import BytesIO
 
+import pandas as pd
 import requests
 from PyPDF2 import PdfReader
 
 
-def extract_pdf_text(pdf_url, verbose=True):
+def extract_pdf_text(pdf_url: str, verbose: bool = True) -> str:
     """
     Extracts the text of a given piece of legislation.
 
@@ -31,7 +32,7 @@ def extract_pdf_text(pdf_url, verbose=True):
     return text
 
 
-def save(df, filepath):
+def save(df: pd.DataFrame, filepath: str) -> None:
     """
     Saves the given dataframe out to the specified filepath.
     """
