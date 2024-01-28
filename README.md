@@ -16,4 +16,4 @@ This repository is a template for a python 🐍 project using the poetry contain
 ## Standard Commands
 - `make lint`: Runs `pre-commit`
 - `make test`: Runs test cases in the `test` directory
-- `make run`: Runs the `main` function in the `project` folder
+- `make run`: Runs the `main` function in the `legislation_analysis` folder
