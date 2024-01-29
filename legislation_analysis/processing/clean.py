@@ -103,7 +103,7 @@ class Cleaner:
         self.cleaned_df = df
 
 
-def main(verbose: bool = True):
+def main(verbose: bool = True) -> None:
     """
     Runs data cleaner.
 

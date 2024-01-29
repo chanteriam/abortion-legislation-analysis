@@ -9,17 +9,12 @@ from PyPDF2 import PdfReader
 def extract_pdf_text(pdf_url: str, verbose: bool = True) -> str:
     """
     Extracts the text of a given piece of legislation.
-
-    parameters:
-        pdf_url (str): url for the pdf of the legislation.
-
-    returns:
-        text (str): text of the legislation.
     """
     if verbose:
         print(f"\textracting text from {pdf_url}...")
 
-    time.sleep(3.6)  # to prevent overloading the api
+    # Prevent overloading the api
+    time.sleep(3.6)
 
     response = requests.get(pdf_url)
     pdf_file = BytesIO(response.content)

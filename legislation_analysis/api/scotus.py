@@ -11,8 +11,8 @@ import requests
 
 from legislation_analysis.utils.constants import (
     API_DATA_PATH,
-    SCOTUS_DATA,
-    SCOTUS_ROOT,
+    SCOTUS_DATA_URL,
+    SCOTUS_ROOT_URL,
 )
 from legislation_analysis.utils.functions import extract_pdf_text
 
@@ -22,7 +22,7 @@ class SCOTUSDataExtractor:
     Pulls text from SCOTUS abortion-related decisions using supreme.justia.com.
     """
 
-    def __init__(self, verbose: bool = True, scotus_url: str = SCOTUS_DATA):
+    def __init__(self, verbose: bool = True, scotus_url: str = SCOTUS_DATA_URL):
         """
         Initializes SCOTUSDataExtractor object.
         """
@@ -46,12 +46,12 @@ class SCOTUSDataExtractor:
             if not case_tag:
                 break
 
-            case_url = SCOTUS_ROOT + case_tag["href"]
+            case_url = SCOTUS_ROOT_URL + case_tag["href"]
             case_title = case_tag.get_text(strip=True)
 
             # Extract author URL and name
             author_tag = section.find_next_sibling("p").find("a")
-            author_url = SCOTUS_ROOT + author_tag["href"]
+            author_url = SCOTUS_ROOT_URL + author_tag["href"]
             author_name = author_tag.get_text(strip=True)
 
             # Extract description

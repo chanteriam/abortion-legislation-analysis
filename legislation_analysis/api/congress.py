@@ -6,27 +6,24 @@ using the following search terms:
     - reproduction
     - reproductive health
 """
-# imports
 import os
 import re
 import time
 import urllib.parse
+from typing import Optional
 
 import bs4
 import numpy as np
 import pandas as pd
 import requests
 
-# constants
 from legislation_analysis.utils.constants import (
     API_DATA_PATH,
     CONGRESS_API_KEY,
-    CONGRESS_API_ROOT,
-    CONGRESS_ROOT,
+    CONGRESS_API_ROOT_URL,
+    CONGRESS_ROOT_URL,
     RAW_DATA_PATH,
 )
-
-# functions
 from legislation_analysis.utils.functions import extract_pdf_text
 
 
@@ -45,7 +42,7 @@ class CongressAPI:
         self.df = None
 
     @staticmethod
-    def extract_legislation_details(df: pd.DataFrame):
+    def extract_legislation_details(df: pd.DataFrame) -> pd.DataFrame:
         """
         Extracts the congress number, bill type, and bill number for each piece
         of legislation.
@@ -75,7 +72,7 @@ class CongressAPI:
     @staticmethod
     def get_api_url(
         congress_num: int, bill_type: str, bill_num: int, verbose: bool = True
-    ):
+    ) -> str:
         """
         Builds the api url for a given piece of legislation.
 
@@ -89,14 +86,14 @@ class CongressAPI:
         """
 
         url = urllib.parse.urljoin(
-            CONGRESS_API_ROOT,
+            CONGRESS_API_ROOT_URL,
             f"{congress_num}/{bill_type}/{bill_num}/text?"
             f"format=xml&api_key={CONGRESS_API_KEY}",
         )
         return url
 
     @staticmethod
-    def extract_text_url(api_url: str, verbose: bool = True):
+    def extract_text_url(api_url: str, verbose: bool = True) -> Optional[str]:
         """
         Extracts the url for the text of a given piece of legislation.
 
@@ -107,7 +104,7 @@ class CongressAPI:
             text_url (str): url for the text of the legislation.
         """
         assert api_url.startswith(
-            CONGRESS_API_ROOT
+            CONGRESS_API_ROOT_URL
         ), "URL does not start with legislation root url."
 
         if verbose:
@@ -127,7 +124,9 @@ class CongressAPI:
         return None
 
     @staticmethod
-    def build_text_url(congress_num, bill_type, bill_num, verbose=True):
+    def build_text_url(
+        congress_num: int, bill_type: str, bill_num: int, verbose=True
+    ) -> str:
         """
         Builds the url for the text of a given piece of legislation.
 
@@ -140,13 +139,14 @@ class CongressAPI:
             text_url (str): url for the text of the legislation.
         """
         url = urllib.parse.urljoin(
-            CONGRESS_ROOT,
+            CONGRESS_ROOT_URL,
             f"{congress_num}/bills/{bill_type}{bill_num}/BILLS-"
             f"{congress_num}{bill_type}{bill_num}is.xml",
         )
         return url
 
-    def extract_text(self, text_url, verbose=True):
+    @staticmethod
+    def extract_text(text_url: str, verbose: bool = True) -> str:
         """
         Extracts the text of a given piece of legislation.
 
@@ -165,17 +165,11 @@ class CongressAPI:
 
         return text
 
-    def process(self, file_path: str, file_name: str, verbose: bool = True):
+    def process(
+        self, file_path: str, file_name: str, verbose: bool = True
+    ) -> None:
         """
         Processing function for extracting text from legislation search results.
-
-        parameters:
-            filepath (str): filepath to csv of legislation search results.
-            verbose (bool): whether to print status updates.
-
-        returns:
-            df (pd.DataFrame): dataframe of legislation search results with
-            text extracted.
         """
 
         # load data
@@ -257,16 +251,10 @@ class CongressAPI:
         self.processed_df.rename(columns={"text": "raw_text"}, inplace=True)
 
 
-def main(verbose: bool = True):
+def main(verbose: bool = True) -> None:
     """
     Iterates through legislation csv search results and extracts the text of
     each bill. Saves the results to a new csv titled filename_text.csv.
-
-    parameters:
-        filepath (str): filepath to csv of legislation search results.
-
-    returns:
-        True (bool): whether the function ran successfully.
     """
     file_path = os.path.join(RAW_DATA_PATH, "congress_abortion_legislation.csv")
     file_name = os.path.basename(file_path).split(".")[0]
@@ -279,5 +267,3 @@ def main(verbose: bool = True):
     # save to csv
     save_path = os.path.join(API_DATA_PATH, f"{file_name}_full-text.csv")
     cleaner.processed_df.to_csv(save_path, index=False)
-
-    return True

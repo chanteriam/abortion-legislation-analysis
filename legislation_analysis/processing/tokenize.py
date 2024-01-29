@@ -8,8 +8,8 @@ import os
 import pandas as pd
 
 from legislation_analysis.utils.constants import (
-    CONGRESS_CLEANED_DATA_FILE,
-    SCOTUS_CLEANED_DATA_FILE,
+    CONGRESS_DATA_FILE_CLEANED,
+    SCOTUS_DATA_FILE_CLEANED,
     TOKENIZED_DATA_PATH,
 )
 from legislation_analysis.utils.functions import save
@@ -17,16 +17,12 @@ from legislation_analysis.utils.functions import save
 
 class Tokenizer:
     """
-    Tokenizes legislation text
-
-    parameters:
-        filepath (str): path to the legislation text csv.
-        filename (str): name of file to save.
+    Tokenizes legislation text.
     """
 
     def __init__(
         self,
-        file_path: str = CONGRESS_CLEANED_DATA_FILE,
+        file_path: str = CONGRESS_DATA_FILE_CLEANED,
         file_name: str = "congress_legislation_tokenized.csv",
     ):
         self.df = pd.read_csv(file_path)
@@ -37,9 +33,6 @@ class Tokenizer:
     def process(self):
         """
         Processes the legislation text for tokenization.
-
-        parameters:
-            verbose (bool): whether to print status updates.
         """
         pass
 
@@ -47,18 +40,12 @@ class Tokenizer:
 def main(verbose: bool = True) -> None:
     """
     Runs data tokenizer.
-
-    parameters:
-        verbose (bool): whether to print status updates.
-
-    returns:
-        True (bool): whether the data cleaner ran successfully.
     """
     congress_tokenizer = Tokenizer(
-        CONGRESS_CLEANED_DATA_FILE, "congress_legislation_tokenized.csv"
+        CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.csv"
     )
     scotus_tokenizer = Tokenizer(
-        SCOTUS_CLEANED_DATA_FILE, "scotus_cases_tokenized.csv"
+        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.csv"
     )
 
     congress_tokenizer.process(verbose)
