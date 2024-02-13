@@ -4,9 +4,9 @@ project.
 """
 
 import os
-import re
-
 import pandas as pd
+import time
+from openai import OpenAI
 
 from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
@@ -18,12 +18,16 @@ from legislation_analysis.utils.functions import save
 
 class Cleaner:
     """
-    Cleans legislation text.
+    Abstract class for a cleaner object.
 
     parameters:
         filepath (str): path to the legislation text csv.
         filename (str): name of file to save.
     """
+
+    TOTAL_TOKENS_USED = 0
+    TOKEN_LIMIT = 3000
+    OPENAI_CLIENT = OpenAI()
 
     def __init__(
         self,
@@ -35,70 +39,102 @@ class Cleaner:
         self.cleaned_df = None
         self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
 
-    @staticmethod
-    def clean_text(text: str) -> str:
+    @classmethod
+    def clean_text(cls, text: str) -> str:
         """
-        Cleans text.
+        Spell checks text.
 
         parameters:
-            text (str): text to clean.
+            text (str): text to spell check.
 
         returns:
-            text (str): cleaned text.
+            text (str): spell checked text.
         """
+        checked_text = ""
+        spell_check_prompt = {
+            "role": "system",
+            "content": """
+            You are a legislation-cleaning assistant. You correct legislative text delimited with triple quotes by
+            identifying and fixing errors such as misplaced or duplicate spaces, missing spaces,
+            removal of new line characters, and identification and concatenation of split up words.
+            In your response, please only included the corrected text and no additional information.
 
-        if not isinstance(text, str):
-            return "None"
+            [Example Request]
+            Please clean this piece of legislation:
+            \"\"\"
+            \n\n\nThis is a pi ece of legis-lation that   nee ds to\n\n becleaned..
+            \"\"\"'
 
-        cleaned_text = re.sub(
-            r"\n", " ", text
-        )  # replace any new line characters with spaces
+            [Example Response]
+            \"\"\"
+            This is a piece of legislation that needs to be cleaned.
+            \"\"\"
+            """,
+        }
+        tokens = text.split(" ")
+        max_token_ct = len(tokens)
+        start_time = time.time()
 
-        # remove html tags
-        cleaned_text = re.sub(r"\<.*?\>", "", cleaned_text)
+        for i in range(0, max_token_ct, cls.TOKEN_LIMIT):
+            # timer for token limitations
+            if cls.TOTAL_TOKENS_USED + len(tokens[i : i + cls.TOKEN_LIMIT]) > 60000:
+                end_time = time.time()
+                elapsed_time = end_time - start_time
+                if elapsed_time > 60:
+                    cls.TOTAL_TOKENS_USED = 0
+                    start_time = time.time()
+                else:
+                    while elapsed_time < 60:
+                        print("Sleeping...")
+                        elapsed_time = end_time - start_time
+                    cls.TOTAL_TOKENS_USED = 0
+                    start_time = time.time()
 
-        cleaned_text = re.sub(
-            r"\([0-9]+\)", "", cleaned_text
-        )  # parentheses with numbers
+            cls.TOTAL_TOKENS_USED += len(tokens[i : i + cls.TOKEN_LIMIT])
+            text = " ".join(tokens[i : i + cls.TOKEN_LIMIT])
 
-        cleaned_text = re.sub(
-            r"[^A-Za-z0-9 \,\.\?\!\;\:\(\)\'\"-]+", "", cleaned_text
-        ).strip()  # remove special characters
+            message = {
+                "role": "user",
+                "content": f"""Please clean this piece of legislation:
+                \"\"\"{text}\"\"\"
+                """,
+            }
 
-        cleaned_text = re.sub(
-            r"[\-\_]+", " ", cleaned_text
-        )  # remove underscores and hyphens
+            response = cls.OPENAI_CLIENT.chat.completions.create(
+                model="gpt-3.5-turbo-0125",
+                messages=[spell_check_prompt, message],
+            )
 
-        # remove extra whitespace
-        cleaned_text = re.sub(r"\s+", " ", cleaned_text)
+            resp = response.choices[0].message.content.strip()
+            resp = resp.replace("'", "'")
+            resp = resp.strip('"').strip("\n").strip(" ")
 
-        return cleaned_text
+            checked_text += f"{resp} "
 
-    def process(self, verbose: bool = True) -> None:
+        return checked_text
+
+    def process(
+        self,
+        verbose: bool = True,
+        cols_to_clean=[
+            ("raw_text", "cleaned_text"),
+        ],
+    ) -> None:
         """
         Processes the legislation text.
 
         parameters:
             verbose (bool): whether to print status updates.
         """
+        for col in cols_to_clean:
+            if verbose:
+                print(f"Cleaning {col[0]}...")
+            col, new_col = col
+            df = self.df.dropna(subset=[col]).copy()
+            df[new_col] = df[col].copy()
 
-        if "raw_text" not in self.df.columns and "text" in self.df.columns:
-            self.df.rename(columns={"text": "raw_text"}, inplace=True)
-
-        # remove rows with null text values
-        df = self.df.dropna(subset=["raw_text"]).copy()
-        df["cleaned_text"] = df["raw_text"].copy()
-        df["cleaned_summary"] = df["latest summary"]
-
-        # clean summarys
-        df["cleaned_summary"] = df["cleaned_summary"].apply(
-            lambda x: self.clean_text(x)
-        )
-
-        # clean text
-        df["cleaned_text"] = df["cleaned_text"].apply(
-            lambda x: self.clean_text(x)
-        )
+            # clean text
+            df[new_col] = df[new_col].apply(lambda x: self.clean_text(x))
 
         self.cleaned_df = df
 
@@ -113,13 +149,11 @@ def main(verbose: bool = True) -> None:
     returns:
         True (bool): whether the data cleaner ran successfully.
     """
-    congress_cleaner = Cleaner(
-        CONGRESS_DATA_FILE, "congress_legislation_cleaned.csv"
-    )
+    congress_cleaner = Cleaner(CONGRESS_DATA_FILE, "congress_legislation_cleaned.csv")
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.csv")
 
     congress_cleaner.process(verbose)
-    scotus_cleaner.process(verbose)
+    scotus_cleaner.process(verbose, cols_to_clean=[("raw_text", "cleaned_text")])
 
     save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
     save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
