@@ -6,6 +6,7 @@ using the following search terms:
     - reproduction
     - reproductive health
 """
+import logging
 import os
 import re
 import time
@@ -70,9 +71,7 @@ class CongressAPI:
         return new_df
 
     @staticmethod
-    def get_api_url(
-        congress_num: int, bill_type: str, bill_num: int, verbose: bool = True
-    ) -> str:
+    def get_api_url(congress_num: int, bill_type: str, bill_num: int) -> str:
         """
         Builds the api url for a given piece of legislation.
 
@@ -93,7 +92,7 @@ class CongressAPI:
         return url
 
     @staticmethod
-    def extract_text_url(api_url: str, verbose: bool = True) -> Optional[str]:
+    def extract_text_url(api_url: str) -> Optional[str]:
         """
         Extracts the url for the text of a given piece of legislation.
 
@@ -107,8 +106,7 @@ class CongressAPI:
             CONGRESS_API_ROOT_URL
         ), "URL does not start with legislation root url."
 
-        if verbose:
-            print(f"\tExtracting text url from {api_url}...")
+        logging.debug(f"\tExtracting text url from {api_url}...")
 
         time.sleep(3.6)  # to prevent overloading the api
         request = requests.get(api_url)
@@ -124,9 +122,7 @@ class CongressAPI:
         return None
 
     @staticmethod
-    def build_text_url(
-        congress_num: int, bill_type: str, bill_num: int, verbose=True
-    ) -> str:
+    def build_text_url(congress_num: int, bill_type: str, bill_num: int) -> str:
         """
         Builds the url for the text of a given piece of legislation.
 
@@ -146,7 +142,7 @@ class CongressAPI:
         return url
 
     @staticmethod
-    def extract_text(text_url: str, verbose: bool = True) -> str:
+    def extract_text(text_url: str) -> str:
         """
         Extracts the text of a given piece of legislation.
 
@@ -156,25 +152,20 @@ class CongressAPI:
         returns:
             text (str): text of the legislation.
         """
-        if verbose:
-            print(f"\textracting text from {text_url}...")
+        logging.debug(f"\textracting text from {text_url}...")
 
         request = requests.get(text_url)
         soup = bs4.BeautifulSoup(request.text, "html.parser")
-        text = soup.text
 
-        return text
+        return soup.text
 
-    def process(
-        self, file_path: str, file_name: str, verbose: bool = True
-    ) -> None:
+    def process(self, file_path: str, file_name: str) -> None:
         """
         Processing function for extracting text from legislation search results.
         """
 
         # load data
-        if verbose:
-            print(f"Loading data from {file_path}...")
+        logging.debug(f"Loading data from {file_path}...")
         df = pd.read_csv(file_path)
 
         # get header row
@@ -189,17 +180,15 @@ class CongressAPI:
         self.df.columns = [c.lower() for c in list(self.df.columns)]
 
         # extract legislation information
-        if verbose:
-            print("Extracting legislation information...")
+        logging.debug("Extracting legislation information...")
         self.processed_df = self.extract_legislation_details(self.df)
 
         # extract legislation api url
-        if verbose:
-            print("Extracting legislation api url...")
+        logging.debug("Extracting legislation api url...")
 
         self.processed_df.loc[:, "api_url"] = self.processed_df.apply(
             lambda x: self.get_api_url(
-                x["congress_num"], x["bill_type"], x["bill_num"], verbose
+                x["congress_num"], x["bill_type"], x["bill_num"]
             ),
             axis=1,
         )
@@ -211,11 +200,10 @@ class CongressAPI:
         self.processed_df.to_csv(save_path, index=False)
 
         # extract legislation text url
-        if verbose:
-            print("Extracting legislation text url...")
+        logging.debug("Extracting legislation text url...")
         self.processed_df.loc[:, "text_url"] = self.processed_df.loc[
             :, "api_url"
-        ].apply(lambda x: self.extract_text_url(x, verbose))
+        ].apply(lambda x: self.extract_text_url(x))
 
         # extract htm text
         self.processed_df.loc[
@@ -225,7 +213,7 @@ class CongressAPI:
             (self.processed_df.loc[:, "text_url"].str[-3:] == "htm"),
             "text_url",
         ].apply(
-            lambda x: self.extract_text(x, verbose)
+            lambda x: self.extract_text(x)
         )
 
         save_path = os.path.join(
@@ -241,7 +229,7 @@ class CongressAPI:
             (self.processed_df.loc[:, "text_url"].str[-3:] == "pdf"),
             "text_url",
         ].apply(
-            lambda x: extract_pdf_text(x, verbose)
+            lambda x: extract_pdf_text(x)
         )
 
         # remove rows with null text values
@@ -251,7 +239,7 @@ class CongressAPI:
         self.processed_df.rename(columns={"text": "raw_text"}, inplace=True)
 
 
-def main(verbose: bool = True) -> None:
+def main() -> None:
     """
     Iterates through legislation csv search results and extracts the text of
     each bill. Saves the results to a new csv titled filename_text.csv.
@@ -262,7 +250,7 @@ def main(verbose: bool = True) -> None:
     cleaner = CongressAPI(file_path)
 
     # process legislation data
-    cleaner.process(file_path, file_name, verbose)
+    cleaner.process(file_path, file_name)
 
     # save to csv
     save_path = os.path.join(API_DATA_PATH, f"{file_name}_full-text.csv")
