@@ -5,6 +5,7 @@ project.
 
 import os
 import re
+from typing import Tuple
 
 import nltk
 import pandas as pd
@@ -20,7 +21,6 @@ from legislation_analysis.utils.functions import save
 
 nltk.download("wordnet")
 nltk.download("words")
-ITER_LIMIT = 4
 
 
 class Cleaner:
@@ -33,6 +33,7 @@ class Cleaner:
     """
 
     DICTIONARY = set(words.words())
+    ITER_LIMIT = 4
 
     def __init__(
         self,
@@ -113,7 +114,7 @@ class Cleaner:
         return Cleaner.spell_check(cleaned_text)
 
     @classmethod
-    def is_valid_word(cls, word):
+    def is_valid_word(cls, word: str) -> bool:
         """
         Check if the word is valid based on wordnet or a custom dictionary.
 
@@ -126,7 +127,9 @@ class Cleaner:
         return bool(wordnet.synsets(word)) or word in cls.DICTIONARY
 
     @classmethod
-    def combine_with_surrounding(cls, words, current_index):
+    def combine_with_surrounding(
+        cls, word_list: [str], current_index: int
+    ) -> Tuple:
         """
         Attempt to combine the current word with surrounding words within
         ITER_LIMIT.
@@ -142,18 +145,18 @@ class Cleaner:
         for direction in [1, -1]:  # Forward and backward
             for j in range(1, cls.ITER_LIMIT + 1):
                 idx = current_index + j * direction
-                if 0 <= idx < len(words):
+                if 0 <= idx < len(word_list):
                     combined_word = (
-                        words[current_index] + words[idx]
+                        word_list[current_index] + word_list[idx]
                         if direction == 1
-                        else words[idx] + words[current_index]
+                        else word_list[idx] + word_list[current_index]
                     )
                     if cls.is_valid_word(combined_word):
                         return combined_word, idx
         return None, None
 
     @classmethod
-    def find_internal_split(cls, word):
+    def find_internal_split(cls, word: str) -> Tuple:
         """
         Find a valid internal split of the word, if any.
 
