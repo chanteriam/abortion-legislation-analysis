@@ -55,7 +55,6 @@ class Cleaner:
         returns:
             text (str): cleaned text.
         """
-        cleaned_text = ""
         split_text = text.split(" ")
         new_split_text = []
 
@@ -122,8 +121,8 @@ class Cleaner:
         ignore = []
 
         # checks if a word exists in the dictionary and tries to fix it
-        for i, word in enumerate(words):
-            if i in ignore:
+        for idx, word in enumerate(words):
+            if idx in ignore:
                 continue
 
             added = False
@@ -139,9 +138,9 @@ class Cleaner:
                     continue
 
                 # a word has been split by a space - forward
-                for j in range(i + 1, len(words)):
+                for j in range(idx + 1, len(words)):
                     # if the word is too far away, stop
-                    if abs(i - j) > ITER_LIMIT:
+                    if abs(idx - j) > ITER_LIMIT:
                         break
                     new_word += words[j]
                     if (
@@ -149,16 +148,16 @@ class Cleaner:
                         or new_word.lower() in cls.DICTIONARY
                     ):
                         new_words.append(new_word)
-                        ignore.extend(list(range(i + 1, j + 1)))
+                        ignore.extend(list(range(idx + 1, j + 1)))
                         added = True
                         break
 
                 # a word has been split by a space - backward
                 if not added:
                     new_word = word
-                    for j in range(i - 1, -1, -1):
+                    for j in range(idx - 1, -1, -1):
                         # if the word is too far away, stop
-                        if abs(i - j) > ITER_LIMIT:
+                        if abs(idx - j) > ITER_LIMIT:
                             break
                         new_word = words[j] + new_word
                         if (
