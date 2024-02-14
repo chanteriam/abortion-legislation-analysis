@@ -1,9 +1,10 @@
 """
 Script for pulling legislation text from abortion-related SCOTS decisions.
 """
-
+import logging
 import os
 import time
+from typing import Optional
 
 import bs4
 import pandas as pd
@@ -22,11 +23,10 @@ class SCOTUSDataExtractor:
     Pulls text from SCOTUS abortion-related decisions using supreme.justia.com.
     """
 
-    def __init__(self, verbose: bool = True, scotus_url: str = SCOTUS_DATA_URL):
+    def __init__(self, scotus_url: str = SCOTUS_DATA_URL):
         """
         Initializes SCOTUSDataExtractor object.
         """
-        self.verbose = verbose
         self.url = scotus_url
         self.df = None
 
@@ -74,12 +74,12 @@ class SCOTUSDataExtractor:
 
         self.df = pd.DataFrame(data)
 
-    def get_pdf_url(self, case_url: str) -> str:
+    @staticmethod
+    def get_pdf_url(case_url: str) -> Optional[str]:
         """
         Gets the pdf url for a given piece of legislation.
         """
-        if self.verbose:
-            print(f"\tgetting pdf url from {case_url}...")
+        logging.debug(f"\tgetting pdf url from {case_url}...")
 
         time.sleep(3.6)
         request = requests.get(case_url)
@@ -88,22 +88,21 @@ class SCOTUSDataExtractor:
         # Find the link to the PDF
         pdf_tag = soup.find("a", string="Download PDF")
 
-        if not (pdf_tag):
+        if not pdf_tag:
             return None
 
-        if self.verbose:
-            print(f"\t\tpdf tag:{pdf_tag}")
+        logging.debug(f"\t\tpdf tag:{pdf_tag}")
 
         pdf_url = pdf_tag["href"]
 
         return pdf_url
 
-    def extract_html_text(self, case_url: str) -> str:
+    @staticmethod
+    def extract_html_text(case_url: str) -> str:
         """
         Extracts the text of a given piece of legislation.
         """
-        if self.verbose:
-            print(f"\textracting text from {case_url}...")
+        logging.debug(f"\textracting text from {case_url}...")
 
         time.sleep(3.6)
         request = requests.get(case_url)
@@ -140,11 +139,11 @@ class SCOTUSDataExtractor:
         )
 
 
-def main(verbose=True) -> None:
+def main() -> None:
     """
     Processes SCOTUS abortion legislation, pulling text from pdf urls.
     """
-    scotus_api = SCOTUSDataExtractor(verbose=verbose)
+    scotus_api = SCOTUSDataExtractor()
     scotus_api.process()
 
     # save data
