@@ -44,6 +44,13 @@ class Cleaner:
         self.cleaned_df = None
         self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
 
+    @classmethod
+    def is_word_or_in_dictionary(cls, test_word: str) -> bool:
+        return (
+            wordnet.synsets(test_word.lower())
+            or test_word.lower() in cls.DICTIONARY
+        )
+
     @staticmethod
     def clean_text(text: str) -> str:
         """
@@ -119,12 +126,6 @@ class Cleaner:
             text (str): spell checked text.
         """
 
-        def is_word_or_in_dictionary(test_word: str) -> bool:
-            return (
-                wordnet.synsets(test_word.lower())
-                or test_word.lower() in cls.DICTIONARY
-            )
-
         words = text.split(" ")
         new_words = []
         ignore = []
@@ -135,7 +136,7 @@ class Cleaner:
                 continue
 
             added = False
-            if is_word_or_in_dictionary(word.lower()):
+            if cls.is_word_or_in_dictionary(word.lower()):
                 new_words.append(word)
                 continue
 
@@ -152,7 +153,7 @@ class Cleaner:
                 if abs(idx - j) > ITER_LIMIT:
                     break
                 new_word += words[j]
-                if is_word_or_in_dictionary(new_word.lower()):
+                if cls.is_word_or_in_dictionary(new_word.lower()):
                     new_words.append(new_word)
                     ignore.extend(list(range(idx + 1, j + 1)))
                     added = True
@@ -166,7 +167,7 @@ class Cleaner:
                     if abs(idx - j) > ITER_LIMIT:
                         break
                     new_word = words[j] + new_word
-                    if is_word_or_in_dictionary(new_word.lower()):
+                    if cls.is_word_or_in_dictionary(new_word.lower()):
                         # remove the previous word from the list
                         new_words = new_words[:j]
                         new_words.append(new_word)
@@ -176,9 +177,9 @@ class Cleaner:
             # two words have been combined - both are words
             if not added:
                 for j in range(len(word)):
-                    if is_word_or_in_dictionary(
+                    if cls.is_word_or_in_dictionary(
                         word[:j].lower()
-                    ) and is_word_or_in_dictionary(word[j:].lower()):
+                    ) and cls.is_word_or_in_dictionary(word[j:].lower()):
                         new_words.append(word[:j])
                         new_words.append(word[j:])
                         added = True
