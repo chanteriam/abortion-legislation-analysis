@@ -81,14 +81,16 @@ class Cleaner:
                     words = new_word.split(".")
                     # if words are combined with a period, retain all but the
                     # last period
-                    for i, w in enumerate(words):
-                        if len(w.strip(" ")) > 0 and len(w.strip("_")) > 0:
-                            if i == len(words) - 1:
-                                new_split_text.append(w.strip(" ").strip("_"))
-                            else:
-                                new_split_text.append(
-                                    w.strip(" ").strip("_") + "."
-                                )
+                    combined_words = [
+                        w
+                        for w in words
+                        if len(w.strip(" ")) and len(w.strip("_"))
+                    ]
+                    for i, w in enumerate(combined_words):
+                        if i == len(words) - 1:
+                            new_split_text.append(w.strip(" ").strip("_"))
+                        else:
+                            new_split_text.append(w.strip(" ").strip("_") + ".")
                 else:
                     new_split_text.append(new_word)
 
@@ -204,6 +206,8 @@ class Cleaner:
         parameters:
             verbose (bool): whether to print status updates.
         """
+        df = pd.DataFrame()
+
         if cols_to_clean is None:
             cols_to_clean = [("raw_text", "cleaned_text")]
         for col in cols_to_clean:
