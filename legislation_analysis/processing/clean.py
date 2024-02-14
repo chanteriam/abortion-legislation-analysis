@@ -89,15 +89,13 @@ class Cleaner:
                     # if words are combined with a period, retain all but the
                     # last period
                     combined_words = [
-                        w
-                        for w in words
-                        if len(w.strip(" ")) and len(w.strip("_"))
+                        w for w in words if len(w.strip()) and len(w.strip("_"))
                     ]
                     for i, w in enumerate(combined_words):
                         if i == len(words) - 1:
-                            new_split_text.append(w.strip(" ").strip("_"))
+                            new_split_text.append(w.strip().strip("_"))
                         else:
-                            new_split_text.append(w.strip(" ").strip("_") + ".")
+                            new_split_text.append(w.strip().strip("_") + ".")
                 else:
                     new_split_text.append(new_word)
 
