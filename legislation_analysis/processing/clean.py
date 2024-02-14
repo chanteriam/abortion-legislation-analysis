@@ -118,6 +118,13 @@ class Cleaner:
         returns:
             text (str): spell checked text.
         """
+
+        def is_word_or_in_dictionary(test_word: str) -> bool:
+            return (
+                wordnet.synsets(test_word.lower())
+                or test_word.lower() in cls.DICTIONARY
+            )
+
         words = text.split(" ")
         new_words = []
         ignore = []
@@ -128,69 +135,57 @@ class Cleaner:
                 continue
 
             added = False
-            if (
-                not wordnet.synsets(word.lower())
-                and word.lower() not in cls.DICTIONARY
-            ):
+            if is_word_or_in_dictionary(word.lower()):
+                new_words.append(word)
+                continue
+
+            new_word = word
+
+            # check if a word is numeric
+            if any(char.isdigit() for char in word):
+                new_words.append(word)
+                continue
+
+            # a word has been split by a space - forward
+            for j in range(idx + 1, len(words)):
+                # if the word is too far away, stop
+                if abs(idx - j) > ITER_LIMIT:
+                    break
+                new_word += words[j]
+                if is_word_or_in_dictionary(new_word.lower()):
+                    new_words.append(new_word)
+                    ignore.extend(list(range(idx + 1, j + 1)))
+                    added = True
+                    break
+
+            # a word has been split by a space - backward
+            if not added:
                 new_word = word
-
-                # check if a word is numeric
-                if any(char.isdigit() for char in word):
-                    new_words.append(word)
-                    continue
-
-                # a word has been split by a space - forward
-                for j in range(idx + 1, len(words)):
+                for j in range(idx - 1, -1, -1):
                     # if the word is too far away, stop
                     if abs(idx - j) > ITER_LIMIT:
                         break
-                    new_word += words[j]
-                    if (
-                        wordnet.synsets(new_word.lower())
-                        or new_word.lower() in cls.DICTIONARY
-                    ):
+                    new_word = words[j] + new_word
+                    if is_word_or_in_dictionary(new_word.lower()):
+                        # remove the previous word from the list
+                        new_words = new_words[:j]
                         new_words.append(new_word)
-                        ignore.extend(list(range(idx + 1, j + 1)))
                         added = True
                         break
 
-                # a word has been split by a space - backward
-                if not added:
-                    new_word = word
-                    for j in range(idx - 1, -1, -1):
-                        # if the word is too far away, stop
-                        if abs(idx - j) > ITER_LIMIT:
-                            break
-                        new_word = words[j] + new_word
-                        if (
-                            wordnet.synsets(new_word.lower())
-                            or new_word.lower() in cls.DICTIONARY
-                        ):
-                            # remove the previous word from the list
-                            new_words = new_words[:j]
-                            new_words.append(new_word)
-                            added = True
-                            break
+            # two words have been combined - both are words
+            if not added:
+                for j in range(len(word)):
+                    if is_word_or_in_dictionary(
+                        word[:j].lower()
+                    ) and is_word_or_in_dictionary(word[j:].lower()):
+                        new_words.append(word[:j])
+                        new_words.append(word[j:])
+                        added = True
+                        break
 
-                # two words have been combined - both are words
-                if not added:
-                    for j in range(len(word)):
-                        if (
-                            wordnet.synsets(word[:j].lower())
-                            or word[:j].lower() in cls.DICTIONARY
-                        ) and (
-                            wordnet.synsets(word[j:].lower())
-                            or word[j:].lower() in cls.DICTIONARY
-                        ):
-                            new_words.append(word[:j])
-                            new_words.append(word[j:])
-                            added = True
-                            break
-
-                # a word was just misspelled
-                if not added:
-                    new_words.append(word)
-            else:
+            # a word was just misspelled
+            if not added:
                 new_words.append(word)
 
         return " ".join(new_words)
