@@ -113,80 +113,92 @@ class Cleaner:
         return Cleaner.spell_check(cleaned_text)
 
     @classmethod
+    def is_valid_word(cls, word):
+        """
+        Check if the word is valid based on wordnet or a custom dictionary.
+
+        parameters:
+            word (str): word to check.
+
+        returns:
+            bool: whether the word is valid.
+        """
+        return bool(wordnet.synsets(word)) or word in cls.DICTIONARY
+
+    @classmethod
+    def combine_with_surrounding(cls, words, current_index):
+        """
+        Attempt to combine the current word with surrounding words within
+        ITER_LIMIT.
+
+        parameters:
+            words (list): list of words.
+            current_index (int): index of the current word.
+
+        returns:
+            combined_word (str): combined word.
+            idx (int): index of the combined word.
+        """
+        for direction in [1, -1]:  # Forward and backward
+            for j in range(1, cls.ITER_LIMIT + 1):
+                idx = current_index + j * direction
+                if 0 <= idx < len(words):
+                    combined_word = (
+                        words[current_index] + words[idx]
+                        if direction == 1
+                        else words[idx] + words[current_index]
+                    )
+                    if cls.is_valid_word(combined_word):
+                        return combined_word, idx
+        return None, None
+
+    @classmethod
+    def find_internal_split(cls, word):
+        """
+        Find a valid internal split of the word, if any.
+
+        parameters:
+            word (str): word to split.
+
+        returns:
+            split_word1 (str): first split word.
+            split_word2 (str): second split word.
+        """
+        for j in range(1, len(word)):
+            if cls.is_valid_word(word[:j]) and cls.is_valid_word(word[j:]):
+                return word[:j], word[j:]
+        return None, None
+
+    @classmethod
     def spell_check(cls, text: str) -> str:
         """
-        Uses the NLTK library to spell check the text and fix spelling errors.
+        Uses NLTK library and custom logic to fix spelling errors.
 
         parameters:
             text (str): text to spell check.
 
         returns:
-            text (str): spell checked text.
+            str: spell checked text.
         """
-
-        words = text.split(" ")
+        words = text.split()
         new_words = []
-        ignore = []
-
-        # checks if a word exists in the dictionary and tries to fix it
-        for idx, word in enumerate(words):
-            if idx in ignore:
-                continue
-
-            added = False
-            if cls.is_word_or_in_dictionary(word.lower()):
+        i = 0
+        while i < len(words):
+            word = words[i]
+            if cls.is_valid_word(word) or any(char.isdigit() for char in word):
                 new_words.append(word)
-                continue
-
-            new_word = word
-
-            # check if a word is numeric
-            if any(char.isdigit() for char in word):
-                new_words.append(word)
-                continue
-
-            # a word has been split by a space - forward
-            for j in range(idx + 1, len(words)):
-                # if the word is too far away, stop
-                if abs(idx - j) > ITER_LIMIT:
-                    break
-                new_word += words[j]
-                if cls.is_word_or_in_dictionary(new_word.lower()):
-                    new_words.append(new_word)
-                    ignore.extend(list(range(idx + 1, j + 1)))
-                    added = True
-                    break
-
-            # a word has been split by a space - backward
-            if not added:
-                new_word = word
-                for j in range(idx - 1, -1, -1):
-                    # if the word is too far away, stop
-                    if abs(idx - j) > ITER_LIMIT:
-                        break
-                    new_word = words[j] + new_word
-                    if cls.is_word_or_in_dictionary(new_word.lower()):
-                        # remove the previous word from the list
-                        new_words = new_words[:j]
-                        new_words.append(new_word)
-                        added = True
-                        break
-
-            # two words have been combined - both are words
-            if not added:
-                for j in range(len(word)):
-                    if cls.is_word_or_in_dictionary(
-                        word[:j].lower()
-                    ) and cls.is_word_or_in_dictionary(word[j:].lower()):
-                        new_words.append(word[:j])
-                        new_words.append(word[j:])
-                        added = True
-                        break
-
-            # a word was just misspelled
-            if not added:
-                new_words.append(word)
-
+            else:
+                combined_word, skip_idx = cls.combine_with_surrounding(words, i)
+                if combined_word:
+                    new_words.append(combined_word)
+                    i = skip_idx  # Skip to the index of the word combined with
+                else:
+                    split_word1, split_word2 = cls.find_internal_split(word)
+                    if split_word1:
+                        new_words.extend([split_word1, split_word2])
+                    else:
+                        new_words.append(word)
+            i += 1  # Move to the next word
         return " ".join(new_words)
 
     def process(
