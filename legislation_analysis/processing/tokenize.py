@@ -79,28 +79,30 @@ class Tokenizer:
         if not cols_to_tokenize:
             cols_to_tokenize = [("cleaned_text", "tokenized_text")]
 
+        self.tokenized_df = self.df.copy()
+
         for col, new_col in cols_to_tokenize:
             if verbose:
                 print(f"\tTokenizing and normalizing {col}...")
-            self.df[new_col] = (
-                self.df[col]
+            self.tokenized_df[new_col] = (
+                self.tokenized_df[col]
                 .dropna()
                 .apply(lambda x: self.tokenize_and_normalize(x))
             )
 
             # Unpack processed text into separate columns
-            self.df[f"{new_col}_sents"] = self.df[new_col].apply(
-                lambda x: x["sents"]
-            )
-            self.df[f"{new_col}_words"] = self.df[new_col].apply(
-                lambda x: x["words"]
-            )
-            self.df[f"{new_col}_words_norm"] = self.df[new_col].apply(
-                lambda x: x["words_norm"]
-            )
+            self.tokenized_df[f"{new_col}_sents"] = self.tokenized_df[
+                new_col
+            ].apply(lambda x: x["sents"])
+            self.tokenized_df[f"{new_col}_words"] = self.tokenized_df[
+                new_col
+            ].apply(lambda x: x["words"])
+            self.tokenized_df[f"{new_col}_words_norm"] = self.tokenized_df[
+                new_col
+            ].apply(lambda x: x["words_norm"])
 
             # Drop the intermediate column
-            self.df.drop(columns=[new_col], inplace=True)
+            self.tokenized_df.drop(columns=[new_col], inplace=True)
 
 
 def main(verbose: bool = True) -> None:
@@ -122,5 +124,5 @@ def main(verbose: bool = True) -> None:
         print("Tokenizing SCOTUS data...")
     scotus_tokenizer.process(verbose)
 
-    save(congress_tokenizer.cleaned_df, congress_tokenizer.save_path)
-    save(scotus_tokenizer.cleaned_df, scotus_tokenizer.save_path)
+    save(congress_tokenizer.tokenized_df, congress_tokenizer.save_path)
+    save(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
