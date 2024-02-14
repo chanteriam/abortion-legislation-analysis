@@ -11,24 +11,24 @@ create-requirements:
 # Group level commands
 .PHONY: get-legislation-data
 get-legislation-data:
-	python -m legilsation_analysis --congress-data --scotus-data
+	python -m legislation_analysis --congress-data --scotus-data
 
 # Individual function commands
 .PHONY: congress-data
 congress-data:
-	python -m legilsation_analysis --congress -v
+	python -m legislation_analysis --congress -v
 
 .PHONY: scotus-data
 scotus-data:
-	python -m legilsation_analysis --scotus -v
+	python -m legislation_analysis --scotus -v
 
 .PHONY: clean-data
 clean-data:
-	python -m legilsation_analysis --clean -v
+	python -m legislation_analysis --clean -v
 
 .PHONY: tokenize-data
 tokenize-data:
-	python -m legilsation_analysis --tokenize -v
+	python -m legislation_analysis --tokenize -v
 
 # run all commands
 .PHONY: run

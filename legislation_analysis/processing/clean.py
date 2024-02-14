@@ -4,9 +4,11 @@ project.
 """
 
 import os
+import re
+
+import nltk
 import pandas as pd
-import time
-from openai import OpenAI
+from nltk.corpus import wordnet, words
 
 from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
@@ -14,6 +16,11 @@ from legislation_analysis.utils.constants import (
     SCOTUS_DATA_FILE,
 )
 from legislation_analysis.utils.functions import save
+
+
+nltk.download("wordnet")
+nltk.download("words")
+ITER_LIMIT = 4
 
 
 class Cleaner:
@@ -25,9 +32,7 @@ class Cleaner:
         filename (str): name of file to save.
     """
 
-    TOTAL_TOKENS_USED = 0
-    TOKEN_LIMIT = 3000
-    OPENAI_CLIENT = OpenAI()
+    DICTIONARY = set(words.words())
 
     def __init__(
         self,
@@ -39,10 +44,72 @@ class Cleaner:
         self.cleaned_df = None
         self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
 
-    @classmethod
-    def clean_text(cls, text: str) -> str:
+    @staticmethod
+    def clean_text(text: str) -> str:
         """
-        Spell checks text.
+        Cleans the text.
+
+        parameters:
+            text (str): text to clean.
+
+        returns:
+            text (str): cleaned text.
+        """
+        cleaned_text = ""
+        split_text = text.split(" ")
+        new_split_text = []
+
+        for word in split_text:
+            new_words = []
+            # check if the word is separated by new line and/or hyphen
+            if "-" in word:
+                if "\n" in word:
+                    word = word.replace("\n", "")
+
+                if not any(char.isdigit() for char in word):
+                    # don't remove hyphens for words like "30-year-old"
+                    word = word.replace("-", "")
+
+            # check if two words are combined with a new line character
+            if "\n" in word:
+                new_words = word.split("\n")
+            else:
+                new_words.append(word)
+
+            # check if words are combined with a period
+            for new_word in new_words:
+                if "." in new_word:
+                    words = new_word.split(".")
+                    # if words are combined with a period, retain all but the
+                    # last period
+                    for i, w in enumerate(words):
+                        if len(w.strip(" ")) > 0 and len(w.strip("_")) > 0:
+                            if i == len(words) - 1:
+                                new_split_text.append(w.strip(" ").strip("_"))
+                            else:
+                                new_split_text.append(
+                                    w.strip(" ").strip("_") + "."
+                                )
+                else:
+                    new_split_text.append(new_word)
+
+        # combined to form cleaned text
+        cleaned_text = " ".join(new_split_text)
+
+        # remove special characters
+        cleaned_text = re.sub(
+            r"[^a-zA-Z0-9\s\,\.\?\;\:\)\(\[\]\"\'\-]", "", cleaned_text
+        )
+
+        # remove excess whitespace
+        cleaned_text = re.sub(r"\s+", " ", cleaned_text).strip()
+
+        return Cleaner.spell_check(cleaned_text)
+
+    @classmethod
+    def spell_check(cls, text: str) -> str:
+        """
+        Uses the NLTK library to spell check the text and fix spelling errors.
 
         parameters:
             text (str): text to spell check.
@@ -50,75 +117,87 @@ class Cleaner:
         returns:
             text (str): spell checked text.
         """
-        checked_text = ""
-        spell_check_prompt = {
-            "role": "system",
-            "content": """
-            You are a legislation-cleaning assistant. You correct legislative text delimited with triple quotes by
-            identifying and fixing errors such as misplaced or duplicate spaces, missing spaces,
-            removal of new line characters, and identification and concatenation of split up words.
-            In your response, please only included the corrected text and no additional information.
+        words = text.split(" ")
+        new_words = []
+        ignore = []
 
-            [Example Request]
-            Please clean this piece of legislation:
-            \"\"\"
-            \n\n\nThis is a pi ece of legis-lation that   nee ds to\n\n becleaned..
-            \"\"\"'
+        # checks if a word exists in the dictionary and tries to fix it
+        for i, word in enumerate(words):
+            if i in ignore:
+                continue
 
-            [Example Response]
-            \"\"\"
-            This is a piece of legislation that needs to be cleaned.
-            \"\"\"
-            """,
-        }
-        tokens = text.split(" ")
-        max_token_ct = len(tokens)
-        start_time = time.time()
+            added = False
+            if (
+                not wordnet.synsets(word.lower())
+                and word.lower() not in cls.DICTIONARY
+            ):
+                new_word = word
 
-        for i in range(0, max_token_ct, cls.TOKEN_LIMIT):
-            # timer for token limitations
-            if cls.TOTAL_TOKENS_USED + len(tokens[i : i + cls.TOKEN_LIMIT]) > 60000:
-                end_time = time.time()
-                elapsed_time = end_time - start_time
-                if elapsed_time > 60:
-                    cls.TOTAL_TOKENS_USED = 0
-                    start_time = time.time()
-                else:
-                    while elapsed_time < 60:
-                        print("Sleeping...")
-                        elapsed_time = end_time - start_time
-                    cls.TOTAL_TOKENS_USED = 0
-                    start_time = time.time()
+                # check if a word is numeric
+                if any(char.isdigit() for char in word):
+                    new_words.append(word)
+                    continue
 
-            cls.TOTAL_TOKENS_USED += len(tokens[i : i + cls.TOKEN_LIMIT])
-            text = " ".join(tokens[i : i + cls.TOKEN_LIMIT])
+                # a word has been split by a space - forward
+                for j in range(i + 1, len(words)):
+                    # if the word is too far away, stop
+                    if abs(i - j) > ITER_LIMIT:
+                        break
+                    new_word += words[j]
+                    if (
+                        wordnet.synsets(new_word.lower())
+                        or new_word.lower() in cls.DICTIONARY
+                    ):
+                        new_words.append(new_word)
+                        ignore.extend(list(range(i + 1, j + 1)))
+                        added = True
+                        break
 
-            message = {
-                "role": "user",
-                "content": f"""Please clean this piece of legislation:
-                \"\"\"{text}\"\"\"
-                """,
-            }
+                # a word has been split by a space - backward
+                if not added:
+                    new_word = word
+                    for j in range(i - 1, -1, -1):
+                        # if the word is too far away, stop
+                        if abs(i - j) > ITER_LIMIT:
+                            break
+                        new_word = words[j] + new_word
+                        if (
+                            wordnet.synsets(new_word.lower())
+                            or new_word.lower() in cls.DICTIONARY
+                        ):
+                            # remove the previous word from the list
+                            new_words = new_words[:j]
+                            new_words.append(new_word)
+                            added = True
+                            break
 
-            response = cls.OPENAI_CLIENT.chat.completions.create(
-                model="gpt-3.5-turbo-0125",
-                messages=[spell_check_prompt, message],
-            )
+                # two words have been combined - both are words
+                if not added:
+                    for j in range(len(word)):
+                        if (
+                            wordnet.synsets(word[:j].lower())
+                            or word[:j].lower() in cls.DICTIONARY
+                        ) and (
+                            wordnet.synsets(word[j:].lower())
+                            or word[j:].lower() in cls.DICTIONARY
+                        ):
+                            new_words.append(word[:j])
+                            new_words.append(word[j:])
+                            added = True
+                            break
 
-            resp = response.choices[0].message.content.strip()
-            resp = resp.replace("'", "'")
-            resp = resp.strip('"').strip("\n").strip(" ")
+                # a word was just misspelled
+                if not added:
+                    new_words.append(word)
+            else:
+                new_words.append(word)
 
-            checked_text += f"{resp} "
-
-        return checked_text
+        return " ".join(new_words)
 
     def process(
         self,
         verbose: bool = True,
-        cols_to_clean=[
-            ("raw_text", "cleaned_text"),
-        ],
+        cols_to_clean=None,
     ) -> None:
         """
         Processes the legislation text.
@@ -126,9 +205,11 @@ class Cleaner:
         parameters:
             verbose (bool): whether to print status updates.
         """
+        if cols_to_clean is None:
+            cols_to_clean = [("raw_text", "cleaned_text")]
         for col in cols_to_clean:
             if verbose:
-                print(f"Cleaning {col[0]}...")
+                print(f"\tCleaning {col[0]}...")
             col, new_col = col
             df = self.df.dropna(subset=[col]).copy()
             df[new_col] = df[col].copy()
@@ -149,11 +230,24 @@ def main(verbose: bool = True) -> None:
     returns:
         True (bool): whether the data cleaner ran successfully.
     """
-    congress_cleaner = Cleaner(CONGRESS_DATA_FILE, "congress_legislation_cleaned.csv")
+    congress_cleaner = Cleaner(
+        CONGRESS_DATA_FILE, "congress_legislation_cleaned.csv"
+    )
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.csv")
 
-    congress_cleaner.process(verbose)
-    scotus_cleaner.process(verbose, cols_to_clean=[("raw_text", "cleaned_text")])
+    if verbose:
+        print("Cleaning Congress Data...")
+    congress_cleaner.process(
+        verbose,
+        cols_to_clean=[
+            ("raw_text", "cleaned_text"),
+            ("latest summary", "cleaned_summary"),
+        ],
+    )
+
+    if verbose:
+        print("Cleaning SCOTUS Data...")
+    scotus_cleaner.process(verbose)
 
     save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
     save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
