@@ -16,19 +16,19 @@ get-legislation-data:
 # Individual function commands
 .PHONY: congress-data
 congress-data:
-	python -m legislation_analysis --congress -v
+	python -m legislation_analysis --congress -d
 
 .PHONY: scotus-data
 scotus-data:
-	python -m legislation_analysis --scotus -v
+	python -m legislation_analysis --scotus -d
 
 .PHONY: clean-data
 clean-data:
-	python -m legislation_analysis --clean -v
+	python -m legislation_analysis --clean -d
 
 .PHONY: tokenize-data
 tokenize-data:
-	python -m legislation_analysis --tokenize -v
+	python -m legislation_analysis --tokenize -d
 
 # run all commands
 .PHONY: run
