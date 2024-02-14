@@ -43,15 +43,15 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--verbose",
+        "--debug",
         "-v",
         action="store_true",
-        help="prints status updates",
+        help="print debugging messages",
     )
 
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
+    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     if args.congress:
         congress.main()
