@@ -133,4 +133,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-legislation_analysis/data
+# data folder
+legislation_analysis/data/

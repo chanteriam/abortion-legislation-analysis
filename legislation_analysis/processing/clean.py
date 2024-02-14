@@ -5,8 +5,11 @@ project.
 
 import os
 import re
+from typing import Tuple
 
+import nltk
 import pandas as pd
+from nltk.corpus import wordnet, words
 
 from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
@@ -16,14 +19,21 @@ from legislation_analysis.utils.constants import (
 from legislation_analysis.utils.functions import save
 
 
+nltk.download("wordnet")
+nltk.download("words")
+
+
 class Cleaner:
     """
-    Cleans legislation text.
+    Abstract class for a cleaner object.
 
     parameters:
         filepath (str): path to the legislation text csv.
         filename (str): name of file to save.
     """
+
+    DICTIONARY = set(words.words())
+    ITER_LIMIT = 4
 
     def __init__(
         self,
@@ -35,10 +45,17 @@ class Cleaner:
         self.cleaned_df = None
         self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
 
+    @classmethod
+    def is_word_or_in_dictionary(cls, test_word: str) -> bool:
+        return (
+            wordnet.synsets(test_word.lower())
+            or test_word.lower() in cls.DICTIONARY
+        )
+
     @staticmethod
     def clean_text(text: str) -> str:
         """
-        Cleans text.
+        Cleans the text.
 
         parameters:
             text (str): text to clean.
@@ -46,59 +63,171 @@ class Cleaner:
         returns:
             text (str): cleaned text.
         """
+        split_text = text.split(" ")
+        new_split_text = []
 
-        if not isinstance(text, str):
-            return "None"
+        for word in split_text:
+            new_words = []
+            # check if the word is separated by new line and/or hyphen
+            if "-" in word:
+                if "\n" in word:
+                    word = word.replace("\n", "")
 
+                if not any(char.isdigit() for char in word):
+                    # don't remove hyphens for words like "30-year-old"
+                    word = word.replace("-", "")
+
+            # check if two words are combined with a new line character
+            if "\n" in word:
+                new_words = word.split("\n")
+            else:
+                new_words.append(word)
+
+            # check if words are combined with a period
+            for new_word in new_words:
+                if "." in new_word:
+                    words = new_word.split(".")
+                    # if words are combined with a period, retain all but the
+                    # last period
+                    combined_words = [
+                        w for w in words if len(w.strip()) and len(w.strip("_"))
+                    ]
+                    for i, w in enumerate(combined_words):
+                        if i == len(words) - 1:
+                            new_split_text.append(w.strip().strip("_"))
+                        else:
+                            new_split_text.append(w.strip().strip("_") + ".")
+                else:
+                    new_split_text.append(new_word)
+
+        # combined to form cleaned text
+        cleaned_text = " ".join(new_split_text)
+
+        # remove special characters
         cleaned_text = re.sub(
-            r"\n", " ", text
-        )  # replace any new line characters with spaces
+            r"[^a-zA-Z0-9\s\,\.\?\;\:\)\(\[\]\"\'\-]", "", cleaned_text
+        )
 
-        # remove html tags
-        cleaned_text = re.sub(r"\<.*?\>", "", cleaned_text)
+        # remove excess whitespace
+        cleaned_text = re.sub(r"\s+", " ", cleaned_text).strip()
 
-        cleaned_text = re.sub(
-            r"\([0-9]+\)", "", cleaned_text
-        )  # parentheses with numbers
+        return Cleaner.spell_check(cleaned_text)
 
-        cleaned_text = re.sub(
-            r"[^A-Za-z0-9 \,\.\?\!\;\:\(\)\'\"-]+", "", cleaned_text
-        ).strip()  # remove special characters
+    @classmethod
+    def is_valid_word(cls, word: str) -> bool:
+        """
+        Check if the word is valid based on wordnet or a custom dictionary.
 
-        cleaned_text = re.sub(
-            r"[\-\_]+", " ", cleaned_text
-        )  # remove underscores and hyphens
+        parameters:
+            word (str): word to check.
 
-        # remove extra whitespace
-        cleaned_text = re.sub(r"\s+", " ", cleaned_text)
+        returns:
+            bool: whether the word is valid.
+        """
+        return bool(wordnet.synsets(word)) or word in cls.DICTIONARY
 
-        return cleaned_text
+    @classmethod
+    def combine_with_surrounding(
+        cls, word_list: [str], current_index: int
+    ) -> Tuple:
+        """
+        Attempt to combine the current word with surrounding words within
+        ITER_LIMIT.
 
-    def process(self, verbose: bool = True) -> None:
+        parameters:
+            words (list): list of words.
+            current_index (int): index of the current word.
+
+        returns:
+            combined_word (str): combined word.
+            idx (int): index of the combined word.
+        """
+        for direction in [1, -1]:  # Forward and backward
+            for j in range(1, cls.ITER_LIMIT + 1):
+                idx = current_index + j * direction
+                if 0 <= idx < len(word_list):
+                    combined_word = (
+                        word_list[current_index] + word_list[idx]
+                        if direction == 1
+                        else word_list[idx] + word_list[current_index]
+                    )
+                    if cls.is_valid_word(combined_word):
+                        return combined_word, idx
+        return None, None
+
+    @classmethod
+    def find_internal_split(cls, word: str) -> Tuple:
+        """
+        Find a valid internal split of the word, if any.
+
+        parameters:
+            word (str): word to split.
+
+        returns:
+            split_word1 (str): first split word.
+            split_word2 (str): second split word.
+        """
+        for j in range(1, len(word)):
+            if cls.is_valid_word(word[:j]) and cls.is_valid_word(word[j:]):
+                return word[:j], word[j:]
+        return None, None
+
+    @classmethod
+    def spell_check(cls, text: str) -> str:
+        """
+        Uses NLTK library and custom logic to fix spelling errors.
+
+        parameters:
+            text (str): text to spell check.
+
+        returns:
+            str: spell checked text.
+        """
+        words = text.split()
+        new_words = []
+        i = 0
+        while i < len(words):
+            word = words[i]
+            if cls.is_valid_word(word) or any(char.isdigit() for char in word):
+                new_words.append(word)
+            else:
+                combined_word, skip_idx = cls.combine_with_surrounding(words, i)
+                if combined_word:
+                    new_words.append(combined_word)
+                    i = skip_idx  # Skip to the index of the word combined with
+                else:
+                    split_word1, split_word2 = cls.find_internal_split(word)
+                    if split_word1:
+                        new_words.extend([split_word1, split_word2])
+                    else:
+                        new_words.append(word)
+            i += 1  # Move to the next word
+        return " ".join(new_words)
+
+    def process(
+        self,
+        verbose: bool = True,
+        cols_to_clean=None,
+    ) -> None:
         """
         Processes the legislation text.
 
         parameters:
             verbose (bool): whether to print status updates.
         """
+        df = pd.DataFrame()
 
-        if "raw_text" not in self.df.columns and "text" in self.df.columns:
-            self.df.rename(columns={"text": "raw_text"}, inplace=True)
+        if cols_to_clean is None:
+            cols_to_clean = [("raw_text", "cleaned_text")]
+        for col in cols_to_clean:
+            if verbose:
+                print(f"\tCleaning {col[0]}...")
+            col, new_col = col
+            df = self.df.dropna(subset=[col]).copy()
+            df[new_col] = df[col].copy()
 
-        # remove rows with null text values
-        df = self.df.dropna(subset=["raw_text"]).copy()
-        df["cleaned_text"] = df["raw_text"].copy()
-        df["cleaned_summary"] = df["latest summary"]
-
-        # clean summarys
-        df["cleaned_summary"] = df["cleaned_summary"].apply(
-            lambda x: self.clean_text(x)
-        )
-
-        # clean text
-        df["cleaned_text"] = df["cleaned_text"].apply(
-            lambda x: self.clean_text(x)
-        )
+            # clean text
+            df[new_col] = df[new_col].apply(lambda x: self.clean_text(x))
 
         self.cleaned_df = df
 
@@ -118,7 +247,18 @@ def main(verbose: bool = True) -> None:
     )
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.csv")
 
-    congress_cleaner.process(verbose)
+    if verbose:
+        print("Cleaning Congress Data...")
+    congress_cleaner.process(
+        verbose,
+        cols_to_clean=[
+            ("raw_text", "cleaned_text"),
+            ("latest summary", "cleaned_summary"),
+        ],
+    )
+
+    if verbose:
+        print("Cleaning SCOTUS Data...")
     scotus_cleaner.process(verbose)
 
     save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
