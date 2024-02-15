@@ -28,8 +28,8 @@ class Cleaner:
     Cleaner object class.
 
     parameters:
-        filepath (str): path to the legislation text csv.
-        filename (str): name of file to save.
+        file_path (str): path to the legislation text csv.
+        file_name (str): name of file to save.
     """
 
     DICTIONARY = set(words.words())
@@ -37,13 +37,13 @@ class Cleaner:
 
     def __init__(
         self,
-        filepath=CONGRESS_DATA_FILE,
-        filename="congress_legislation_cleaned.fea",
+        file_path=CONGRESS_DATA_FILE,
+        file_name="congress_legislation_cleaned.fea",
     ):
-        self.df = load_file_to_df(filepath)
-        self.filename = filename
+        self.df = load_file_to_df(file_path)
+        self.file_name = file_name
         self.cleaned_df = None
-        self.savepath = os.path.join(CLEANED_DATA_PATH, self.filename)
+        self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
 
     @staticmethod
     def process_words(split_text: list) -> list:
@@ -83,15 +83,13 @@ class Cleaner:
                     # if words are combined with a period, retain all but the
                     # last period
                     combined_words = [
-                        w
-                        for w in words
-                        if len(w.strip(" ")) and len(w.strip("_"))
+                        w for w in words if len(w.strip()) and len(w.strip("_"))
                     ]
                     for i, w in enumerate(combined_words):
                         if i == len(words) - 1:
-                            new_split_text.append(w.strip(" ").strip("_"))
+                            new_split_text.append(w.strip().strip("_"))
                         else:
-                            new_split_text.append(w.strip(" ").strip("_") + ".")
+                            new_split_text.append(w.strip().strip("_") + ".")
                 else:
                     new_split_text.append(new_word)
 
@@ -249,16 +247,12 @@ class Cleaner:
                 continue
 
             # check if the word is a valid word or contains a number
-            if cls.is_valid_word(word.lower()) or any(
-                char.isdigit() for char in word
-            ):
+            if cls.is_valid_word(word.lower()) or any(char.isdigit() for char in word):
                 new_words.append(word)
                 continue
 
             # check if one word was split by a space
-            combined_word, idxs, add_type = cls.combine_with_surrounding(
-                words, idx
-            )
+            combined_word, idxs, add_type = cls.combine_with_surrounding(words, idx)
             if combined_word:
                 # for forward, we skip the next words
                 if add_type == "skip":
@@ -313,9 +307,7 @@ def main() -> None:
     """
     Runs data cleaner.
     """
-    congress_cleaner = Cleaner(
-        CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea"
-    )
+    congress_cleaner = Cleaner(CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea")
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
 
     logging.debug("Cleaning Congress Data...")
@@ -329,5 +321,5 @@ def main() -> None:
     logging.debug("Cleaning SCOTUS Data...")
     scotus_cleaner.process()
 
-    save(congress_cleaner.cleaned_df, congress_cleaner.savepath)
-    save(scotus_cleaner.cleaned_df, scotus_cleaner.savepath)
+    save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
+    save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)

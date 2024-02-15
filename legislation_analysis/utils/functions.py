@@ -35,13 +35,13 @@ def extract_pdf_text(pdf_url: str) -> str:
 
 
 def load_file_to_df(
-    filepath: str, load_tokenized=False, tokenized_cols=None
+    file_path: str, load_tokenized=False, tokenized_cols=None
 ) -> pd.DataFrame:
     """
     Loads a file into a dataframe.
 
     parameters:
-        filepath (str): path to the file to load.
+        file_path (str): path to the file to load.
         load_tokenized (bool): whether or not to load tokenized data.
         tokenized_cols (list): list of columns to load tokenized data for.
 
@@ -50,16 +50,16 @@ def load_file_to_df(
     """
     if tokenized_cols is None:
         tokenized_cols = []
-    ext = filepath.split(".")[-1]
+    ext = file_path.split(".")[-1]
 
     if ext.lower() in ["pickle", "pkl"]:
-        df = pd.read_pickle(filepath)
+        df = pd.read_pickle(file_path)
     elif ext["csv", "txt"]:
-        df = pd.read_csv(filepath)
+        df = pd.read_csv(file_path)
     elif ext in ["xlsx", "xls"]:
-        df = pd.read_excel(filepath)
+        df = pd.read_excel(file_path)
     elif ext in ["fea", "feather"]:
-        df = pd.read_feather(filepath)
+        df = pd.read_feather(file_path)
     else:
         raise ValueError(f"File type {ext} not supported.")
 
@@ -70,23 +70,23 @@ def load_file_to_df(
     return df
 
 
-def save(df: pd.DataFrame, filepath: str) -> None:
+def save(df: pd.DataFrame, file_path: str) -> None:
     """
-    Saves the given dataframe out to the specified filepath.
+    Saves the given dataframe out to the specified file_path.
 
     parameters:
         df (pd.DataFrame): dataframe to save.
-        filepath (str): path to save the dataframe to.
+        file_path (str): path to save the dataframe to.
     """
-    ext = filepath.split(".")[-1]
+    ext = file_path.split(".")[-1]
 
     if ext.lower() in ["pickle", "pkl"]:
-        df.to_pickle(filepath)
+        df.to_pickle(file_path)
     elif ext.lower() in ["csv", "txt"]:
-        df.to_csv(filepath, index=False)
+        df.to_csv(file_path, index=False)
     elif ext.lower() in ["xlsx", "xls"]:
-        df.to_excel(filepath, index=False)
+        df.to_excel(file_path, index=False)
     elif ext.lower() in ["fea", "feather"]:
-        df.to_feather(filepath)
+        df.to_feather(file_path)
     else:
         raise ValueError(f"File type {ext} not supported.")

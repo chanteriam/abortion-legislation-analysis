@@ -25,19 +25,19 @@ class Tokenizer:
     Tokenizes legislation text.
 
     parameters:
-        filepath (str): path to the file to tokenize.
-        filename (str): name of the file to save the tokenized data to.
+        file_path (str): path to the file to tokenize.
+        file_name (str): name of the file to save the tokenized data to.
     """
 
     def __init__(
         self,
-        filepath: str = CONGRESS_DATA_FILE_CLEANED,
-        filename: str = "congress_legislation_tokenized.fea",
+        file_path: str = CONGRESS_DATA_FILE_CLEANED,
+        file_name: str = "congress_legislation_tokenized.fea",
     ):
-        self.df = load_file_to_df(filepath)
-        self.filename = filename
+        self.df = load_file_to_df(file_path)
+        self.file_name = file_name
         self.tokenized_df = None
-        self.savepath = os.path.join(TOKENIZED_DATA_PATH, self.filename)
+        self.save_path = os.path.join(TOKENIZED_DATA_PATH, self.file_name)
 
     @staticmethod
     def tokenize_and_normalize(text: str, extra_stop: list = None) -> dict:
@@ -94,12 +94,12 @@ class Tokenizer:
             )
 
             # Unpack processed text into separate columns
-            self.tokenized_df[f"{new_col}_sents"] = self.tokenized_df[
-                new_col
-            ].apply(lambda x: x["sents"])
-            self.tokenized_df[f"{new_col}_words"] = self.tokenized_df[
-                new_col
-            ].apply(lambda x: x["words"])
+            self.tokenized_df[f"{new_col}_sents"] = self.tokenized_df[new_col].apply(
+                lambda x: x["sents"]
+            )
+            self.tokenized_df[f"{new_col}_words"] = self.tokenized_df[new_col].apply(
+                lambda x: x["words"]
+            )
             self.tokenized_df[f"{new_col}_words_norm"] = self.tokenized_df[
                 new_col
             ].apply(lambda x: x["words_norm"])
@@ -118,12 +118,10 @@ def main() -> None:
     )
 
     logging.debug("Tokenizing SCOTUS Data...")
-    scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea"
-    )
+    scotus_tokenizer = Tokenizer(SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea")
 
     congress_tokenizer.process()
     scotus_tokenizer.process()
 
-    save(congress_tokenizer.tokenized_df, congress_tokenizer.savepath)
-    save(scotus_tokenizer.tokenized_df, scotus_tokenizer.savepath)
+    save(congress_tokenizer.tokenized_df, congress_tokenizer.save_path)
+    save(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
