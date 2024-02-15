@@ -2,7 +2,7 @@
 Develops a data cleaner class for the abortion legislation content analysis
 project.
 """
-
+import logging
 import os
 import re
 from typing import Tuple
@@ -206,22 +206,17 @@ class Cleaner:
 
     def process(
         self,
-        verbose: bool = True,
         cols_to_clean=None,
     ) -> None:
         """
         Processes the legislation text.
-
-        parameters:
-            verbose (bool): whether to print status updates.
         """
         df = pd.DataFrame()
 
         if cols_to_clean is None:
             cols_to_clean = [("raw_text", "cleaned_text")]
         for col in cols_to_clean:
-            if verbose:
-                print(f"\tCleaning {col[0]}...")
+            logging.debug(f"\tCleaning {col[0]}...")
             col, new_col = col
             df = self.df.dropna(subset=[col]).copy()
             df[new_col] = df[col].copy()
@@ -232,12 +227,9 @@ class Cleaner:
         self.cleaned_df = df
 
 
-def main(verbose: bool = True) -> None:
+def main() -> None:
     """
     Runs data cleaner.
-
-    parameters:
-        verbose (bool): whether to print status updates.
 
     returns:
         True (bool): whether the data cleaner ran successfully.
@@ -247,19 +239,16 @@ def main(verbose: bool = True) -> None:
     )
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.csv")
 
-    if verbose:
-        print("Cleaning Congress Data...")
+    logging.debug("Cleaning Congress Data...")
     congress_cleaner.process(
-        verbose,
         cols_to_clean=[
             ("raw_text", "cleaned_text"),
             ("latest summary", "cleaned_summary"),
         ],
     )
 
-    if verbose:
-        print("Cleaning SCOTUS Data...")
-    scotus_cleaner.process(verbose)
+    logging.debug("Cleaning SCOTUS Data...")
+    scotus_cleaner.process()
 
     save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
     save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)

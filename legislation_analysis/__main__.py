@@ -1,9 +1,15 @@
 """Serves as the entry point for the project module."""
 
 import argparse
+import logging
 
 from legislation_analysis.api import congress, scotus
 from legislation_analysis.processing import clean, tokenize
+
+
+logging.basicConfig(
+    format="%(asctime)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p"
+)
 
 
 def main() -> None:
@@ -37,25 +43,27 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--verbose",
+        "--debug",
         "-v",
         action="store_true",
-        help="prints status updates",
+        help="print debugging messages",
     )
 
     args = parser.parse_args()
 
+    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+
     if args.congress:
-        congress.main(args.verbose)
+        congress.main()
 
     if args.scotus:
-        scotus.main(args.verbose)
+        scotus.main()
 
     if args.clean:
-        clean.main(args.verbose)
+        clean.main()
 
     if args.tokenize:
-        tokenize.main(args.verbose)
+        tokenize.main()
 
 
 if __name__ == "__main__":

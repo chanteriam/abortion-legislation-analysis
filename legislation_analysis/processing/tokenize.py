@@ -37,7 +37,7 @@ class Tokenizer:
         pass
 
 
-def main(verbose: bool = True) -> None:
+def main() -> None:
     """
     Runs data tokenizer.
     """
@@ -48,8 +48,8 @@ def main(verbose: bool = True) -> None:
         SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.csv"
     )
 
-    congress_tokenizer.process(verbose)
-    scotus_tokenizer.process(verbose)
+    congress_tokenizer.process()
+    scotus_tokenizer.process()
 
     save(congress_tokenizer.cleaned_df, congress_tokenizer.save_path)
     save(scotus_tokenizer.cleaned_df, scotus_tokenizer.save_path)
