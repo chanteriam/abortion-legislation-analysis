@@ -1,8 +1,8 @@
 import os
 
 
+# base paths
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 API_DATA_PATH = os.path.join(PROJECT_PATH, "data", "api")
 CLEANED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "cleaned")
 RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
@@ -24,9 +24,9 @@ CONGRESS_DATA_FILE = os.path.join(
     API_DATA_PATH, "congress_abortion_legislation_full-text.csv"
 )
 CONGRESS_DATA_FILE_CLEANED = os.path.join(
-    CLEANED_DATA_PATH, "congress_legislation_cleaned"
+    CLEANED_DATA_PATH, "congress_legislation_cleaned.fea"
 )
 SCOTUS_DATA_FILE = os.path.join(API_DATA_PATH, "scotus_cases_full-text.csv")
 SCOTUS_DATA_FILE_CLEANED = os.path.join(
-    CLEANED_DATA_PATH, "scotus_cases_cleaned"
+    CLEANED_DATA_PATH, "scotus_cases_cleaned.fea"
 )

@@ -1,6 +1,7 @@
 """
 Script for pulling legislation text from abortion-related SCOTS decisions.
 """
+
 import logging
 import os
 import time
@@ -21,6 +22,9 @@ from legislation_analysis.utils.functions import extract_pdf_text
 class SCOTUSDataExtractor:
     """
     Pulls text from SCOTUS abortion-related decisions using supreme.justia.com.
+
+    parameters:
+        scotus_url (str): url to the supreme.justia.com abortion decisions.
     """
 
     def __init__(self, scotus_url: str = SCOTUS_DATA_URL):
@@ -33,6 +37,10 @@ class SCOTUSDataExtractor:
     def extract_case_data(self, request: requests.models.Response) -> None:
         """
         Extracts the case data from the supreme.justia site.
+
+        parameters:
+            request (requests.models.Response): request object from the
+                supreme.justia site.
         """
         soup = bs4.BeautifulSoup(request.text, "html.parser")
 
@@ -78,6 +86,12 @@ class SCOTUSDataExtractor:
     def get_pdf_url(case_url: str) -> Optional[str]:
         """
         Gets the pdf url for a given piece of legislation.
+
+        parameters:
+            case_url (str): url to the case.
+
+        returns:
+            pdf_url (str): url to the pdf.
         """
         logging.debug(f"\tgetting pdf url from {case_url}...")
 
@@ -101,6 +115,12 @@ class SCOTUSDataExtractor:
     def extract_html_text(case_url: str) -> str:
         """
         Extracts the text of a given piece of legislation.
+
+        parameters:
+            case_url (str): url of the pdf to extract text from.
+
+        returns:
+            text (str): extracted text.
         """
         logging.debug(f"\textracting text from {case_url}...")
 

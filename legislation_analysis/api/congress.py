@@ -6,6 +6,7 @@ using the following search terms:
     - reproduction
     - reproductive health
 """
+
 import logging
 import os
 import re
@@ -33,12 +34,12 @@ class CongressAPI:
     Pulls legislation text from api.congress.gov.
 
     parameters:
-        filepath (str): filepath to csv of legislation search results.
+        file_path (str): file_path to csv of legislation search results.
     """
 
-    def __init__(self, filepath):
-        self.filepath = filepath
-        self.filename = os.path.basename(filepath).split(".")[0]
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.file_name = os.path.basename(file_path).split(".")[0]
         self.processed_df = None
         self.df = None
 
@@ -242,7 +243,7 @@ class CongressAPI:
 def main() -> None:
     """
     Iterates through legislation csv search results and extracts the text of
-    each bill. Saves the results to a new csv titled filename_text.csv.
+    each bill. Saves the results to a new csv titled file_name_text.csv.
     """
     file_path = os.path.join(RAW_DATA_PATH, "congress_abortion_legislation.csv")
     file_name = os.path.basename(file_path).split(".")[0]
