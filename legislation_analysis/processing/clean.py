@@ -5,7 +5,6 @@ project.
 
 import os
 import re
-from typing import Tuple
 
 import nltk
 import pandas as pd
@@ -19,8 +18,8 @@ from legislation_analysis.utils.constants import (
 from legislation_analysis.utils.functions import save
 
 
-nltk.download("wordnet")
 nltk.download("words")
+nltk.download("wordnet")
 
 
 class Cleaner:
@@ -45,29 +44,22 @@ class Cleaner:
         self.cleaned_df = None
         self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
 
-    @classmethod
-    def is_word_or_in_dictionary(cls, test_word: str) -> bool:
-        return (
-            wordnet.synsets(test_word.lower())
-            or test_word.lower() in cls.DICTIONARY
-        )
-
     @staticmethod
-    def clean_text(text: str) -> str:
+    def process_words(split_text: list) -> list:
         """
-        Cleans the text.
+        Processes words.
 
         parameters:
-            text (str): text to clean.
+            split_text (list): list of words to process.
 
         returns:
-            text (str): cleaned text.
+            words (list): processed words.
         """
-        split_text = text.split(" ")
         new_split_text = []
 
         for word in split_text:
             new_words = []
+
             # check if the word is separated by new line and/or hyphen
             if "-" in word:
                 if "\n" in word:
@@ -90,15 +82,43 @@ class Cleaner:
                     # if words are combined with a period, retain all but the
                     # last period
                     combined_words = [
-                        w for w in words if len(w.strip()) and len(w.strip("_"))
+                        w
+                        for w in words
+                        if len(w.strip(" ")) and len(w.strip("_"))
                     ]
                     for i, w in enumerate(combined_words):
                         if i == len(words) - 1:
-                            new_split_text.append(w.strip().strip("_"))
+                            new_split_text.append(w.strip(" ").strip("_"))
                         else:
-                            new_split_text.append(w.strip().strip("_") + ".")
+                            new_split_text.append(w.strip(" ").strip("_") + ".")
                 else:
                     new_split_text.append(new_word)
+
+        return new_split_text
+
+    @classmethod
+    def clean_text(cls, text: str) -> str:
+        """
+        Cleans the text.
+
+        parameters:
+            text (str): text to clean.
+
+        returns:
+            text (str): cleaned text.
+        """
+        if not text or pd.isna(text):
+            return text
+
+        split_text = text.split(" ")
+        new_split_text = cls.process_words(split_text)
+
+        # remove html tags
+        new_split_text = [
+            re.sub(r"<[^>]*>", "", word)
+            for word in new_split_text
+            if len(re.sub(r"<[^>]*>", "", word)) > 0
+        ]
 
         # combined to form cleaned text
         cleaned_text = " ".join(new_split_text)
@@ -115,21 +135,15 @@ class Cleaner:
 
     @classmethod
     def is_valid_word(cls, word: str) -> bool:
-        """
-        Check if the word is valid based on wordnet or a custom dictionary.
+        punctuation = [",", ".", "!", "?", ";", ":", ")", "(", "[", "]"]
 
-        parameters:
-            word (str): word to check.
+        for punc in punctuation:
+            word = word.replace(punc, "")
 
-        returns:
-            bool: whether the word is valid.
-        """
-        return bool(wordnet.synsets(word)) or word in cls.DICTIONARY
+        return bool(wordnet.synsets(word)) or (word.lower() in cls.DICTIONARY)
 
     @classmethod
-    def combine_with_surrounding(
-        cls, word_list: [str], current_index: int
-    ) -> Tuple:
+    def combine_with_surrounding(cls, words, current_index):
         """
         Attempt to combine the current word with surrounding words within
         ITER_LIMIT.
@@ -140,32 +154,42 @@ class Cleaner:
 
         returns:
             combined_word (str): combined word.
-            idx (int): index of the combined word.
+            idxs (list): indices of the combined words.
+            j (int): number of words combined.
+            add_type (str): type of addition.
         """
         for direction in [1, -1]:  # Forward and backward
+            combined_word = words[current_index]
+            idxs = []
+            add_type = None  # skip, pop
+
+            # check surroundings
             for j in range(1, cls.ITER_LIMIT + 1):
                 idx = current_index + j * direction
-                if 0 <= idx < len(word_list):
+                idxs.append(idx)
+
+                # if the word is too far away, stop
+                if 0 <= idx < len(words):
                     combined_word = (
-                        word_list[current_index] + word_list[idx]
+                        combined_word + words[idx]
                         if direction == 1
-                        else word_list[idx] + word_list[current_index]
+                        else words[idx] + combined_word
                     )
+
+                    # check if the combined word is valid
                     if cls.is_valid_word(combined_word):
-                        return combined_word, idx
-        return None, None
+                        if direction == 1:
+                            add_type = "skip"
+                        else:
+                            add_type = "pop"
+                        return combined_word, idxs, add_type
+        return None, None, None
 
     @classmethod
-    def find_internal_split(cls, word: str) -> Tuple:
+    def find_internal_split(cls, word):
         """
         Find a valid internal split of the word, if any.
 
-        parameters:
-            word (str): word to split.
-
-        returns:
-            split_word1 (str): first split word.
-            split_word2 (str): second split word.
         """
         for j in range(1, len(word)):
             if cls.is_valid_word(word[:j]) and cls.is_valid_word(word[j:]):
@@ -175,33 +199,57 @@ class Cleaner:
     @classmethod
     def spell_check(cls, text: str) -> str:
         """
-        Uses NLTK library and custom logic to fix spelling errors.
+        Uses the NLTK library to spell check the text and fix spelling errors.
 
         parameters:
             text (str): text to spell check.
 
         returns:
-            str: spell checked text.
+            text (str): spell checked text.
         """
-        words = text.split()
+
+        words = text.split(" ")
         new_words = []
-        i = 0
-        while i < len(words):
-            word = words[i]
-            if cls.is_valid_word(word) or any(char.isdigit() for char in word):
+        ignore = []
+
+        # checks if a word exists in the dictionary and tries to fix it
+        for idx, word in enumerate(words):
+            # check if we should ignore the word
+            if idx in ignore:
+                continue
+
+            # check if the word is a valid word or contains a number
+            if cls.is_valid_word(word.lower()) or any(
+                char.isdigit() for char in word
+            ):
                 new_words.append(word)
-            else:
-                combined_word, skip_idx = cls.combine_with_surrounding(words, i)
-                if combined_word:
-                    new_words.append(combined_word)
-                    i = skip_idx  # Skip to the index of the word combined with
-                else:
-                    split_word1, split_word2 = cls.find_internal_split(word)
-                    if split_word1:
-                        new_words.extend([split_word1, split_word2])
-                    else:
-                        new_words.append(word)
-            i += 1  # Move to the next word
+                continue
+
+            # check if one word was split by a space
+            combined_word, idxs, add_type = cls.combine_with_surrounding(
+                words, idx
+            )
+            if combined_word:
+                # for forward, we skip the next words
+                if add_type == "skip":
+                    ignore.extend(idxs)
+
+                # for backward, we remove the previous words
+                elif add_type == "pop":
+                    new_words = new_words[: idxs[-1] + 1]
+                new_words.append(combined_word)
+                continue
+
+            # check if two words were combined
+            word1, word2 = cls.find_internal_split(word)
+            if word1 and word2:
+                new_words.append(word1)
+                new_words.append(word2)
+                continue
+
+            # misspelled word
+            new_words.append(word)
+
         return " ".join(new_words)
 
     def process(
@@ -215,7 +263,7 @@ class Cleaner:
         parameters:
             verbose (bool): whether to print status updates.
         """
-        df = pd.DataFrame()
+        cleaned_df = self.df.copy()
 
         if cols_to_clean is None:
             cols_to_clean = [("raw_text", "cleaned_text")]
@@ -223,13 +271,14 @@ class Cleaner:
             if verbose:
                 print(f"\tCleaning {col[0]}...")
             col, new_col = col
-            df = self.df.dropna(subset=[col]).copy()
-            df[new_col] = df[col].copy()
+            cleaned_df[new_col] = cleaned_df[col]
 
             # clean text
-            df[new_col] = df[new_col].apply(lambda x: self.clean_text(x))
+            cleaned_df[new_col] = cleaned_df[new_col].apply(
+                lambda x: self.clean_text(x)
+            )
 
-        self.cleaned_df = df
+        self.cleaned_df = cleaned_df
 
 
 def main(verbose: bool = True) -> None:
