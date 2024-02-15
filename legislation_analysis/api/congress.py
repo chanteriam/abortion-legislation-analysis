@@ -195,7 +195,9 @@ class CongressAPI:
         )
 
         # intermediary saving
-        save_path = os.path.join(os.path.dirname(file_path), f"{file_name}_api_url.csv")
+        save_path = os.path.join(
+            os.path.dirname(file_path), f"{file_name}_api_url.csv"
+        )
         self.processed_df.to_csv(save_path, index=False)
 
         # extract legislation text url

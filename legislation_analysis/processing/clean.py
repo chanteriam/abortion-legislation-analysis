@@ -247,12 +247,16 @@ class Cleaner:
                 continue
 
             # check if the word is a valid word or contains a number
-            if cls.is_valid_word(word.lower()) or any(char.isdigit() for char in word):
+            if cls.is_valid_word(word.lower()) or any(
+                char.isdigit() for char in word
+            ):
                 new_words.append(word)
                 continue
 
             # check if one word was split by a space
-            combined_word, idxs, add_type = cls.combine_with_surrounding(words, idx)
+            combined_word, idxs, add_type = cls.combine_with_surrounding(
+                words, idx
+            )
             if combined_word:
                 # for forward, we skip the next words
                 if add_type == "skip":
@@ -307,7 +311,9 @@ def main() -> None:
     """
     Runs data cleaner.
     """
-    congress_cleaner = Cleaner(CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea")
+    congress_cleaner = Cleaner(
+        CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea"
+    )
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
 
     logging.debug("Cleaning Congress Data...")
