@@ -23,6 +23,10 @@ nlp.max_length = 4700000
 class Tokenizer:
     """
     Tokenizes legislation text.
+
+    parameters:
+        filepath (str): path to the file to tokenize.
+        filename (str): name of the file to save the tokenized data to.
     """
 
     def __init__(
@@ -90,12 +94,12 @@ class Tokenizer:
             )
 
             # Unpack processed text into separate columns
-            self.tokenized_df[f"{new_col}_sents"] = self.tokenized_df[new_col].apply(
-                lambda x: x["sents"]
-            )
-            self.tokenized_df[f"{new_col}_words"] = self.tokenized_df[new_col].apply(
-                lambda x: x["words"]
-            )
+            self.tokenized_df[f"{new_col}_sents"] = self.tokenized_df[
+                new_col
+            ].apply(lambda x: x["sents"])
+            self.tokenized_df[f"{new_col}_words"] = self.tokenized_df[
+                new_col
+            ].apply(lambda x: x["words"])
             self.tokenized_df[f"{new_col}_words_norm"] = self.tokenized_df[
                 new_col
             ].apply(lambda x: x["words_norm"])
@@ -114,7 +118,9 @@ def main() -> None:
     )
 
     logging.debug("Tokenizing SCOTUS Data...")
-    scotus_tokenizer = Tokenizer(SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.pkl")
+    scotus_tokenizer = Tokenizer(
+        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.pkl"
+    )
 
     congress_tokenizer.process()
     scotus_tokenizer.process()

@@ -2,6 +2,7 @@
 Develops a data cleaner class for the abortion legislation content analysis
 project.
 """
+
 import logging
 import os
 import re
@@ -24,7 +25,7 @@ nltk.download("wordnet")
 
 class Cleaner:
     """
-    Abstract class for a cleaner object.
+    Cleaner object class.
 
     parameters:
         filepath (str): path to the legislation text csv.
@@ -135,6 +136,15 @@ class Cleaner:
 
     @classmethod
     def is_valid_word(cls, word: str) -> bool:
+        """
+        Determines if a word is valid.
+
+        parameters:
+            word (str): word to check.
+
+        returns:
+            bool: whether the word is valid.
+        """
         punctuation = [",", ".", "!", "?", ";", ":", ")", "(", "[", "]"]
 
         for punc in punctuation:
@@ -155,7 +165,6 @@ class Cleaner:
         returns:
             combined_word (str): combined word.
             idxs (list): indices of the combined words.
-            j (int): number of words combined.
             add_type (str): type of addition.
         """
         for direction in [1, -1]:  # Forward and backward
@@ -190,6 +199,12 @@ class Cleaner:
         """
         Find a valid internal split of the word, if any.
 
+        parameters:
+            word (str): word to split.
+
+        returns:
+            word1 (str): first word.
+            word2 (str): second word.
         """
         for j in range(1, len(word)):
             if cls.is_valid_word(word[:j]) and cls.is_valid_word(word[j:]):
@@ -258,6 +273,9 @@ class Cleaner:
     ) -> None:
         """
         Processes the legislation text.
+
+        parameters:
+            cols_to_clean (list): columns to clean.
         """
         cleaned_df = self.df.copy()
 
@@ -279,9 +297,6 @@ class Cleaner:
 def main() -> None:
     """
     Runs data cleaner.
-
-    returns:
-        True (bool): whether the data cleaner ran successfully.
     """
     congress_cleaner = Cleaner(
         CONGRESS_DATA_FILE, "congress_legislation_cleaned.pkl"
