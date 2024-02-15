@@ -16,6 +16,7 @@ from legislation_analysis.utils.functions import load_file_to_df, save
 
 
 nlp = spacy.load("en_core_web_sm")
+nlp.max_length = 4700000
 
 
 class Tokenizer:
