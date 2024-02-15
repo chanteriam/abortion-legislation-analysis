@@ -38,7 +38,7 @@ class Cleaner:
     def __init__(
         self,
         filepath=CONGRESS_DATA_FILE,
-        filename="congress_legislation_cleaned.pkl",
+        filename="congress_legislation_cleaned.fea",
     ):
         self.df = load_file_to_df(filepath)
         self.filename = filename
@@ -145,7 +145,22 @@ class Cleaner:
         returns:
             bool: whether the word is valid.
         """
-        punctuation = [",", ".", "!", "?", ";", ":", ")", "(", "[", "]"]
+        punctuation = [
+            ",",
+            ".",
+            "!",
+            "?",
+            ";",
+            ":",
+            ")",
+            "(",
+            "[",
+            "]",
+            "{",
+            "}",
+            "\\",
+            "/",
+        ]
 
         for punc in punctuation:
             word = word.replace(punc, "")
@@ -153,7 +168,7 @@ class Cleaner:
         return bool(wordnet.synsets(word)) or (word.lower() in cls.DICTIONARY)
 
     @classmethod
-    def combine_with_surrounding(cls, words, current_index):
+    def combine_with_surrounding(cls, words, current_index) -> tuple:
         """
         Attempt to combine the current word with surrounding words within
         ITER_LIMIT.
@@ -195,7 +210,7 @@ class Cleaner:
         return None, None, None
 
     @classmethod
-    def find_internal_split(cls, word):
+    def find_internal_split(cls, word) -> tuple:
         """
         Find a valid internal split of the word, if any.
 
@@ -299,9 +314,9 @@ def main() -> None:
     Runs data cleaner.
     """
     congress_cleaner = Cleaner(
-        CONGRESS_DATA_FILE, "congress_legislation_cleaned.pkl"
+        CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea"
     )
-    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.pkl")
+    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
 
     logging.debug("Cleaning Congress Data...")
     congress_cleaner.process(

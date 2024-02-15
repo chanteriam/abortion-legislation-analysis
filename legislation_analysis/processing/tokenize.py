@@ -32,7 +32,7 @@ class Tokenizer:
     def __init__(
         self,
         filepath: str = CONGRESS_DATA_FILE_CLEANED,
-        filename: str = "congress_legislation_tokenized.pkl",
+        filename: str = "congress_legislation_tokenized.fea",
     ):
         self.df = load_file_to_df(filepath)
         self.filename = filename
@@ -114,12 +114,12 @@ def main() -> None:
     """
     logging.debug("Tokenizing Congress Data...")
     congress_tokenizer = Tokenizer(
-        CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.pkl"
+        CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.fea"
     )
 
     logging.debug("Tokenizing SCOTUS Data...")
     scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.pkl"
+        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea"
     )
 
     congress_tokenizer.process()
