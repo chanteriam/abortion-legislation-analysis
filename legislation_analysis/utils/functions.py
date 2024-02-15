@@ -1,17 +1,17 @@
 import time
 from io import BytesIO
+import logging
 
 import pandas as pd
 import requests
 from PyPDF2 import PdfReader
 
 
-def extract_pdf_text(pdf_url: str, verbose: bool = True) -> str:
+def extract_pdf_text(pdf_url: str) -> str:
     """
     Extracts the text of a given piece of legislation.
     """
-    if verbose:
-        print(f"\textracting text from {pdf_url}...")
+    logging.debug(f"\textracting text from {pdf_url}...")
 
     # Prevent overloading the api
     time.sleep(3.6)

@@ -3,6 +3,7 @@ Processes legislation text by stemming/lemmatizing, removing stop words, and
 removing punctuation. Also sentences the text.
 """
 
+import logging
 import os
 
 import spacy
@@ -68,12 +69,11 @@ class Tokenizer:
 
         return processed
 
-    def process(self, verbose=True, cols_to_tokenize=None):
+    def process(self, cols_to_tokenize=None):
         """
         Processes the legislation text.
 
         parameters:
-            verbose (bool): whether to print updates.
             cols_to_tokenize (list): columns to tokenize.
         """
         if not cols_to_tokenize:
@@ -82,8 +82,7 @@ class Tokenizer:
         self.tokenized_df = self.df.copy()
 
         for col, new_col in cols_to_tokenize:
-            if verbose:
-                print(f"\tTokenizing and normalizing {col}...")
+            logging.debug(f"\tTokenizing and normalizing {col}...")
             self.tokenized_df[new_col] = (
                 self.tokenized_df[col]
                 .dropna()
@@ -91,12 +90,12 @@ class Tokenizer:
             )
 
             # Unpack processed text into separate columns
-            self.tokenized_df[f"{new_col}_sents"] = self.tokenized_df[
-                new_col
-            ].apply(lambda x: x["sents"])
-            self.tokenized_df[f"{new_col}_words"] = self.tokenized_df[
-                new_col
-            ].apply(lambda x: x["words"])
+            self.tokenized_df[f"{new_col}_sents"] = self.tokenized_df[new_col].apply(
+                lambda x: x["sents"]
+            )
+            self.tokenized_df[f"{new_col}_words"] = self.tokenized_df[new_col].apply(
+                lambda x: x["words"]
+            )
             self.tokenized_df[f"{new_col}_words_norm"] = self.tokenized_df[
                 new_col
             ].apply(lambda x: x["words_norm"])
@@ -105,24 +104,20 @@ class Tokenizer:
             self.tokenized_df.drop(columns=[new_col], inplace=True)
 
 
-def main(verbose: bool = True) -> None:
+def main() -> None:
     """
     Runs data tokenizer.
     """
+    logging.debug("Tokenizing Congress Data...")
     congress_tokenizer = Tokenizer(
         CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.pkl"
     )
-    scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.pkl"
-    )
 
-    if verbose:
-        print("Tokenizing Congress data...")
-    congress_tokenizer.process(verbose)
+    logging.debug("Tokenizing SCOTUS Data...")
+    scotus_tokenizer = Tokenizer(SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.pkl")
 
-    if verbose:
-        print("Tokenizing SCOTUS data...")
-    scotus_tokenizer.process(verbose)
+    congress_tokenizer.process()
+    scotus_tokenizer.process()
 
     save(congress_tokenizer.tokenized_df, congress_tokenizer.savepath)
     save(scotus_tokenizer.tokenized_df, scotus_tokenizer.savepath)
