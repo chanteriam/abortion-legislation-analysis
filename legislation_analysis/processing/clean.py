@@ -15,7 +15,7 @@ from legislation_analysis.utils.constants import (
     CONGRESS_DATA_FILE,
     SCOTUS_DATA_FILE,
 )
-from legislation_analysis.utils.functions import save
+from legislation_analysis.utils.functions import load_file_to_df, save
 
 
 nltk.download("words")
@@ -36,13 +36,13 @@ class Cleaner:
 
     def __init__(
         self,
-        file_path=CONGRESS_DATA_FILE,
-        file_name="congress_legislation_cleaned.csv",
+        filepath=CONGRESS_DATA_FILE,
+        filename="congress_legislation_cleaned.pkl",
     ):
-        self.df = pd.read_csv(file_path)
-        self.file_name = file_name
+        self.df = load_file_to_df(filepath)
+        self.filename = filename
         self.cleaned_df = None
-        self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
+        self.savepath = os.path.join(CLEANED_DATA_PATH, self.filename)
 
     @staticmethod
     def process_words(split_text: list) -> list:
@@ -292,9 +292,9 @@ def main(verbose: bool = True) -> None:
         True (bool): whether the data cleaner ran successfully.
     """
     congress_cleaner = Cleaner(
-        CONGRESS_DATA_FILE, "congress_legislation_cleaned.csv"
+        CONGRESS_DATA_FILE, "congress_legislation_cleaned.pkl"
     )
-    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.csv")
+    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.pkl")
 
     if verbose:
         print("Cleaning Congress Data...")
@@ -310,5 +310,5 @@ def main(verbose: bool = True) -> None:
         print("Cleaning SCOTUS Data...")
     scotus_cleaner.process(verbose)
 
-    save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
-    save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
+    save(congress_cleaner.cleaned_df, congress_cleaner.savepath)
+    save(scotus_cleaner.cleaned_df, scotus_cleaner.savepath)

@@ -5,7 +5,6 @@ removing punctuation. Also sentences the text.
 
 import os
 
-import pandas as pd
 import spacy
 
 from legislation_analysis.utils.constants import (
@@ -13,7 +12,7 @@ from legislation_analysis.utils.constants import (
     SCOTUS_DATA_FILE_CLEANED,
     TOKENIZED_DATA_PATH,
 )
-from legislation_analysis.utils.functions import save
+from legislation_analysis.utils.functions import load_file_to_df, save
 
 
 nlp = spacy.load("en_core_web_sm")
@@ -26,13 +25,13 @@ class Tokenizer:
 
     def __init__(
         self,
-        file_path: str = CONGRESS_DATA_FILE_CLEANED,
-        file_name: str = "congress_legislation_tokenized.csv",
+        filepath: str = CONGRESS_DATA_FILE_CLEANED,
+        filename: str = "congress_legislation_tokenized.pkl",
     ):
-        self.df = pd.read_csv(file_path)
-        self.file_name = file_name
+        self.df = load_file_to_df(filepath)
+        self.filename = filename
         self.tokenized_df = None
-        self.save_path = os.path.join(TOKENIZED_DATA_PATH, self.file_name)
+        self.savepath = os.path.join(TOKENIZED_DATA_PATH, self.filename)
 
     @staticmethod
     def tokenize_and_normalize(text: str, extra_stop: list = None) -> dict:
@@ -110,10 +109,10 @@ def main(verbose: bool = True) -> None:
     Runs data tokenizer.
     """
     congress_tokenizer = Tokenizer(
-        CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.csv"
+        CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.pkl"
     )
     scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.csv"
+        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.pkl"
     )
 
     if verbose:
@@ -124,5 +123,5 @@ def main(verbose: bool = True) -> None:
         print("Tokenizing SCOTUS data...")
     scotus_tokenizer.process(verbose)
 
-    save(congress_tokenizer.tokenized_df, congress_tokenizer.save_path)
-    save(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
+    save(congress_tokenizer.tokenized_df, congress_tokenizer.savepath)
+    save(scotus_tokenizer.tokenized_df, scotus_tokenizer.savepath)
