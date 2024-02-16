@@ -8,14 +8,16 @@ import os
 import spacy
 
 from legislation_analysis.utils.constants import PROCESSED_DATA_PATH
-from legislation_analysis.utils.functions import save, load_file_to_df
+from legislation_analysis.utils.functions import load_file_to_df, save
+
 
 nlp = spacy.load("en_core_web_sm")
 
 
 class POSTagger:
     """
-    A class for applying Part-of-Speech (POS) tagging to the text of the legislation.
+    A class for applying Part-of-Speech (POS) tagging to the text of the
+    legislation.
 
     parameters:
         file_path (str): path to the file to tokenize.
@@ -66,13 +68,16 @@ class POSTagger:
 
     def process(
         self,
-        cols_to_apply_pos: list = [("cleaned_text", "text_pos")],
+        cols_to_apply_pos: list = None,
         tags_of_interest: list = None,
     ):
         """
-        Applies POS tagging to the text of the legislation and saves the results to a file.
+        Applies POS tagging to the text of the legislation and saves the results
+        to a file.
         """
-        logging.debug(f"\tApplying POS tagging...")
+        if cols_to_apply_pos is None:
+            cols_to_apply_pos = [("cleaned_text", "text_pos")]
+        logging.debug("\tApplying POS tagging...")
 
         self.pos_df = self.df.copy()
 
@@ -83,7 +88,7 @@ class POSTagger:
 
         # isolate parts of speech of interest
         if tags_of_interest:
-            logging.debug(f"\tExtracting tags of interest...")
+            logging.debug("\tExtracting tags of interest...")
 
             for col in cols_to_apply_pos:
                 logging.debug(f"\tExtracting tags of interest from {col[1]}...")
@@ -96,7 +101,8 @@ class POSTagger:
 
 def main():
     """
-    Applies POS tagging to the text of the legislation and saves the results to a file.
+    Applies POS tagging to the text of the legislation and saves the results to
+    a file.
     """
     tags_of_interest = ["NOUN", "ADJ", "VERB", "ADV"]
     congress_pos = POSTagger(
@@ -106,12 +112,14 @@ def main():
         file_name="congress_legislation_pos.fea",
     )
     scotus_pos = POSTagger(
-        file_path=os.path.join(PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"),
+        file_path=os.path.join(
+            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
+        ),
         file_name="scotus_cases_pos.fea",
     )
 
     # Apply POS tagging to congressional legislation
-    logging.debug(f"Applying POS tagging to congressional text...")
+    logging.debug("Applying POS tagging to congressional text...")
     congress_pos.process(
         cols_to_apply_pos=[
             ("cleaned_text", "text_pos"),
@@ -122,6 +130,6 @@ def main():
     save(congress_pos.pos_df, congress_pos.save_path)
 
     # Apply POS tagging to SCOTUS opinions
-    logging.debug(f"Applying POS tagging to SCOTUS text...")
+    logging.debug("Applying POS tagging to SCOTUS text...")
     scotus_pos.process(tags_of_interest=tags_of_interest)
     save(scotus_pos.pos_df, scotus_pos.save_path)
