@@ -10,8 +10,8 @@ import spacy
 
 from legislation_analysis.utils.constants import (
     CONGRESS_DATA_FILE_CLEANED,
+    PROCESSED_DATA_PATH,
     SCOTUS_DATA_FILE_CLEANED,
-    TOKENIZED_DATA_PATH,
 )
 from legislation_analysis.utils.functions import load_file_to_df, save
 
@@ -37,7 +37,7 @@ class Tokenizer:
         self.df = load_file_to_df(file_path)
         self.file_name = file_name
         self.tokenized_df = None
-        self.save_path = os.path.join(TOKENIZED_DATA_PATH, self.file_name)
+        self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
     def tokenize_and_normalize(text: str, extra_stop: list = None) -> dict:
@@ -80,9 +80,8 @@ class Tokenizer:
         parameters:
             cols_to_tokenize (list): columns to tokenize.
         """
-        if not cols_to_tokenize:
+        if cols_to_tokenize is None:
             cols_to_tokenize = [("cleaned_text", "tokenized_text")]
-
         self.tokenized_df = self.df.copy()
 
         for col, new_col in cols_to_tokenize:
@@ -112,18 +111,24 @@ def main() -> None:
     """
     Runs data tokenizer.
     """
-    logging.debug("Tokenizing Congress Data...")
     congress_tokenizer = Tokenizer(
         CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.fea"
     )
-
-    logging.debug("Tokenizing SCOTUS Data...")
     scotus_tokenizer = Tokenizer(
         SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea"
     )
 
-    congress_tokenizer.process()
-    scotus_tokenizer.process()
-
+    # Tokenize congressional legislation
+    logging.debug("Tokenizing Congress Data...")
+    congress_tokenizer.process(
+        cols_to_tokenize=[
+            ("cleaned_text", "tokenized_text"),
+            ("cleaned_summary", "tokenized_summary"),
+        ]
+    )
     save(congress_tokenizer.tokenized_df, congress_tokenizer.save_path)
+
+    # Tokenize SCOTUS opinions
+    logging.debug("Tokenizing SCOTUS Data...")
+    scotus_tokenizer.process()
     save(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)

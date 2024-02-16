@@ -7,6 +7,8 @@ import pandas as pd
 import requests
 from PyPDF2 import PdfReader
 
+from legislation_analysis.utils.constants import NLP_COLS
+
 
 def extract_pdf_text(pdf_url: str) -> str:
     """
@@ -34,9 +36,7 @@ def extract_pdf_text(pdf_url: str) -> str:
     return text
 
 
-def load_file_to_df(
-    file_path: str, load_tokenized=False, tokenized_cols=None
-) -> pd.DataFrame:
+def load_file_to_df(file_path: str) -> pd.DataFrame:
     """
     Loads a file into a dataframe.
 
@@ -48,23 +48,21 @@ def load_file_to_df(
     returns:
         df (pd.DataFrame): dataframe of the file.
     """
-    if tokenized_cols is None:
-        tokenized_cols = []
     ext = file_path.split(".")[-1]
 
     if ext.lower() in ["pickle", "pkl"]:
         df = pd.read_pickle(file_path)
-    elif ext["csv", "txt"]:
+    elif ext.lower() in ["csv", "txt"]:
         df = pd.read_csv(file_path)
-    elif ext in ["xlsx", "xls"]:
+    elif ext.lower() in ["xlsx", "xls"]:
         df = pd.read_excel(file_path)
-    elif ext in ["fea", "feather"]:
+    elif ext.lower() in ["fea", "feather"]:
         df = pd.read_feather(file_path)
     else:
         raise ValueError(f"File type {ext} not supported.")
 
-    if load_tokenized:
-        for col in tokenized_cols:
+    for col in NLP_COLS:
+        if col in df.columns:
             df[col] = df[col].apply(ast.literal_eval)
 
     return df

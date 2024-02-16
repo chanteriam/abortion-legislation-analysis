@@ -6,7 +6,7 @@ PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API_DATA_PATH = os.path.join(PROJECT_PATH, "data", "api")
 CLEANED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "cleaned")
 RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
-TOKENIZED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "processed")
+PROCESSED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "processed")
 
 # api
 CONGRESS_API_ROOT_URL = "https://api.congress.gov/v3/bill/"
@@ -30,3 +30,15 @@ SCOTUS_DATA_FILE = os.path.join(API_DATA_PATH, "scotus_cases_full-text.csv")
 SCOTUS_DATA_FILE_CLEANED = os.path.join(
     CLEANED_DATA_PATH, "scotus_cases_cleaned.fea"
 )
+
+# data loading
+NLP_COLS = [
+    "tokenized_text",
+    "tokenized_text_sents",
+    "tokenized_text_words",
+    "tokenized_text_words_norm",
+    "tokenized_summary",
+    "tokenized_summary_sents",
+    "tokenized_summary_words",
+    "tokenized_summary_words_norm",
+]

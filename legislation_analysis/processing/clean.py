@@ -316,6 +316,7 @@ def main() -> None:
     )
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
 
+    # Clean congressional legislation
     logging.debug("Cleaning Congress Data...")
     congress_cleaner.process(
         cols_to_clean=[
@@ -323,9 +324,9 @@ def main() -> None:
             ("latest summary", "cleaned_summary"),
         ],
     )
+    save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
 
+    # Clean SCOTUS opinions
     logging.debug("Cleaning SCOTUS Data...")
     scotus_cleaner.process()
-
-    save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
     save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
