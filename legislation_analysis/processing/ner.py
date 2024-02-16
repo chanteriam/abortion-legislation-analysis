@@ -19,7 +19,8 @@ nlp = spacy.load("en_core_web_sm")
 
 class NER:
     """
-    Class to apply Named Entity Recognition (NER) to the text of the legislation.
+    Class to apply Named Entity Recognition (NER) to the text of the
+    legislation.
 
     parameters:
         file_path (str): path to the file to apply NER to.
@@ -63,13 +64,16 @@ class NER:
 
         return ner
 
-    def process(self, cols_to_ner: list = ["cleaned_text"]):
+    def process(self, cols_to_ner: list = None):
         """
-        Process the text of the legislation to apply Named Entity Recognition (NER).
+        Process the text of the legislation to apply Named Entity Recognition
+        (NER).
 
         parameters:
             cols_to_ner (list): columns to apply NER to.
         """
+        if cols_to_ner is None:
+            cols_to_ner = ["cleaned_text"]
         self.ner_df = self.df.copy()
 
         for col in cols_to_ner:
@@ -80,10 +84,13 @@ class NER:
 
 def main():
     """
-    Main function to apply Named Entity Recognition (NER) to the text of the legislation.
+    Main function to apply Named Entity Recognition (NER) to the text of the
+    legislation.
     """
     logging.info(
-        "Applying Named Entity Recognition (NER) to the text of the legislation..."
+        """
+        Applying Named Entity Recognition (NER) to the
+        text of the legislation..."""
     )
 
     # Apply NER to congressional legislation
