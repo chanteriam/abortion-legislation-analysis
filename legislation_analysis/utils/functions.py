@@ -1,4 +1,3 @@
-import ast
 import logging
 import time
 from io import BytesIO
@@ -34,9 +33,7 @@ def extract_pdf_text(pdf_url: str) -> str:
     return text
 
 
-def load_file_to_df(
-    file_path: str, load_tokenized=False, tokenized_cols=None
-) -> pd.DataFrame:
+def load_file_to_df(file_path: str) -> pd.DataFrame:
     """
     Loads a file into a dataframe.
 
@@ -48,13 +45,11 @@ def load_file_to_df(
     returns:
         df (pd.DataFrame): dataframe of the file.
     """
-    if tokenized_cols is None:
-        tokenized_cols = []
-    ext = file_path.split(".")[-1]
+    ext = file_path.split(".")[-1].lower()
 
-    if ext.lower() in ["pickle", "pkl"]:
+    if ext in ["pickle", "pkl"]:
         df = pd.read_pickle(file_path)
-    elif ext["csv", "txt"]:
+    elif ext in ["csv", "txt"]:
         df = pd.read_csv(file_path)
     elif ext in ["xlsx", "xls"]:
         df = pd.read_excel(file_path)
@@ -62,10 +57,6 @@ def load_file_to_df(
         df = pd.read_feather(file_path)
     else:
         raise ValueError(f"File type {ext} not supported.")
-
-    if load_tokenized:
-        for col in tokenized_cols:
-            df[col] = df[col].apply(ast.literal_eval)
 
     return df
 
@@ -78,15 +69,15 @@ def save(df: pd.DataFrame, file_path: str) -> None:
         df (pd.DataFrame): dataframe to save.
         file_path (str): path to save the dataframe to.
     """
-    ext = file_path.split(".")[-1]
+    ext = file_path.split(".")[-1].lower()
 
-    if ext.lower() in ["pickle", "pkl"]:
+    if ext in ["pickle", "pkl"]:
         df.to_pickle(file_path)
-    elif ext.lower() in ["csv", "txt"]:
+    elif ext in ["csv", "txt"]:
         df.to_csv(file_path, index=False)
-    elif ext.lower() in ["xlsx", "xls"]:
+    elif ext in ["xlsx", "xls"]:
         df.to_excel(file_path, index=False)
-    elif ext.lower() in ["fea", "feather"]:
+    elif ext in ["fea", "feather"]:
         df.to_feather(file_path)
     else:
         raise ValueError(f"File type {ext} not supported.")

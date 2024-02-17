@@ -43,14 +43,12 @@ class SCOTUSDataExtractor:
                 supreme.justia site.
         """
         soup = bs4.BeautifulSoup(request.text, "html.parser")
-
         data = []
 
         # Iterate through each section in the div
         for section in soup.select("div.has-margin-top-50 > strong"):
             # Extract case URL and title
             case_tag = section.find("a")
-
             if not case_tag:
                 break
 
