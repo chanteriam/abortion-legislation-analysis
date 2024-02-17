@@ -7,10 +7,7 @@ import os
 
 import spacy
 
-from legislation_analysis.utils.constants import (
-    PROCESSED_DATA_PATH,
-    TOKENIZED_DATA_PATH,
-)
+from legislation_analysis.utils.constants import PROCESSED_DATA_PATH
 from legislation_analysis.utils.functions import load_file_to_df, save
 
 
@@ -35,10 +32,10 @@ class NER:
         self.df = load_file_to_df(file_path)
         self.file_name = file_name
         self.ner_df = None
-        self.save_path = os.path.join(TOKENIZED_DATA_PATH, self.file_name)
+        self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
-    def apply_ner(text: str, ner_dict: dict) -> dict:
+    def apply_ner(text: str, ner_lst: list) -> list:
         """
         Applies Named Entity Recognition (NER) to a chunk of text.
 
@@ -51,20 +48,14 @@ class NER:
         """
         doc = nlp(text)
         for ent in doc.ents:
-            ner_dict["ents"].append(
-                {
-                    "text": ent.text,
-                    "start": ent.start_char,
-                    "end": ent.end_char,
-                    "label": ent.label_,
-                }
-            )
-        return ner_dict
+            ner_lst.append((ent.text, ent.label_))
+        return ner_lst
 
     @classmethod
     def ner(cls, text: str) -> dict:
         """
-        Applies Named Entity Recognition (NER) to the text of the legislation, considering maximum character length.
+        Applies Named Entity Recognition (NER) to the text of the legislation,
+        considering maximum character length.
 
         Parameters:
             text (str): Text to apply NER to.
@@ -75,7 +66,7 @@ class NER:
         max_chunk_size = (
             999980  # Set slightly below spaCy max to account for whitespace
         )
-        ner = {"ents": []}
+        ner = []
 
         if not text or str(text).lower() == "nan":
             return ner
