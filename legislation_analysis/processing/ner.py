@@ -38,22 +38,20 @@ class NER:
         self.save_path = os.path.join(TOKENIZED_DATA_PATH, self.file_name)
 
     @staticmethod
-    def apply_ner(text: str) -> dict:
+    def apply_ner(text: str, ner_dict: dict) -> dict:
         """
-        Applies Named Entity Recognition (NER) to the text of the legislation.
+        Applies Named Entity Recognition (NER) to a chunk of text.
 
-        parameters:
-            text (str): text to apply NER to.
+        Parameters:
+            text (str): Chunk of text to apply NER to.
+            ner_dict (dict): Dictionary of Named Entity Recognition (NER) data.
 
-        returns:
-            ner (dict): Named Entity Recognition (NER) data.
+        Returns:
+            ner_dict (dict): Updated NER data with entities from the chunk.
         """
-        ner = {"ents": []}
-
-        # Use spaCy for NER
         doc = nlp(text)
         for ent in doc.ents:
-            ner["ents"].append(
+            ner_dict["ents"].append(
                 {
                     "text": ent.text,
                     "start": ent.start_char,
@@ -61,6 +59,49 @@ class NER:
                     "label": ent.label_,
                 }
             )
+        return ner_dict
+
+    @classmethod
+    def ner(cls, text: str) -> dict:
+        """
+        Applies Named Entity Recognition (NER) to the text of the legislation, considering maximum character length.
+
+        Parameters:
+            text (str): Text to apply NER to.
+
+        Returns:
+            ner (dict): Named Entity Recognition (NER) data.
+        """
+        max_chunk_size = (
+            999980  # Set slightly below spaCy max to account for whitespace
+        )
+        ner = {"ents": []}
+
+        if not text or str(text).lower() == "nan":
+            return ner
+
+        # Initialize starting point for chunking
+        start = 0
+        text_length = len(text)
+
+        while start < text_length:
+            # If remaining text is shorter than max_chunk_size,
+            # adjust end to length of text
+            end = min(start + max_chunk_size, text_length)
+
+            # Move the end to the nearest whitespace to avoid splitting words
+            if end < text_length:
+                while end > start and not text[end].isspace():
+                    end -= 1
+
+            # Ensure we don't create an infinite loop
+            if end == start:
+                break  # This should not happen, but it's a safety measure
+
+            chunk = text[start:end]
+            ner = cls.apply_ner(chunk, ner)
+
+            start = end  # Move to the next chunk
 
         return ner
 
@@ -79,10 +120,10 @@ class NER:
         for col in cols_to_ner:
             logging.debug(f"\tApplying NER to {col}...")
             new_col = f"{col}_ner"
-            self.ner_df[new_col] = self.ner_df[col].apply(self.apply_ner)
+            self.ner_df[new_col] = self.ner_df[col].apply(self.ner)
 
 
-def main():
+def main() -> None:
     """
     Main function to apply Named Entity Recognition (NER) to the text of the
     legislation.
