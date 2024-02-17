@@ -30,15 +30,3 @@ SCOTUS_DATA_FILE = os.path.join(API_DATA_PATH, "scotus_cases_full-text.csv")
 SCOTUS_DATA_FILE_CLEANED = os.path.join(
     CLEANED_DATA_PATH, "scotus_cases_cleaned.fea"
 )
-
-# data loading
-NLP_COLS = [
-    "tokenized_text",
-    "tokenized_text_sents",
-    "tokenized_text_words",
-    "tokenized_text_words_norm",
-    "tokenized_summary",
-    "tokenized_summary_sents",
-    "tokenized_summary_words",
-    "tokenized_summary_words_norm",
-]

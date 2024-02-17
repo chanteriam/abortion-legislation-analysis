@@ -32,7 +32,7 @@ class POSTagger:
         self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
-    def tag_text(text: str) -> list:
+    def tag_text(text: str) -> [str]:
         """
         Tags the text of the legislation.
 
@@ -43,7 +43,7 @@ class POSTagger:
         return [(token.text, token.pos_) for token in doc]
 
     @classmethod
-    def pos_tag(cls, text: str) -> list:
+    def pos_tag(cls, text: str) -> [str]:
         """
         Applies Part-of-Speech (POS) tagging to the text of the legislation.
 
@@ -63,10 +63,12 @@ class POSTagger:
         if len(text) > max_chunk_size:
             start = 0
             while start < len(text):
-                # Determine the end index of the current chunk, trying not to split words
+                # Determine the end index of the current chunk, trying not to
+                # split words
                 end = start + max_chunk_size
                 if end < len(text) and not text[end].isspace():
-                    # Try to move the end index to the next space to avoid splitting a word
+                    # Try to move the end index to the next space to avoid
+                    # splitting a word
                     while end < len(text) and not text[end].isspace():
                         end += 1
                 # Tag the current chunk
@@ -80,7 +82,7 @@ class POSTagger:
         return tagged
 
     @staticmethod
-    def extract_tags_of_interest(tags: list, tags_of_interest: list) -> list:
+    def extract_tags_of_interest(tags: [str], tags_of_interest: [str]) -> [str]:
         """
         Extracts parts of speech of interest from the POS tagging.
 
@@ -98,22 +100,19 @@ class POSTagger:
         interested_tags = [tag for tag in tags if tag[1] in tags_of_interest]
 
         # keep only the text
-        interested_text = [tag[0] for tag in interested_tags]
-
-        return interested_text
+        return [tag[0] for tag in interested_tags]
 
     def process(
         self,
         cols_to_apply_pos: list = None,
         tags_of_interest: list = None,
-    ):
+    ) -> None:
         """
         Applies POS tagging to the text of the legislation and saves the results
         to a file.
         """
         if cols_to_apply_pos is None:
             cols_to_apply_pos = [("cleaned_text", "text_pos")]
-        logging.debug("\tApplying POS tagging...")
 
         self.pos_df = self.df.copy()
 
@@ -135,7 +134,7 @@ class POSTagger:
                 )
 
 
-def main():
+def main() -> None:
     """
     Applies POS tagging to the text of the legislation and saves the results to
     a file.
@@ -148,7 +147,9 @@ def main():
         file_name="congress_legislation_pos.fea",
     )
     scotus_pos = POSTagger(
-        file_path=os.path.join(PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"),
+        file_path=os.path.join(
+            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
+        ),
         file_name="scotus_cases_pos.fea",
     )
 

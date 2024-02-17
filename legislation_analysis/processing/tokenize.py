@@ -40,7 +40,7 @@ class Tokenizer:
         self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
-    def tokenize_and_normalize(text: str, extra_stop: list = None) -> dict:
+    def tokenize_and_normalize(text: str, extra_stop: [str] = None) -> dict:
         """
         Tokenizes and normalizes text into sentences and words.
 
@@ -73,7 +73,7 @@ class Tokenizer:
 
         return processed
 
-    def process(self, cols_to_tokenize=None):
+    def process(self, cols_to_tokenize=None) -> None:
         """
         Processes the legislation text.
 
