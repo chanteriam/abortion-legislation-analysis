@@ -32,7 +32,18 @@ class POSTagger:
         self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
-    def pos_tag(text: str) -> list:
+    def tag_text(text: str) -> list:
+        """
+        Tags the text of the legislation.
+
+        parameters:
+            text (str): text to tag.
+        """
+        doc = nlp(text)
+        return [(token.text, token.pos_) for token in doc]
+
+    @classmethod
+    def pos_tag(cls, text: str) -> list:
         """
         Applies Part-of-Speech (POS) tagging to the text of the legislation.
 
@@ -42,8 +53,30 @@ class POSTagger:
         returns:
             tagged (list): text with POS tagging applied.
         """
-        doc = nlp(text)
-        tagged = [(token.text, token.pos_) for token in doc]
+        max_chunk_size = 999980
+        tagged = []
+
+        if not text or str(text).lower() == "nan":
+            return None
+
+        # Check if text exceeds the max length and needs to be chunked
+        if len(text) > max_chunk_size:
+            start = 0
+            while start < len(text):
+                # Determine the end index of the current chunk, trying not to split words
+                end = start + max_chunk_size
+                if end < len(text) and not text[end].isspace():
+                    # Try to move the end index to the next space to avoid splitting a word
+                    while end < len(text) and not text[end].isspace():
+                        end += 1
+                # Tag the current chunk
+                chunk = text[start:end]
+                tagged.extend(cls.tag_text(chunk))
+                start = end
+        else:
+            # If text is within the limit, tag it directly
+            tagged = cls.tag_text(text)
+
         return tagged
 
     @staticmethod
@@ -58,6 +91,9 @@ class POSTagger:
         returns:
             tags_of_interest (list): parts of speech of interest.
         """
+        if not tags:
+            return None
+
         # extract the tags
         interested_tags = [tag for tag in tags if tag[1] in tags_of_interest]
 
@@ -112,9 +148,7 @@ def main():
         file_name="congress_legislation_pos.fea",
     )
     scotus_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
+        file_path=os.path.join(PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"),
         file_name="scotus_cases_pos.fea",
     )
 
