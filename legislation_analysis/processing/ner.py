@@ -96,7 +96,7 @@ class NER:
 
         return ner
 
-    def process(self, cols_to_ner: list = None):
+    def process(self, cols_to_ner=None) -> None:
         """
         Process the text of the legislation to apply Named Entity Recognition
         (NER).
@@ -105,13 +105,12 @@ class NER:
             cols_to_ner (list): columns to apply NER to.
         """
         if cols_to_ner is None:
-            cols_to_ner = ["cleaned_text"]
+            cols_to_ner = [("cleaned_text", "cleaned_text_ner")]
         self.ner_df = self.df.copy()
 
         for col in cols_to_ner:
-            logging.debug(f"\tApplying NER to {col}...")
-            new_col = f"{col}_ner"
-            self.ner_df[new_col] = self.ner_df[col].apply(self.ner)
+            logging.debug(f"\tApplying NER to {col[0]}...")
+            self.ner_df[col[1]] = self.ner_df[col[0]].apply(self.ner)
 
 
 def main() -> None:
@@ -144,7 +143,9 @@ def main() -> None:
     # Apply NER to SCOTUS opinions
     logging.debug("Applying NER to SCOTUS opinions...")
     scotus_ner = NER(
-        file_path=os.path.join(PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"),
+        file_path=os.path.join(
+            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
+        ),
         file_name="scotus_cases_ner.fea",
     )
     scotus_ner.process()
