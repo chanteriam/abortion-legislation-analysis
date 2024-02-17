@@ -135,15 +135,13 @@ def main() -> None:
     )
 
     # Apply NER to congressional legislation
+    logging.debug("Applying NER to congressional legislation...")
     congress_ner = NER(
         file_path=os.path.join(
             PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
         ),
         file_name="congress_legislation_ner.fea",
     )
-
-    # Apply NER to congressional legislation
-    logging.debug("Applying NER to congressional legislation...")
     congress_ner.process(
         cols_to_ner=[
             ("cleaned_text", "cleaned_text_ner"),
