@@ -26,7 +26,11 @@ from legislation_analysis.utils.constants import (
     CONGRESS_ROOT_URL,
     RAW_DATA_PATH,
 )
-from legislation_analysis.utils.functions import extract_pdf_text
+from legislation_analysis.utils.functions import (
+    extract_pdf_text,
+    load_file_to_df,
+    save,
+)
 
 
 class CongressAPI:
@@ -160,14 +164,14 @@ class CongressAPI:
 
         return soup.text
 
-    def process(self, file_path: str, file_name: str) -> None:
+    def process(self) -> None:
         """
         Processing function for extracting text from legislation search results.
         """
 
         # load data
-        logging.debug(f"Loading data from {file_path}...")
-        df = pd.read_csv(file_path)
+        logging.debug(f"Loading data from {self.file_path}...")
+        df = load_file_to_df(self.file_path)
 
         # get header row
         first_col = df.iloc[:, 0]
@@ -177,7 +181,6 @@ class CongressAPI:
         df = df.iloc[:, :col_row].copy()
         df.columns = list(df.iloc[header_row, :col_row])
         self.df = df.iloc[header_row + 1 :, :].reset_index(drop=True).copy()
-
         self.df.columns = [c.lower() for c in list(self.df.columns)]
 
         # extract legislation information
@@ -193,12 +196,6 @@ class CongressAPI:
             ),
             axis=1,
         )
-
-        # intermediary saving
-        save_path = os.path.join(
-            os.path.dirname(file_path), f"{file_name}_api_url.csv"
-        )
-        self.processed_df.to_csv(save_path, index=False)
 
         # extract legislation text url
         logging.debug("Extracting legislation text url...")
@@ -216,11 +213,6 @@ class CongressAPI:
         ].apply(
             lambda x: self.extract_text(x)
         )
-
-        save_path = os.path.join(
-            os.path.dirname(file_path), f"{file_name}_htm-text.csv"
-        )
-        self.processed_df.to_csv(save_path, index=False)
 
         # extract pdf text
         self.processed_df.loc[
@@ -249,10 +241,9 @@ def main() -> None:
     file_name = os.path.basename(file_path).split(".")[0]
 
     cleaner = CongressAPI(file_path)
+    cleaner.process()
 
-    # process legislation data
-    cleaner.process(file_path, file_name)
-
-    # save to csv
-    save_path = os.path.join(API_DATA_PATH, f"{file_name}_full-text.csv")
-    cleaner.processed_df.to_csv(save_path, index=False)
+    save(
+        cleaner.processed_df,
+        os.path.join(API_DATA_PATH, f"{file_name}_full-text.fea"),
+    )
