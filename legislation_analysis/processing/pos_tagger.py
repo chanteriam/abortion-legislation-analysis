@@ -103,7 +103,7 @@ class POSTagger:
 
     @staticmethod
     def _join_numpy_array(arr: np.ndarray) -> str:
-        return " ".join(map(str, arr.flatten()))
+        return " ".join(map(str, arr.flatten())) if arr is not None else ""
 
     def process(
         self,
