@@ -1,31 +1,43 @@
+import logging
+import os
+
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 import scipy
 import sklearn
 
 from legislation_analysis.clustering.abstract_clustering import (
     AbstractClustering,
 )
+from legislation_analysis.utils.constants import (
+    CLUSTERED_DATA_PATH,
+    OPTIMAL_CONGRESS_CLUSTERS,
+    OPTIMAL_SCOTUS_CLUSTERS,
+    TAGS_OF_INTEREST,
+)
+from legislation_analysis.utils.functions import (
+    load_file_to_df,
+    save_df_to_file,
+)
 
 
-class HierarchyComplete(AbstractClustering):
+class HierarchyWard(AbstractClustering):
     """
-    Class for implementing hierarchy ward clustering.
+    Class for implementing Hierarchy Ward clustering.
     """
 
     def __init__(
         self,
-        df: pd.DataFrame,
-        df_column: str = "cleaned_text",
-        n_clusters: int = 32,
-        is_scotus: bool = False,
+        file_path: str,
+        file_name: str,
     ):
-        self._df = df
-        self._n_clusters = n_clusters
-        self._title_suffix = (
-            "SCOTUS Decisions" if is_scotus else "Congressional Legislation"
-        )
+        self._df = load_file_to_df(file_path)
+        if "congress" in file_name:
+            self._n_clusters = OPTIMAL_CONGRESS_CLUSTERS
+            self._title_suffix = "Congressional Legislation"
+        else:
+            self._n_clusters = OPTIMAL_SCOTUS_CLUSTERS
+            self._title_suffix = "SCOTUS Decisions"
+        self._save_path = os.path.join(CLUSTERED_DATA_PATH, file_name)
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
         # only have a maximum of 1000 features.
@@ -36,29 +48,49 @@ class HierarchyComplete(AbstractClustering):
             stop_words="english",
             norm="l2",
         )
-        self._vectors = self._vectorizer.fit_transform(self._df[df_column])
 
-        self._vectors.todense()
-        vector_matrix = self._vectors * self._vectors.T
-        vector_matrix.setdiag(0)
+    def cluster_parts_of_speech(self) -> None:
+        for tag in TAGS_OF_INTEREST:
+            logging.debug(f"Starting Hierarchy Ward clustering for {tag}.")
+            vectors = self._vectorizer.fit_transform(
+                self._df[f"{tag}_tags_of_interest"]
+            )
 
-        self._linkage_matrix = scipy.cluster.hierarchy.ward(
-            vector_matrix.toarray()
-        )
-        self._cluster_algo = scipy.cluster.hierarchy.fcluster(
-            vector_matrix, self._n_clusters, "maxclust"
-        )
+            vectors.todense()
+            vector_matrix = vectors * vectors.T
+            vector_matrix.setdiag(0)
 
-    def get_labels(self) -> np.ndarray:
-        return self._cluster_algo
+            linkage_matrix = scipy.cluster.hierarchy.ward(
+                vector_matrix.toarray()
+            )
+            cluster_algo = scipy.cluster.hierarchy.fcluster(
+                linkage_matrix, self._n_clusters, "maxclust"
+            )
 
-    def visualize(self) -> None:
+            self._df[f"{tag}_hw_clusters"] = cluster_algo
+            logging.debug(f"Finished Hierarchy Ward clustering for {tag}.")
+        logging.debug("Saving Hierarchy Ward assignments.")
+        save_df_to_file(self._df, self._save_path)
+
+    def visualize(self, tag: str) -> None:
         plt.title(
             "Hierarchical Complete Clustering Dendrogram "
             f"of {self._title_suffix}"
         )
         plt.xlabel("Cluster Size")
+        vectors = self._vectorizer.fit_transform(
+            self._df[f"{tag}_tags_of_interest"]
+        )
+
+        vectors.todense()
+        vector_matrix = vectors * vectors.T
+        vector_matrix.setdiag(0)
+
+        linkage_matrix = scipy.cluster.hierarchy.ward(vector_matrix.toarray())
+        cluster_algo = scipy.cluster.hierarchy.fcluster(
+            linkage_matrix, self._n_clusters, "maxclust"
+        )
         scipy.cluster.hierarchy.dendrogram(
-            self._linkage_matrix, p=5, truncate_mode="level"
+            cluster_algo, p=5, truncate_mode="level"
         )
         plt.show()
