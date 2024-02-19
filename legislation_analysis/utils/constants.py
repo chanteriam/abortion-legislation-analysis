@@ -31,3 +31,6 @@ SCOTUS_DATA_FILE = os.path.join(API_DATA_PATH, "scotus_cases_full-text.csv")
 SCOTUS_DATA_FILE_CLEANED = os.path.join(
     CLEANED_DATA_PATH, "scotus_cases_cleaned.fea"
 )
+
+# General Constants
+TAGS_OF_INTEREST = ["NOUN", "ADJ", "VERB", "ADV"]
