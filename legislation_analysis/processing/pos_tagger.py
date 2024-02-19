@@ -27,9 +27,7 @@ class POSTagger:
     def __init__(self, file_path: str, file_name: str):
         self.df = load_file_to_df(file_path)
         self.pos_df = None
-        self.file_path = file_path
-        self.file_name = file_name
-        self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
+        self.save_path = os.path.join(PROCESSED_DATA_PATH, file_name)
 
     @staticmethod
     def tag_text(text: str) -> [str]:
