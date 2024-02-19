@@ -10,7 +10,7 @@ class AbstractClustering(ABC):
     """
 
     @abstractmethod
-    def execute(self):
+    def get_labels(self):
         pass
 
     @abstractmethod

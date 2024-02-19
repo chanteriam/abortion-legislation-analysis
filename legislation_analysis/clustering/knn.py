@@ -28,7 +28,7 @@ class KNN(AbstractClustering):
         )
         self._vectors = self._vectorizer.fit_transform(self._df[df_column])
 
-    def execute(self):
+    def get_labels(self):
         pass
 
     def visualize(self):
