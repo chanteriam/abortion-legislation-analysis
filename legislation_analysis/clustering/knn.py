@@ -87,8 +87,8 @@ class KNN(AbstractClustering):
             y_lower = y_upper + 10
 
         ax1.set_title("The silhouette plot for the various clusters.")
-        ax1.set_xlabel("The silhouette coefficient values")
-        ax1.set_ylabel("Cluster label")
+        ax1.set_xlabel("Silhouette Coefficient Values")
+        ax1.set_ylabel("Cluster labels")
 
         ax1.axvline(x=silhouette_avg, color="red", linestyle="--")
 
