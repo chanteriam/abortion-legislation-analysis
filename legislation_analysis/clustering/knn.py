@@ -13,7 +13,10 @@ from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
     TAGS_OF_INTEREST,
 )
-from legislation_analysis.utils.functions import load_file_to_df, save
+from legislation_analysis.utils.functions import (
+    load_file_to_df,
+    save_df_to_file,
+)
 
 
 class KNN(AbstractClustering):
@@ -62,7 +65,7 @@ class KNN(AbstractClustering):
             self._df[f"{tag}_knn_clusters"] = cluster_algo.labels_
             logging.debug(f"Finished K-Nearest Neighbor clustering for {tag}.")
         logging.debug("Saving K-Nearest Neighbor assignments.")
-        save(self._df, self._save_path)
+        save_df_to_file(self._df, self._save_path)
 
     def visualize(self, tag: str) -> None:
         vector_array = self._vectorizer.fit_transform(

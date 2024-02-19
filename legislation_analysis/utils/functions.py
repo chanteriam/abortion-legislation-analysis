@@ -39,7 +39,7 @@ def load_file_to_df(file_path: str) -> pd.DataFrame:
 
     parameters:
         file_path (str): path to the file to load.
-        load_tokenized (bool): whether or not to load tokenized data.
+        load_tokenized (bool): whether to load tokenized data.
         tokenized_cols (list): list of columns to load tokenized data for.
 
     returns:
@@ -61,7 +61,7 @@ def load_file_to_df(file_path: str) -> pd.DataFrame:
     return df
 
 
-def save(df: pd.DataFrame, file_path: str) -> None:
+def save_df_to_file(df: pd.DataFrame, file_path: str) -> None:
     """
     Saves the given dataframe out to the specified file_path.
 

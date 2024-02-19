@@ -12,7 +12,7 @@ from legislation_analysis.utils.constants import (
     SCOTUS_DATA_FILE_CLEANED,
     TAGS_OF_INTEREST,
 )
-from legislation_analysis.utils.functions import save
+from legislation_analysis.utils.functions import save_df_to_file
 
 
 def run_data_cleaner() -> None:
@@ -32,12 +32,12 @@ def run_data_cleaner() -> None:
             ("latest summary", "cleaned_summary"),
         ],
     )
-    save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
+    save_df_to_file(congress_cleaner.cleaned_df, congress_cleaner.save_path)
 
     # Clean SCOTUS opinions
     logging.info("Cleaning SCOTUS Data.")
     scotus_cleaner.process()
-    save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
+    save_df_to_file(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
 
 
 def run_data_tokenizer() -> None:
@@ -59,12 +59,14 @@ def run_data_tokenizer() -> None:
             ("cleaned_summary", "tokenized_summary"),
         ]
     )
-    save(congress_tokenizer.tokenized_df, congress_tokenizer.save_path)
+    save_df_to_file(
+        congress_tokenizer.tokenized_df, congress_tokenizer.save_path
+    )
 
     # Tokenize SCOTUS opinions
     logging.info("Tokenizing SCOTUS Data.")
     scotus_tokenizer.process()
-    save(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
+    save_df_to_file(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
 
 
 def run_pos_tagger() -> None:
@@ -94,9 +96,9 @@ def run_pos_tagger() -> None:
         ],
         tags_of_interest=TAGS_OF_INTEREST,
     )
-    save(congress_pos.pos_df, congress_pos.save_path)
+    save_df_to_file(congress_pos.pos_df, congress_pos.save_path)
 
     # Apply POS tagging to SCOTUS opinions
     logging.info("Applying POS tagging to SCOTUS text.")
     scotus_pos.process(tags_of_interest=TAGS_OF_INTEREST)
-    save(scotus_pos.pos_df, scotus_pos.save_path)
+    save_df_to_file(scotus_pos.pos_df, scotus_pos.save_path)
