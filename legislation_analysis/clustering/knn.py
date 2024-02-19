@@ -11,6 +11,8 @@ from legislation_analysis.clustering.abstract_clustering import (
 )
 from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
+    OPTIMAL_CONGRESS_CLUSTERS,
+    OPTIMAL_SCOTUS_CLUSTERS,
     TAGS_OF_INTEREST,
 )
 from legislation_analysis.utils.functions import (
@@ -28,19 +30,14 @@ class KNN(AbstractClustering):
         self,
         file_path: str,
         file_name: str,
-        n_clusters: int = 32,
     ):
-        """
-        32 Clusters were the optimal amount of clusters as determined by
-        tests in exercise 3 .
-        """
         self._df = load_file_to_df(file_path)
-        self._n_clusters = n_clusters
-        self._title_suffix = (
-            "SCOTUS Decisions"
-            if "scotus" in file_name
-            else "Congressional Legislation"
-        )
+        if "congress" in file_name:
+            self._n_clusters = OPTIMAL_CONGRESS_CLUSTERS
+            self._title_suffix = "Congressional Legislation"
+        else:
+            self._n_clusters = OPTIMAL_SCOTUS_CLUSTERS
+            self._title_suffix = "SCOTUS Decisions"
         self._save_path = os.path.join(CLUSTERED_DATA_PATH, file_name)
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
