@@ -292,7 +292,7 @@ class Cleaner:
         cleaned_df = self.df.copy()
 
         for col in cols_to_clean:
-            logging.debug(f"\tCleaning {col[0]}...")
+            logging.debug(f"\tCleaning {col[0]}.")
             col, new_col = col
             cleaned_df[new_col] = cleaned_df[col]
 

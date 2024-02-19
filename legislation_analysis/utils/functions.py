@@ -17,7 +17,7 @@ def extract_pdf_text(pdf_url: str) -> str:
     returns:
         text (str): extracted text.
     """
-    logging.debug(f"\textracting text from {pdf_url}...")
+    logging.debug(f"\textracting text from {pdf_url}.")
 
     # Prevent overloading the api
     time.sleep(3.6)

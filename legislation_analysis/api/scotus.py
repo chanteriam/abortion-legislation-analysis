@@ -89,7 +89,7 @@ class SCOTUSDataExtractor:
         returns:
             pdf_url (str): url to the pdf.
         """
-        logging.debug(f"\tgetting pdf url from {case_url}...")
+        logging.debug(f"\tgetting pdf url from {case_url}.")
 
         time.sleep(3.6)
         request = requests.get(case_url)
@@ -118,7 +118,7 @@ class SCOTUSDataExtractor:
         returns:
             text (str): extracted text.
         """
-        logging.debug(f"\textracting text from {case_url}...")
+        logging.debug(f"\textracting text from {case_url}.")
 
         time.sleep(3.6)
         request = requests.get(case_url)
