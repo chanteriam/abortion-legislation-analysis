@@ -33,9 +33,7 @@ def run_hierarchy_complete_clustering() -> None:
     )
 
     logging.info("Starting Hierarchy Complete clustering for SCOTUS decisions.")
-    scotus_hc = HierarchyComplete(
-        CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE
-    )
+    scotus_hc = HierarchyComplete(SCOTUS_POS_TAGGED_FILE, SCOTUS_CLUSTERED_FILE)
     scotus_hc.cluster_parts_of_speech()
     logging.info("Finished Hierarchy Complete clustering for SCOTUS decisions.")
 
@@ -57,9 +55,7 @@ def run_hierarchy_ward_clustering() -> None:
     )
 
     logging.info("Starting Hierarchy Ward clustering for SCOTUS decisions.")
-    scotus_hw = HierarchyComplete(
-        CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE
-    )
+    scotus_hw = HierarchyComplete(SCOTUS_POS_TAGGED_FILE, SCOTUS_CLUSTERED_FILE)
     scotus_hw.cluster_parts_of_speech()
     logging.info("Finished Hierarchy Ward clustering for SCOTUS decisions.")
 
