@@ -62,9 +62,9 @@ class KNN(BaseClustering):
         logging.debug("Saving K-Nearest Neighbor assignments.")
         save_df_to_file(self._df, self._save_path)
 
-    def visualize(self, tag: str) -> None:
+    def visualize(self) -> None:
         vector_array = self._vectorizer.fit_transform(
-            self._df[f"{tag}_knn_clusters"]
+            self._df["knn_clusters"]
         ).toarray()
         fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(15, 5))
         ax1.set_xlim([-0.1, 1])

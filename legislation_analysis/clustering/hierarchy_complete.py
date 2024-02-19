@@ -68,14 +68,14 @@ class HierarchyComplete(BaseClustering):
         logging.debug("Saving Hierarchy Complete assignments.")
         save_df_to_file(self._df, self._save_path)
 
-    def visualize(self, tag: str) -> None:
+    def visualize(self) -> None:
         plt.title(
             "Hierarchical Complete Clustering Dendrogram "
             f"of {self._title_suffix}"
         )
         plt.xlabel("Cluster Size")
         vectors = self._vectorizer.fit_transform(
-            self._df[f"{tag}_tags_of_interest"]
+            self._df["joined_text_pos_tags_of_interest"]
         )
 
         vectors.todense()

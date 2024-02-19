@@ -15,7 +15,7 @@ class BaseClustering(ABC):
         pass
 
     @abstractmethod
-    def visualize(self, tag: str) -> None:
+    def visualize(self) -> None:
         pass
 
     @staticmethod
