@@ -24,10 +24,10 @@ def run_hierarchy_complete_clustering() -> None:
     logging.info(
         "Starting Hierarchy Complete clustering for Congressional legislation."
     )
-    congress_hc = HierarchyComplete(
-        CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE
-    )
-    congress_hc.cluster_parts_of_speech()
+    # congress_hc = HierarchyComplete(
+    #     CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE
+    # )
+    # congress_hc.cluster_parts_of_speech()
     logging.info(
         "Finished Hierarchy Complete clustering for Congressional legislation."
     )
@@ -46,10 +46,10 @@ def run_hierarchy_ward_clustering() -> None:
     logging.info(
         "Starting Hierarchy Ward clustering for Congressional legislation."
     )
-    congress_hw = HierarchyComplete(
-        CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE
-    )
-    congress_hw.cluster_parts_of_speech()
+    # congress_hw = HierarchyComplete(
+    #     CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE
+    # )
+    # congress_hw.cluster_parts_of_speech()
     logging.info(
         "Finished Hierarchy Ward clustering for Congressional legislation."
     )
@@ -67,8 +67,8 @@ def run_knn_clustering() -> None:
     logging.info(
         "Starting K-Nearest Neighbor clustering for Congressional legislation."
     )
-    congress_knn = KNN(CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE)
-    congress_knn.cluster_parts_of_speech()
+    # congress_knn = KNN(CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE)
+    # congress_knn.cluster_parts_of_speech()
     logging.info(
         "Finished K-Nearest Neighbor clustering for Congressional legislation."
     )
