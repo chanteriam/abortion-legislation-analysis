@@ -7,6 +7,11 @@ from legislation_analysis.api.service import (
     download_congress_data,
     download_scotus_data,
 )
+from legislation_analysis.clustering.service import (
+    run_hierarchy_complete_clustering,
+    run_hierarchy_ward_clustering,
+    run_knn_clustering,
+)
 from legislation_analysis.processing.service import (
     run_data_cleaner,
     run_data_tokenizer,
@@ -76,6 +81,11 @@ def main() -> None:
 
     if args.tokenize:
         run_data_tokenizer()
+
+    if args.cluster:
+        run_hierarchy_complete_clustering()
+        run_hierarchy_ward_clustering()
+        run_knn_clustering()
 
 
 if __name__ == "__main__":
