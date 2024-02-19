@@ -4,7 +4,7 @@ import argparse
 import logging
 
 from legislation_analysis.api import congress, scotus
-from legislation_analysis.processing import clean, tokenize
+from legislation_analysis.processing import clean, tokenizer
 
 
 logging.basicConfig(
