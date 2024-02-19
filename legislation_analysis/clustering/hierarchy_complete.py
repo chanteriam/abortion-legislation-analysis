@@ -5,14 +5,11 @@ import matplotlib.pyplot as plt
 import scipy
 import sklearn
 
-from legislation_analysis.clustering.abstract_clustering import (
-    AbstractClustering,
-)
+from legislation_analysis.clustering.abstract_clustering import BaseClustering
 from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
     OPTIMAL_CONGRESS_CLUSTERS,
     OPTIMAL_SCOTUS_CLUSTERS,
-    TAGS_OF_INTEREST,
 )
 from legislation_analysis.utils.functions import (
     load_file_to_df,
@@ -20,7 +17,7 @@ from legislation_analysis.utils.functions import (
 )
 
 
-class HierarchyComplete(AbstractClustering):
+class HierarchyComplete(BaseClustering):
     """
     Class for implementing hierarchy complete clustering.
     """
@@ -50,25 +47,27 @@ class HierarchyComplete(AbstractClustering):
         )
 
     def cluster_parts_of_speech(self) -> None:
-        for tag in TAGS_OF_INTEREST:
-            logging.debug(f"Starting Hierarchy Complete clustering for {tag}.")
-            vectors = self._vectorizer.fit_transform(
-                self._df[f"{tag}_tags_of_interest"]
-            )
+        logging.debug("Starting Hierarchy Complete clustering..")
+        self._df["joined_text_pos_tags_of_interest"] = self._df[
+            "text_pos_tags_of_interest"
+        ].apply(self.join_numpy_array)
+        vectors = self._vectorizer.fit_transform(
+            self._df["joined_text_pos_tags_of_interest"]
+        )
 
-            vectors.todense()
-            vector_matrix = vectors * vectors.T
-            vector_matrix.setdiag(0)
+        vectors.todense()
+        vector_matrix = vectors * vectors.T
+        vector_matrix.setdiag(0)
 
-            linkage_matrix = scipy.cluster.hierarchy.complete(
-                vector_matrix.toarray()
-            )
-            cluster_algo = scipy.cluster.hierarchy.fcluster(
-                linkage_matrix, self._n_clusters, "maxclust"
-            )
+        linkage_matrix = scipy.cluster.hierarchy.complete(
+            vector_matrix.toarray()
+        )
+        cluster_algo = scipy.cluster.hierarchy.fcluster(
+            linkage_matrix, self._n_clusters, "maxclust"
+        )
 
-            self._df[f"{tag}_hc_clusters"] = cluster_algo
-            logging.debug(f"Finished Hierarchy Complete clustering for {tag}.")
+        self._df["hc_clusters"] = cluster_algo
+        logging.debug("Finished Hierarchy Complete clustering.")
         logging.debug("Saving Hierarchy Complete assignments.")
         save_df_to_file(self._df, self._save_path)
 

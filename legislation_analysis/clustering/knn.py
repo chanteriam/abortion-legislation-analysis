@@ -5,15 +5,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import sklearn
+import sklearn.cluster
 
-from legislation_analysis.clustering.abstract_clustering import (
-    AbstractClustering,
-)
+from legislation_analysis.clustering.abstract_clustering import BaseClustering
 from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
     OPTIMAL_CONGRESS_CLUSTERS,
     OPTIMAL_SCOTUS_CLUSTERS,
-    TAGS_OF_INTEREST,
 )
 from legislation_analysis.utils.functions import (
     load_file_to_df,
@@ -21,7 +19,7 @@ from legislation_analysis.utils.functions import (
 )
 
 
-class KNN(AbstractClustering):
+class KNN(BaseClustering):
     """
     Class for implementing K-Nearest Neighbor clustering.
     """
@@ -51,16 +49,19 @@ class KNN(AbstractClustering):
         )
 
     def cluster_parts_of_speech(self) -> None:
-        for tag in TAGS_OF_INTEREST:
-            logging.debug(f"Starting K-Nearest Neighbor clustering for {tag}.")
-            col_name = f"{tag}_tags_of_interest"
-            vectors = self._vectorizer.fit_transform(self._df[col_name])
-            cluster_algo = sklearn.cluster.KMeans(
-                n_clusters=self._n_clusters, init="k-means++"
-            )
-            cluster_algo.fit(vectors.toarray())
-            self._df[f"{tag}_knn_clusters"] = cluster_algo.labels_
-            logging.debug(f"Finished K-Nearest Neighbor clustering for {tag}.")
+        logging.debug("Starting K-Nearest Neighbor clustering.")
+        self._df["joined_text_pos_tags_of_interest"] = self._df[
+            "text_pos_tags_of_interest"
+        ].apply(self.join_numpy_array)
+        vectors = self._vectorizer.fit_transform(
+            self._df["joined_text_pos_tags_of_interest"]
+        )
+        cluster_algo = sklearn.cluster.KMeans(
+            n_clusters=self._n_clusters, init="k-means++"
+        )
+        cluster_algo.fit(vectors.toarray())
+        self._df["knn_clusters"] = cluster_algo.labels_
+        logging.debug("Finished K-Nearest Neighbor clustering.")
         logging.debug("Saving K-Nearest Neighbor assignments.")
         save_df_to_file(self._df, self._save_path)
 
