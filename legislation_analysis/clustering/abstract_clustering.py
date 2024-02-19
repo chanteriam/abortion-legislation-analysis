@@ -11,11 +11,11 @@ class AbstractClustering(ABC):
     """
 
     @abstractmethod
-    def get_labels(self) -> np.ndarray:
+    def cluster_parts_of_speech(self) -> None:
         pass
 
     @abstractmethod
-    def visualize(self) -> None:
+    def visualize(self, tag: str) -> None:
         pass
 
     @staticmethod
