@@ -15,10 +15,17 @@ class KNN(AbstractClustering):
     """
 
     def __init__(
-        self, df: pd.DataFrame, df_column: str = "cleaned_text", n_clusters=32
+        self,
+        df: pd.DataFrame,
+        df_column: str = "cleaned_text",
+        n_clusters: int = 32,
+        is_scotus: bool = False,
     ):
         self._df = df
         self._n_clusters = n_clusters
+        self._title_suffix = (
+            "SCOTUS Decisions" if is_scotus else "Congressional Legislation"
+        )
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
         # only have a maximum of 1000 features.
@@ -86,7 +93,7 @@ class KNN(AbstractClustering):
 
             y_lower = y_upper + 10
 
-        ax1.set_title("The silhouette plot for the various clusters.")
+        ax1.set_title(f"Silhouette Plot for {self._title_suffix}")
         ax1.set_xlabel("Silhouette Coefficient Values")
         ax1.set_ylabel("Cluster labels")
 
@@ -124,18 +131,9 @@ class KNN(AbstractClustering):
         for i, c in enumerate(projected_centers):
             ax2.scatter(c[0], c[1], marker="$%d$" % i, alpha=1, s=50)
 
-        ax2.set_title("The visualization of the clustered data.")
+        ax2.set_title(f"PCA of {self._title_suffix} Clusters")
         ax2.set_xlabel("Principle Component 1")
         ax2.set_ylabel("Principle Component 2")
-
-        plt.suptitle(
-            (
-                "Silhouette analysis for KMeans clustering on sample data "
-                "with n_clusters = %d" % self._n_clusters
-            ),
-            fontsize=14,
-            fontweight="bold",
-        )
 
         plt.show()
 

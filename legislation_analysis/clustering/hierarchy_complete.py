@@ -15,9 +15,16 @@ class HierarchyComplete(AbstractClustering):
     """
 
     def __init__(
-        self, df: pd.DataFrame, df_column: str = "cleaned_text", n_clusters=32
+        self,
+        df: pd.DataFrame,
+        df_column: str = "cleaned_text",
+        n_clusters: int = 32,
+        is_scotus: bool = False,
     ):
         self._df = df
+        self._title_suffix = (
+            "SCOTUS Decisions" if is_scotus else "Congressional Legislation"
+        )
         self._n_clusters = n_clusters
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
@@ -46,7 +53,10 @@ class HierarchyComplete(AbstractClustering):
         return self._cluster_algo
 
     def visualize(self) -> None:
-        plt.title("Hierarchical Complete Clustering Dendrogram")
+        plt.title(
+            "Hierarchical Complete Clustering Dendrogram "
+            f"of {self._title_suffix}"
+        )
         plt.xlabel("Cluster Size")
         scipy.cluster.hierarchy.dendrogram(
             self._linkage_matrix, p=5, truncate_mode="level"
