@@ -1,6 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
+import numpy as np
 import sklearn
 
 
@@ -10,15 +11,15 @@ class AbstractClustering(ABC):
     """
 
     @abstractmethod
-    def get_labels(self):
+    def get_labels(self) -> np.ndarray:
         pass
 
     @abstractmethod
-    def visualize(self):
+    def visualize(self) -> None:
         pass
 
     @staticmethod
-    def cluster_scoring(df_column: str, labels):
+    def cluster_scoring(df_column: str, labels: np.ndarray) -> None:
         logging.info("Cluster scoring:")
         logging.info(
             f"\tHomogeneity: "

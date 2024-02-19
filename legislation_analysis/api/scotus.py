@@ -3,7 +3,6 @@ Script for pulling legislation text from abortion-related SCOTS decisions.
 """
 
 import logging
-import os
 import time
 from typing import Optional
 
@@ -12,7 +11,6 @@ import pandas as pd
 import requests
 
 from legislation_analysis.utils.constants import (
-    API_DATA_PATH,
     SCOTUS_DATA_URL,
     SCOTUS_ROOT_URL,
 )
@@ -155,16 +153,3 @@ class SCOTUSDataExtractor:
         ] = self.df.loc[~(self.df.loc[:, "pdf_url"].isna()), "pdf_url"].apply(
             lambda x: extract_pdf_text(x)
         )
-
-
-def main() -> None:
-    """
-    Processes SCOTUS abortion legislation, pulling text from pdf urls.
-    """
-    scotus_api = SCOTUSDataExtractor()
-    scotus_api.process()
-
-    # save data
-    scotus_api.df.to_csv(
-        os.path.join(API_DATA_PATH, "scotus_cases_full-text.csv"), index=False
-    )

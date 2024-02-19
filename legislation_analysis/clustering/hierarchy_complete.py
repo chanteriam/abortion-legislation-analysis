@@ -1,4 +1,7 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import scipy
 import sklearn
 
 from legislation_analysis.clustering.abstract_clustering import (
@@ -27,13 +30,25 @@ class HierarchyComplete(AbstractClustering):
             norm="l2",
         )
         self._vectors = self._vectorizer.fit_transform(self._df[df_column])
-        self._cluster_algo = sklearn.cluster.KMeans(
-            n_clusters=self._n_clusters, init="k-means++"
+
+        self._vectors.todense()
+        vector_matrix = self._vectors * self._vectors.T
+        vector_matrix.setdiag(0)
+
+        self._linkage_matrix = scipy.cluster.hierarchy.complete(
+            vector_matrix.toarray()
         )
-        self._cluster_algo.fit(self._vectors.toarray())
+        self._cluster_algo = scipy.cluster.hierarchy.fcluster(
+            self._linkage_matrix, self._n_clusters, "maxclust"
+        )
 
-    def get_labels(self):
-        pass
+    def get_labels(self) -> np.ndarray:
+        return self._cluster_algo
 
-    def visualize(self):
-        pass
+    def visualize(self) -> None:
+        plt.title("Hierarchical Complete Clustering Dendrogram")
+        plt.xlabel("Cluster Size")
+        scipy.cluster.hierarchy.dendrogram(
+            self._linkage_matrix, p=5, truncate_mode="level"
+        )
+        plt.show()

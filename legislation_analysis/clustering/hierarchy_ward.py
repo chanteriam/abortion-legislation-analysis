@@ -1,4 +1,7 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import scipy
 import sklearn
 
 from legislation_analysis.clustering.abstract_clustering import (
@@ -18,7 +21,7 @@ class HierarchyComplete(AbstractClustering):
         n_clusters: int = 32,
     ):
         self._df = df
-        self.n_cluster = n_clusters
+        self._n_clusters = n_clusters
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
         # only have a maximum of 1000 features.
@@ -31,8 +34,24 @@ class HierarchyComplete(AbstractClustering):
         )
         self._vectors = self._vectorizer.fit_transform(self._df[df_column])
 
-    def get_labels(self):
-        pass
+        self._vectors.todense()
+        vector_matrix = self._vectors * self._vectors.T
+        vector_matrix.setdiag(0)
 
-    def visualize(self):
-        pass
+        self._linkage_matrix = scipy.cluster.hierarchy.ward(
+            vector_matrix.toarray()
+        )
+        self._cluster_algo = scipy.cluster.hierarchy.fcluster(
+            vector_matrix, self._n_clusters, "maxclust"
+        )
+
+    def get_labels(self) -> np.ndarray:
+        return self._cluster_algo
+
+    def visualize(self) -> None:
+        plt.title("Hierarchical Ward Clustering Dendrogram")
+        plt.xlabel("Cluster Size")
+        scipy.cluster.hierarchy.dendrogram(
+            self._linkage_matrix, p=5, truncate_mode="level"
+        )
+        plt.show()
