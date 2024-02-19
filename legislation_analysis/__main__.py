@@ -63,7 +63,7 @@ def main() -> None:
         clean.main()
 
     if args.tokenize:
-        tokenize.main()
+        tokenizer.main()
 
 
 if __name__ == "__main__":
