@@ -61,7 +61,7 @@ def main() -> None:
 
     parser.add_argument(
         "--debug",
-        "-v",
+        "-d",
         action="store_true",
         help="print debugging messages",
     )
