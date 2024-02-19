@@ -110,7 +110,7 @@ class SCOTUSDataExtractor:
     @staticmethod
     def extract_html_text(case_url: str) -> str:
         """
-        Extracts the text of a given piece of legislation.
+        Extracts the text of a given decision.
 
         parameters:
             case_url (str): url of the pdf to extract text from.
@@ -132,7 +132,7 @@ class SCOTUSDataExtractor:
 
     def process(self) -> None:
         """
-        Processes the SCOTUS data, extracting the case data and pdf urls.
+        Processes the SCOTUS data, extracting the decision data and pdf urls.
         """
         request = requests.get(self.url)
 
