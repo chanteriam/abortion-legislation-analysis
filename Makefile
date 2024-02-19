@@ -30,6 +30,10 @@ clean-data:
 tokenize-data:
 	python -m legislation_analysis --tokenize -d
 
+.PHONY: cluster-data
+cluster-data:
+	python -m legislation_analysis --cluster -d
+
 # run all commands
 .PHONY: run
 run:
