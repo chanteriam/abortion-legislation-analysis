@@ -1,17 +1,18 @@
 import os
 
 
-# base paths
+# Base Path Constants
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API_DATA_PATH = os.path.join(PROJECT_PATH, "data", "api")
 CLEANED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "cleaned")
-RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
+CLUSTERED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "clustered")
 PROCESSED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "processed")
+RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
 
-# api
+# API Constants
+CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY")
 CONGRESS_API_ROOT_URL = "https://api.congress.gov/v3/bill/"
 CONGRESS_ROOT_URL = "https://congress.gov/"
-CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY")
 
 SCOTUS_ROOT_URL = "https://supreme.justia.com"
 SCOTUS_DATA_URL = (
@@ -19,7 +20,7 @@ SCOTUS_DATA_URL = (
 )
 
 
-# data files
+# Data File Constants
 CONGRESS_DATA_FILE = os.path.join(
     API_DATA_PATH, "congress_abortion_legislation_full-text.csv"
 )
