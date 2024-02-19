@@ -5,6 +5,7 @@ Applies Part-of-Speech (POS) tagging to the text of the legislation.
 import logging
 import os
 
+import numpy as np
 import spacy
 
 from legislation_analysis.utils.constants import PROCESSED_DATA_PATH
@@ -100,6 +101,10 @@ class POSTagger:
         # keep only the text
         return [tag[0] for tag in interested_tags]
 
+    @staticmethod
+    def _join_numpy_array(arr: np.ndarray) -> str:
+        return " ".join(map(str, arr.flatten()))
+
     def process(
         self,
         cols_to_apply_pos: list = None,
@@ -125,9 +130,11 @@ class POSTagger:
 
             for col in cols_to_apply_pos:
                 logging.debug(f"\tExtracting tags of interest from {col[1]}.")
+                col_name = f"{col[1]}_tags_of_interest"
 
-                self.pos_df[f"{col[1]}_tags_of_interest"] = self.pos_df[
-                    col[1]
-                ].apply(
+                self.pos_df[col_name] = self.pos_df[col[1]].apply(
                     lambda x: self.extract_tags_of_interest(x, tags_of_interest)
+                )
+                self.pos_df["joined_" + col_name] = self.pos_df[col_name].apply(
+                    self._join_numpy_array
                 )

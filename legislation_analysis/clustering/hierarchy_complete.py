@@ -48,9 +48,6 @@ class HierarchyComplete(BaseClustering):
 
     def cluster_parts_of_speech(self) -> None:
         logging.debug("Starting Hierarchy Complete clustering..")
-        self._df["joined_text_pos_tags_of_interest"] = self._df[
-            "text_pos_tags_of_interest"
-        ].apply(self.join_numpy_array)
         vectors = self._vectorizer.fit_transform(
             self._df["joined_text_pos_tags_of_interest"]
         )

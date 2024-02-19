@@ -15,6 +15,7 @@ from legislation_analysis.clustering.service import (
 from legislation_analysis.processing.service import (
     run_data_cleaner,
     run_data_tokenizer,
+    run_pos_tagger,
 )
 
 
@@ -54,6 +55,12 @@ def main() -> None:
     )
 
     parser.add_argument(
+        "--pos-tag",
+        action="store_true",
+        help="PoS tag the data",
+    )
+
+    parser.add_argument(
         "--cluster",
         action="store_true",
         help="cluster the data",
@@ -81,6 +88,9 @@ def main() -> None:
 
     if args.tokenize:
         run_data_tokenizer()
+
+    if args.pos_tag:
+        run_pos_tagger()
 
     if args.cluster:
         run_hierarchy_complete_clustering()

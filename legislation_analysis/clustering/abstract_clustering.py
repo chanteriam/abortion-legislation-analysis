@@ -19,10 +19,6 @@ class BaseClustering(ABC):
         pass
 
     @staticmethod
-    def join_numpy_array(arr: np.ndarray) -> str:
-        return " ".join(map(str, arr.flatten()))
-
-    @staticmethod
     def cluster_scoring(df_column: str, labels: np.ndarray) -> None:
         logging.info("Cluster scoring:")
         logging.info(
