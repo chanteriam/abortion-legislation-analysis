@@ -5,7 +5,7 @@ import numpy as np
 import sklearn
 
 
-class AbstractClustering(ABC):
+class BaseClustering(ABC):
     """
     Abstract class for the clustering methods.
     """
@@ -17,6 +17,10 @@ class AbstractClustering(ABC):
     @abstractmethod
     def visualize(self, tag: str) -> None:
         pass
+
+    @staticmethod
+    def join_numpy_array(arr: np.ndarray) -> str:
+        return " ".join(map(str, arr.flatten()))
 
     @staticmethod
     def cluster_scoring(df_column: str, labels: np.ndarray) -> None:
