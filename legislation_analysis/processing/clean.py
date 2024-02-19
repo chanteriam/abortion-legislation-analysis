@@ -176,18 +176,18 @@ class Cleaner:
 
         returns:
             combined_word (str): combined word.
-            idxs (list): indices of the combined words.
+            indexes (list): indices of the combined words.
             add_type (str): type of addition.
         """
         for direction in [1, -1]:  # Forward and backward
             combined_word = words[current_index]
-            idxs = []
+            indexes = []
             add_type = None  # skip, pop
 
             # check surroundings
             for j in range(1, cls.ITER_LIMIT + 1):
                 idx = current_index + j * direction
-                idxs.append(idx)
+                indexes.append(idx)
 
                 # if the word is too far away, stop
                 if 0 <= idx < len(words):
@@ -203,7 +203,7 @@ class Cleaner:
                             add_type = "skip"
                         else:
                             add_type = "pop"
-                        return combined_word, idxs, add_type
+                        return combined_word, indexes, add_type
         return None, None, None
 
     @classmethod
