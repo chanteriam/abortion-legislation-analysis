@@ -10,6 +10,7 @@ from legislation_analysis.utils.constants import (
     PROCESSED_DATA_PATH,
     SCOTUS_DATA_FILE,
     SCOTUS_DATA_FILE_CLEANED,
+    TAGS_OF_INTEREST,
 )
 from legislation_analysis.utils.functions import save
 
@@ -71,7 +72,6 @@ def run_pos_tagger() -> None:
     Applies POS tagging to the text of the legislation and saves the results to
     a file.
     """
-    tags_of_interest = ["NOUN", "ADJ", "VERB", "ADV"]
     congress_pos = POSTagger(
         file_path=os.path.join(
             PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
@@ -92,11 +92,11 @@ def run_pos_tagger() -> None:
             ("cleaned_text", "text_pos"),
             ("cleaned_summary", "summary_pos"),
         ],
-        tags_of_interest=tags_of_interest,
+        tags_of_interest=TAGS_OF_INTEREST,
     )
     save(congress_pos.pos_df, congress_pos.save_path)
 
     # Apply POS tagging to SCOTUS opinions
     logging.info("Applying POS tagging to SCOTUS text.")
-    scotus_pos.process(tags_of_interest=tags_of_interest)
+    scotus_pos.process(tags_of_interest=TAGS_OF_INTEREST)
     save(scotus_pos.pos_df, scotus_pos.save_path)
