@@ -35,5 +35,5 @@ SCOTUS_DATA_FILE_CLEANED = os.path.join(
 # General Constants
 # Cluster numbers determined in exercise 3
 OPTIMAL_CONGRESS_CLUSTERS = 32
-OPTIMAL_SCOTUS_CLUSTERS = 32
+OPTIMAL_SCOTUS_CLUSTERS = 6
 TAGS_OF_INTEREST = ["NOUN", "ADJ", "VERB", "ADV"]
