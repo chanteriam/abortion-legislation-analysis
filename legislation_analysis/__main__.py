@@ -77,9 +77,6 @@ def main() -> None:
     if args.tokenize:
         run_data_tokenizer()
 
-    if args.cluster:
-        main()
-
 
 if __name__ == "__main__":
     main()
