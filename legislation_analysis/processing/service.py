@@ -4,8 +4,13 @@ import os
 from legislation_analysis.processing.clean import Cleaner
 from legislation_analysis.processing.pos_tagger import POSTagger
 from legislation_analysis.processing.tokenizer import Tokenizer
-from legislation_analysis.utils.constants import CONGRESS_DATA_FILE, SCOTUS_DATA_FILE, \
-    CONGRESS_DATA_FILE_CLEANED, SCOTUS_DATA_FILE_CLEANED, PROCESSED_DATA_PATH
+from legislation_analysis.utils.constants import (
+    CONGRESS_DATA_FILE,
+    CONGRESS_DATA_FILE_CLEANED,
+    PROCESSED_DATA_PATH,
+    SCOTUS_DATA_FILE,
+    SCOTUS_DATA_FILE_CLEANED,
+)
 from legislation_analysis.utils.functions import save
 
 
