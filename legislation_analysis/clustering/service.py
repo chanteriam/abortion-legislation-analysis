@@ -2,6 +2,7 @@ import logging
 import os
 
 from legislation_analysis.clustering.hierarchy_complete import HierarchyComplete
+from legislation_analysis.clustering.hierarchy_ward import HierarchyWard
 from legislation_analysis.clustering.knn import KNN
 from legislation_analysis.utils.constants import PROCESSED_DATA_PATH
 
@@ -46,7 +47,7 @@ def run_hierarchy_ward_clustering() -> None:
     logging.info(
         "Starting Hierarchy Ward clustering for Congressional legislation."
     )
-    # congress_hw = HierarchyComplete(
+    # congress_hw = HierarchyWard(
     #     CONGRESS_POS_TAGGED_FILE, CONGRESS_CLUSTERED_FILE
     # )
     # congress_hw.cluster_parts_of_speech()
@@ -55,7 +56,7 @@ def run_hierarchy_ward_clustering() -> None:
     )
 
     logging.info("Starting Hierarchy Ward clustering for SCOTUS decisions.")
-    scotus_hw = HierarchyComplete(SCOTUS_POS_TAGGED_FILE, SCOTUS_CLUSTERED_FILE)
+    scotus_hw = HierarchyWard(SCOTUS_POS_TAGGED_FILE, SCOTUS_CLUSTERED_FILE)
     scotus_hw.cluster_parts_of_speech()
     logging.info("Finished Hierarchy Ward clustering for SCOTUS decisions.")
 
