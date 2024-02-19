@@ -125,8 +125,9 @@ class POSTagger:
 
             for col in cols_to_apply_pos:
                 logging.debug(f"\tExtracting tags of interest from {col[1]}.")
-                col_name = f"{col[1]}_tags_of_interest"
 
-                self.pos_df[col_name] = self.pos_df[col[1]].apply(
+                self.pos_df[f"{col[1]}_tags_of_interest"] = self.pos_df[
+                    col[1]
+                ].apply(
                     lambda x: self.extract_tags_of_interest(x, tags_of_interest)
                 )
