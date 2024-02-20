@@ -27,7 +27,7 @@ def download_congress_data() -> None:
 
 def download_scotus_data() -> None:
     """
-    Processes SCOTUS abortion decisions, pulling text from PDF urls.
+    Processes SCOTUS abortion decisions, pulling text from pdf urls.
     """
     logging.info("Downloading SCOTUS abortion decisions...")
     scotus_api = SCOTUSDataExtractor()
