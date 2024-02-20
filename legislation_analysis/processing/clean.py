@@ -14,8 +14,12 @@ from nltk.corpus import wordnet, words
 from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
     CONGRESS_DATA_FILE,
+    MISC_DICTIONARY_ENTRIES,
 )
-from legislation_analysis.utils.functions import load_file_to_df
+from legislation_analysis.utils.functions import (
+    get_legal_dictionary,
+    load_file_to_df,
+)
 
 
 nltk.download("words")
@@ -31,13 +35,14 @@ class Cleaner:
         file_name (str): name of file to save.
     """
 
-    DICTIONARY = set(words.words())
+    DICTIONARY = set(words.words()) | MISC_DICTIONARY_ENTRIES
     ITER_LIMIT = 4
+    LEGAL_DICTIONARY = get_legal_dictionary()
 
     def __init__(
         self,
-        file_path=CONGRESS_DATA_FILE,
-        file_name="congress_legislation_cleaned.fea",
+        file_path: str = CONGRESS_DATA_FILE,
+        file_name: str = "congress_legislation_cleaned.fea",
     ):
         self.df = load_file_to_df(file_path)
         self.file_name = file_name
@@ -134,7 +139,7 @@ class Cleaner:
     @classmethod
     def is_valid_word(cls, word: str) -> bool:
         """
-        Determines if a word is valid.
+        Determines if a word is valid, excluding most single letters except 'a'.
 
         parameters:
             word (str): word to check.
@@ -142,6 +147,10 @@ class Cleaner:
         returns:
             bool: whether the word is valid.
         """
+        # Exclude single letters except 'a'
+        if len(word) == 1 and word != "a":
+            return False
+
         punctuation = [
             ",",
             ".",
@@ -162,7 +171,13 @@ class Cleaner:
         for punc in punctuation:
             word = word.replace(punc, "")
 
-        return bool(wordnet.synsets(word)) or (word.lower() in cls.DICTIONARY)
+        word = word.lower()
+
+        return (
+            bool(wordnet.synsets(word))
+            or (word in cls.DICTIONARY)
+            or (word in cls.LEGAL_DICTIONARY)
+        )
 
     @classmethod
     def combine_with_surrounding(cls, words: list, current_index: int) -> tuple:
@@ -182,7 +197,7 @@ class Cleaner:
         for direction in [1, -1]:  # Forward and backward
             combined_word = words[current_index]
             idxs = []
-            add_type = None  # skip, pop
+            add_type = None
 
             # check surroundings
             for j in range(1, cls.ITER_LIMIT + 1):
@@ -207,21 +222,38 @@ class Cleaner:
         return None, None, None
 
     @classmethod
-    def find_internal_split(cls, word: str) -> tuple:
+    def find_internal_splits(cls, word: str) -> list:
         """
-        Find a valid internal split of the word, if any.
+        Recursively find all valid internal splits of the word, if any.
 
         parameters:
             word (str): word to split.
 
         returns:
-            word1 (str): first word.
-            word2 (str): second word.
+            list of str: split words.
         """
-        for j in range(1, len(word)):
-            if cls.is_valid_word(word[:j]) and cls.is_valid_word(word[j:]):
-                return word[:j], word[j:]
-        return None, None
+        if len(word) <= 1 or cls.is_valid_word(word):
+            return [word]
+
+        # initialize variables to track best split
+        best_split_point = None
+        for split_point in range(1, len(word)):
+            prefix = word[:split_point]
+
+            # if the prefix is a valid word and suffix either forms a valid
+            # word or can be split into valid words (recursively checked),
+            # consider this point as a potential best split
+            if cls.is_valid_word(prefix):
+                best_split_point = split_point
+
+        # if a split point is found, split word and recursively process suffix
+        if best_split_point is not None:
+            return [word[:best_split_point]] + cls.find_internal_splits(
+                word[best_split_point:]
+            )
+
+        # no valid split found, return word as is
+        return [word]
 
     @classmethod
     def spell_check(cls, text: str) -> str:
@@ -234,7 +266,6 @@ class Cleaner:
         returns:
             text (str): spell checked text.
         """
-
         words = text.split(" ")
         new_words = []
         ignore = []
@@ -267,15 +298,9 @@ class Cleaner:
                 new_words.append(combined_word)
                 continue
 
-            # check if two words were combined
-            word1, word2 = cls.find_internal_split(word)
-            if word1 and word2:
-                new_words.append(word1)
-                new_words.append(word2)
-                continue
-
-            # misspelled word
-            new_words.append(word)
+            # check if two words were combined or misspelled
+            splits = cls.find_internal_splits(word)
+            new_words.extend(splits)
 
         return " ".join(new_words)
 

@@ -1,10 +1,14 @@
 import logging
+import os
 import time
 from io import BytesIO
 
 import pandas as pd
 import requests
+from bs4 import BeautifulSoup
 from PyPDF2 import PdfReader
+
+from legislation_analysis.utils.constants import LEGAL_DICTIONARY_FILE
 
 
 def extract_pdf_text(pdf_url: str) -> str:
@@ -31,6 +35,44 @@ def extract_pdf_text(pdf_url: str) -> str:
         text += page.extract_text() + "\n"
 
     return text
+
+
+def get_legal_dictionary() -> set:
+    """
+    Scrapes dictionary of legal terms from https://www.uscourts.gov/glossary.
+
+    returns:
+        legal_terms (set): set of legal terms.
+    """
+    if os.path.exists(LEGAL_DICTIONARY_FILE):
+        with open(LEGAL_DICTIONARY_FILE, "r") as file:
+            return set(file.read().split())
+
+    url = "https://www.uscourts.gov/glossary"
+    legal_terms = set()
+
+    # get the html content
+    html_content = requests.get(url).text
+    soup = BeautifulSoup(html_content, "html.parser").find(
+        "div", class_="lexicon-list"
+    )
+
+    # get the legal terms
+    for term in soup.find_all("dt"):
+        term = term.text.strip().lower()
+
+        if len(term.split()) > 1:
+            terms = term.split()
+            for t in terms:
+                legal_terms.add(t)
+        else:
+            legal_terms.add(term)
+
+    with open(LEGAL_DICTIONARY_FILE, "w") as file:
+        for term in legal_terms:
+            file.write(term + "\n")
+
+    return legal_terms
 
 
 def load_file_to_df(file_path: str) -> pd.DataFrame:

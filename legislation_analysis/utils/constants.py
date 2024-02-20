@@ -34,5 +34,27 @@ SCOTUS_DATA_FILE_CLEANED = os.path.join(
 
 # general
 # cluster numbers determined in exercise 3
+LEGAL_DICTIONARY_FILE = os.path.join(CLEANED_DATA_PATH, "legal_terms.txt")
+MISC_DICTIONARY_ENTRIES = {
+    "dobbs",
+    "roe",
+    "wade",
+    "breyer",
+    "sotomayor",
+    "kagan",
+    "hellerstedt",
+    "carhart",
+    "stenberg",
+    "eisenstadt",
+    "baird",
+    "griswold",
+    "doe",
+    "hodgson",
+    "webster",
+    "maher",
+}
 OPTIMAL_CONGRESS_CLUSTERS = 32
 OPTIMAL_SCOTUS_CLUSTERS = 6
+
+# NLP
+NLP_MAX_CHAR_LENGTH = 999980
