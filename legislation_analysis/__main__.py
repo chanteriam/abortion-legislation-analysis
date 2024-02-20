@@ -15,11 +15,7 @@ from legislation_analysis.clustering.service import (
 from legislation_analysis.processing.service import (
     run_data_cleaner,
     run_data_tokenizer,
-)
-
-
-logging.basicConfig(
-    format="%(asctime)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p"
+    run_pos_tagger,
 )
 
 
@@ -28,6 +24,13 @@ def main() -> None:
     Collects and runs command-line arguments.
     """
     parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--all",
+        "-a",
+        action="store_true",
+        help="runs all applications processes",
+    )
 
     parser.add_argument(
         "--congress",
@@ -54,6 +57,12 @@ def main() -> None:
     )
 
     parser.add_argument(
+        "--pos-tag",
+        action="store_true",
+        help="PoS tag the data",
+    )
+
+    parser.add_argument(
         "--cluster",
         action="store_true",
         help="cluster the data",
@@ -61,28 +70,35 @@ def main() -> None:
 
     parser.add_argument(
         "--debug",
-        "-v",
+        "-d",
         action="store_true",
         help="print debugging messages",
     )
 
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+    logging.basicConfig(
+        format="%(asctime)s: %(message)s",
+        datefmt="%m/%d/%Y %I:%M:%S %p",
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
 
-    if args.congress:
+    if args.all or args.congress:
         download_congress_data()
 
-    if args.scotus:
+    if args.all or args.scotus:
         download_scotus_data()
 
-    if args.clean:
+    if args.all or args.clean:
         run_data_cleaner()
 
-    if args.tokenize:
+    if args.all or args.tokenize:
         run_data_tokenizer()
 
-    if args.cluster:
+    if args.all or args.pos_tag:
+        run_pos_tagger()
+
+    if args.all or args.cluster:
         run_hierarchy_complete_clustering()
         run_hierarchy_ward_clustering()
         run_knn_clustering()

@@ -79,5 +79,4 @@ legislation.
 ## Standard Commands
 
 - `make lint`: Runs `pre-commit`
-- `make test`: Runs test cases in the `test` directory
 - `make run`: Runs the `main` function in the `legislation_analysis` folder

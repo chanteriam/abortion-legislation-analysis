@@ -30,6 +30,10 @@ clean-data:
 tokenize-data:
 	python -m legislation_analysis --tokenize -d
 
+.PHONY: pos-tag-data
+pos-tag-data:
+	python -m legislation_analysis --pos-tag -d
+
 .PHONY: cluster-data
 cluster-data:
 	python -m legislation_analysis --cluster -d
@@ -37,4 +41,4 @@ cluster-data:
 # run all commands
 .PHONY: run
 run:
-	make get-legislation-data clean-data
+	make get-legislation-data --all

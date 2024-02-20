@@ -4,7 +4,7 @@ import os
 from legislation_analysis.api.congress import CongressAPI
 from legislation_analysis.api.scotus import SCOTUSDataExtractor
 from legislation_analysis.utils.constants import API_DATA_PATH, RAW_DATA_PATH
-from legislation_analysis.utils.functions import save
+from legislation_analysis.utils.functions import save_df_to_file
 
 
 def download_congress_data() -> None:
@@ -19,7 +19,7 @@ def download_congress_data() -> None:
     cleaner = CongressAPI(file_path)
     cleaner.process()
 
-    save(
+    save_df_to_file(
         cleaner.processed_df,
         os.path.join(API_DATA_PATH, f"{file_name}_full-text.fea"),
     )

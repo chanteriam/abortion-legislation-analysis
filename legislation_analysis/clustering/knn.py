@@ -1,31 +1,42 @@
+import logging
+import os
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import sklearn
+import sklearn.cluster
 
-from legislation_analysis.clustering.abstract_clustering import (
-    AbstractClustering,
+from legislation_analysis.clustering.abstract_clustering import BaseClustering
+from legislation_analysis.utils.constants import (
+    CLUSTERED_DATA_PATH,
+    OPTIMAL_CONGRESS_CLUSTERS,
+    OPTIMAL_SCOTUS_CLUSTERS,
+)
+from legislation_analysis.utils.functions import (
+    load_file_to_df,
+    save_df_to_file,
 )
 
 
-class KNN(AbstractClustering):
+class KNN(BaseClustering):
     """
-    Class for implementing k-nearest neighbor clustering.
+    Class for implementing K-Nearest Neighbor clustering.
     """
 
     def __init__(
         self,
-        df: pd.DataFrame,
-        df_column: str = "cleaned_text",
-        n_clusters: int = 32,
-        is_scotus: bool = False,
+        file_path: str,
+        file_name: str,
     ):
-        self._df = df
-        self._n_clusters = n_clusters
-        self._title_suffix = (
-            "SCOTUS Decisions" if is_scotus else "Congressional Legislation"
-        )
+        self._df = load_file_to_df(file_path)
+        if "congress" in file_name:
+            self._n_clusters = OPTIMAL_CONGRESS_CLUSTERS
+            self._title_suffix = "Congressional Legislation"
+        else:
+            self._n_clusters = OPTIMAL_SCOTUS_CLUSTERS
+            self._title_suffix = "SCOTUS Decisions"
+        self._save_path = os.path.join(CLUSTERED_DATA_PATH, file_name)
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
         # only have a maximum of 1000 features.
@@ -36,22 +47,33 @@ class KNN(AbstractClustering):
             stop_words="english",
             norm="l2",
         )
-        self._vectors = self._vectorizer.fit_transform(self._df[df_column])
-        self._cluster_algo = sklearn.cluster.KMeans(
+
+    def cluster_parts_of_speech(self) -> None:
+        logging.debug("Starting K-Nearest Neighbor clustering...")
+        vectors = self._vectorizer.fit_transform(
+            self._df["joined_text_pos_tags_of_interest"]
+        )
+        cluster_algo = sklearn.cluster.KMeans(
             n_clusters=self._n_clusters, init="k-means++"
         )
-        self._cluster_algo.fit(self._vectors.toarray())
-
-    def get_labels(self) -> np.ndarray:
-        return self._cluster_algo.labels_
+        cluster_algo.fit(vectors.toarray())
+        self._df["knn_clusters"] = cluster_algo.labels_
+        logging.debug("Finished K-Nearest Neighbor clustering...")
+        logging.debug("Saving K-Nearest Neighbor assignments...")
+        save_df_to_file(self._df, self._save_path)
 
     def visualize(self) -> None:
-        vector_array = self._vectors.toarray()
+        vector_array = self._vectorizer.fit_transform(
+            self._df["knn_clusters"]
+        ).toarray()
         fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(15, 5))
         ax1.set_xlim([-0.1, 1])
         ax1.set_ylim([0, len(vector_array) + (self._n_clusters + 1) * 10])
 
-        cluster_labels = self._cluster_algo.fit_predict(vector_array)
+        cluster_algo = sklearn.cluster.KMeans(
+            n_clusters=self._n_clusters, init="k-means++"
+        )
+        cluster_labels = cluster_algo.fit_predict(vector_array)
 
         silhouette_avg = sklearn.metrics.silhouette_score(
             vector_array, cluster_labels
@@ -116,7 +138,7 @@ class KNN(AbstractClustering):
         )
 
         # Labeling the clusters
-        centers = self._cluster_algo.cluster_centers_
+        centers = cluster_algo.cluster_centers_
         projected_centers = pca.transform(centers)
         # Draw white circles at cluster centers
         ax2.scatter(

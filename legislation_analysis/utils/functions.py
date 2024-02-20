@@ -21,7 +21,7 @@ def extract_pdf_text(pdf_url: str) -> str:
     returns:
         text (str): extracted text.
     """
-    logging.debug(f"\textracting text from {pdf_url}...")
+    logging.debug(f"\tExtracting text from {pdf_url}...")
 
     # Prevent overloading the api
     time.sleep(3.6)
@@ -81,7 +81,7 @@ def load_file_to_df(file_path: str) -> pd.DataFrame:
 
     parameters:
         file_path (str): path to the file to load.
-        load_tokenized (bool): whether or not to load tokenized data.
+        load_tokenized (bool): whether to load tokenized data.
         tokenized_cols (list): list of columns to load tokenized data for.
 
     returns:
@@ -103,7 +103,7 @@ def load_file_to_df(file_path: str) -> pd.DataFrame:
     return df
 
 
-def save(df: pd.DataFrame, file_path: str) -> None:
+def save_df_to_file(df: pd.DataFrame, file_path: str) -> None:
     """
     Saves the given dataframe out to the specified file_path.
 

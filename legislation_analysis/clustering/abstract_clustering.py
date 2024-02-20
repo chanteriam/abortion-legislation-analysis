@@ -5,13 +5,13 @@ import numpy as np
 import sklearn
 
 
-class AbstractClustering(ABC):
+class BaseClustering(ABC):
     """
     Abstract class for the clustering methods.
     """
 
     @abstractmethod
-    def get_labels(self) -> np.ndarray:
+    def cluster_parts_of_speech(self) -> None:
         pass
 
     @abstractmethod

@@ -154,7 +154,7 @@ class CongressAPI:
         returns:
             text (str): text of the legislation.
         """
-        logging.debug(f"\textracting text from {text_url}...")
+        logging.debug(f"\tExtracting text from {text_url}...")
 
         request = requests.get(text_url)
         soup = bs4.BeautifulSoup(request.text, "html.parser")
