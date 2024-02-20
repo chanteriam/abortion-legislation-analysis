@@ -40,8 +40,9 @@ class Cleaner:
         file_name="congress_legislation_cleaned.fea",
     ):
         self.df = load_file_to_df(file_path)
+        self.file_name = file_name
         self.cleaned_df = None
-        self.save_path = os.path.join(CLEANED_DATA_PATH, file_name)
+        self.save_path = os.path.join(CLEANED_DATA_PATH, self.file_name)
 
     @staticmethod
     def process_words(split_text: list) -> list:
