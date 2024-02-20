@@ -19,11 +19,6 @@ from legislation_analysis.processing.service import (
 )
 
 
-logging.basicConfig(
-    format="%(asctime)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p"
-)
-
-
 def main() -> None:
     """
     Collects and runs command-line arguments.
@@ -82,7 +77,11 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+    logging.basicConfig(
+        format="%(asctime)s: %(message)s",
+        datefmt="%m/%d/%Y %I:%M:%S %p",
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
 
     if args.all or args.congress:
         download_congress_data()
