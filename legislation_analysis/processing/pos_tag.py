@@ -7,7 +7,10 @@ import os
 
 import spacy
 
-from legislation_analysis.utils.constants import PROCESSED_DATA_PATH
+from legislation_analysis.utils.constants import (
+    PROCESSED_DATA_PATH,
+    NLP_MAX_CHAR_LENGTH,
+)
 from legislation_analysis.utils.functions import load_file_to_df, save
 
 
@@ -53,19 +56,18 @@ class POSTagger:
         returns:
             tagged (list): text with POS tagging applied.
         """
-        max_chunk_size = 999980
         tagged = []
 
         if not text or str(text).lower() == "nan":
             return None
 
         # Check if text exceeds the max length and needs to be chunked
-        if len(text) > max_chunk_size:
+        if len(text) > NLP_MAX_CHAR_LENGTH:
             start = 0
             while start < len(text):
                 # Determine the end index of the current chunk, trying not to
                 # split words
-                end = start + max_chunk_size
+                end = start + NLP_MAX_CHAR_LENGTH
                 if end < len(text) and not text[end].isspace():
                     # Try to move the end index to the next space to avoid
                     # splitting a word
@@ -147,9 +149,7 @@ def main() -> None:
         file_name="congress_legislation_pos.fea",
     )
     scotus_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
+        file_path=os.path.join(PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"),
         file_name="scotus_cases_pos.fea",
     )
 

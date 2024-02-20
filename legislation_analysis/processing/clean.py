@@ -15,8 +15,13 @@ from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
     CONGRESS_DATA_FILE,
     SCOTUS_DATA_FILE,
+    MISC_DICTIONARY_ENTRIES,
 )
-from legislation_analysis.utils.functions import load_file_to_df, save
+from legislation_analysis.utils.functions import (
+    load_file_to_df,
+    save,
+    get_legal_dictionary,
+)
 
 
 nltk.download("words")
@@ -32,8 +37,9 @@ class Cleaner:
         file_name (str): name of file to save.
     """
 
-    DICTIONARY = set(words.words())
+    DICTIONARY = set(words.words()) | MISC_DICTIONARY_ENTRIES
     ITER_LIMIT = 4
+    LEGAL_DICTIONARY = get_legal_dictionary()
 
     def __init__(
         self,
@@ -135,7 +141,7 @@ class Cleaner:
     @classmethod
     def is_valid_word(cls, word: str) -> bool:
         """
-        Determines if a word is valid.
+        Determines if a word is valid, excluding most single letters except 'a'.
 
         parameters:
             word (str): word to check.
@@ -143,6 +149,10 @@ class Cleaner:
         returns:
             bool: whether the word is valid.
         """
+        # Exclude single letters except 'a'
+        if len(word) == 1 and word != "a":
+            return False
+
         punctuation = [
             ",",
             ".",
@@ -163,7 +173,13 @@ class Cleaner:
         for punc in punctuation:
             word = word.replace(punc, "")
 
-        return bool(wordnet.synsets(word)) or (word.lower() in cls.DICTIONARY)
+        word = word.lower()
+
+        return (
+            bool(wordnet.synsets(word))
+            or (word in cls.DICTIONARY)
+            or (word in cls.LEGAL_DICTIONARY)
+        )
 
     @classmethod
     def combine_with_surrounding(cls, words: list, current_index: int) -> tuple:
@@ -208,21 +224,38 @@ class Cleaner:
         return None, None, None
 
     @classmethod
-    def find_internal_split(cls, word: str) -> tuple:
+    def find_internal_splits(cls, word: str) -> list:
         """
-        Find a valid internal split of the word, if any.
+        Recursively find all valid internal splits of the word, if any.
 
         parameters:
             word (str): word to split.
 
         returns:
-            word1 (str): first word.
-            word2 (str): second word.
+            list of str: split words.
         """
-        for j in range(1, len(word)):
-            if cls.is_valid_word(word[:j]) and cls.is_valid_word(word[j:]):
-                return word[:j], word[j:]
-        return None, None
+        if len(word) <= 1 or cls.is_valid_word(word):
+            return [word]
+
+        # Initialize variables to track the best split
+        best_split_point = None
+        for split_point in range(1, len(word)):
+            prefix = word[:split_point]
+
+            # If the prefix is a valid word and the suffix either forms a valid word
+            # or can be split into valid words (recursively checked),
+            # consider this point as a potential best split
+            if cls.is_valid_word(prefix):
+                best_split_point = split_point
+
+        # If a split point is found, split the word and recursively process the suffix
+        if best_split_point is not None:
+            return [word[:best_split_point]] + cls.find_internal_splits(
+                word[best_split_point:]
+            )
+
+        # No valid split found, return the word as is
+        return [word]
 
     @classmethod
     def spell_check(cls, text: str) -> str:
@@ -247,16 +280,12 @@ class Cleaner:
                 continue
 
             # check if the word is a valid word or contains a number
-            if cls.is_valid_word(word.lower()) or any(
-                char.isdigit() for char in word
-            ):
+            if cls.is_valid_word(word.lower()) or any(char.isdigit() for char in word):
                 new_words.append(word)
                 continue
 
             # check if one word was split by a space
-            combined_word, idxs, add_type = cls.combine_with_surrounding(
-                words, idx
-            )
+            combined_word, idxs, add_type = cls.combine_with_surrounding(words, idx)
             if combined_word:
                 # for forward, we skip the next words
                 if add_type == "skip":
@@ -268,15 +297,9 @@ class Cleaner:
                 new_words.append(combined_word)
                 continue
 
-            # check if two words were combined
-            word1, word2 = cls.find_internal_split(word)
-            if word1 and word2:
-                new_words.append(word1)
-                new_words.append(word2)
-                continue
-
-            # misspelled word
-            new_words.append(word)
+            # check if two words were combined or mispelled
+            splits = cls.find_internal_splits(word)
+            new_words.extend(splits)
 
         return " ".join(new_words)
 
@@ -309,9 +332,7 @@ def main() -> None:
     """
     Runs data cleaner.
     """
-    congress_cleaner = Cleaner(
-        CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea"
-    )
+    congress_cleaner = Cleaner(CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea")
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
 
     # Clean congressional legislation
