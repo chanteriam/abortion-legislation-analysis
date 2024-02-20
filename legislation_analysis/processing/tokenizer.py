@@ -34,8 +34,9 @@ class Tokenizer:
         file_name: str = "congress_legislation_tokenized.fea",
     ):
         self.df = load_file_to_df(file_path)
+        self.file_name = file_name
         self.tokenized_df = None
-        self.save_path = os.path.join(PROCESSED_DATA_PATH, file_name)
+        self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
     def tokenize_and_normalize(text: str, extra_stop: [str] = None) -> dict:

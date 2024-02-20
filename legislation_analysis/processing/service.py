@@ -74,6 +74,7 @@ def run_pos_tagger() -> None:
     Applies POS tagging to the text of the legislation and saves the results to
     a file.
     """
+    tags_of_interest = ["NOUN", "ADJ", "VERB", "ADV"]
     congress_pos = POSTagger(
         file_path=os.path.join(
             PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
@@ -94,7 +95,7 @@ def run_pos_tagger() -> None:
             ("cleaned_text", "text_pos"),
             ("cleaned_summary", "summary_pos"),
         ],
-        tags_of_interest=TAGS_OF_INTEREST,
+        tags_of_interest=tags_of_interest,
     )
     save_df_to_file(congress_pos.pos_df, congress_pos.save_path)
 
