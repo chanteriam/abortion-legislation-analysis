@@ -41,35 +41,30 @@ legislation.
 
 ### Data
 
-- create a `data` folder at the path `abortion-legislation-analysis/legislation_analysis/data`
-  - in the `data` folder, create the following subfolders: `api`, `cleaned`, `raw`, `processed`
+- Create a `data` folder at the path `abortion-legislation-analysis/legislation_analysis/data.`
+- In the `data` folder, create the following subfolders: `api`, `cleaned`, `raw`, `processed.`
 
 #### Congressional Legislation Data
 
-1. Request an API key from [https://api.congress.gov/sign-up/](https://api.congress.gov/sign-up/)
-2. Save your API key as an environment variable, naming it `CONGRESS_API_KEY`
-   1. For MacOS
+1. Request an API key from [https://api.congress.gov/sign-up/](https://api.congress.gov/sign-up/).
+2. Save your API key as an environment variable, naming it `CONGRESS_API_KEY`.
+   1. For MacOS:
 
       1. Open Terminal.
       2. Open the `zsh` configuration file by running `open ~/.zshrc`. This command will open the file in your default text editor. If the file doesn't exist, it will create a new one.
       3. Add your API key by typing `export CONGRESS_API_KEY=value` in the file. Replace `value` with your API key.
       4. Save the file and exit the text editor.
       5. Apply the changes by running `source ~/.zshrc` in the terminal. This will reload your zsh configuration with the new variable.
-   2. For Windows
+   2. For Windows:
 
       1. Open command prompt as administrator a. Search for 'cmd' in the Start menu, right-click on 'Command Prompt', and select 'Run as administrator'.
       2. Run `setx CONGRESS_API_KEY "value"`. Replace `value` with your API key.
       3. Close and reopen the command prompt to see the changes take effect.
    3. Download the search results from [this link](https://www.congress.gov/advanced-search/legislation?congressGroup%5B%5D=0&congresses%5B%5D=118&congresses%5B%5D=117&congresses%5B%5D=116&congresses%5B%5D=115&congresses%5B%5D=114&congresses%5B%5D=113&congresses%5B%5D=112&congresses%5B%5D=111&congresses%5B%5D=110&congresses%5B%5D=109&congresses%5B%5D=108&congresses%5B%5D=107&congresses%5B%5D=106&congresses%5B%5D=105&congresses%5B%5D=104&congresses%5B%5D=103&congresses%5B%5D=102&congresses%5B%5D=101&congresses%5B%5D=100&congresses%5B%5D=99&congresses%5B%5D=98&congresses%5B%5D=97&congresses%5B%5D=96&congresses%5B%5D=95&congresses%5B%5D=94&congresses%5B%5D=93&legislationNumbers=&restrictionType=field&restrictionFields%5B%5D=allBillTitles&restrictionFields%5B%5D=summary&summaryField=billSummary&enterTerms=%22reproductive+health+care%22%2C+%22reproduction%22%2C+%22abortion%22&legislationTypes%5B%5D=hr&legislationTypes%5B%5D=hjres&legislationTypes%5B%5D=s&legislationTypes%5B%5D=sjres&public=true&private=true&chamber=all&actionTerms=&legislativeActionWordVariants=true&dateOfActionOperator=equal&dateOfActionStartDate=&dateOfActionEndDate=&dateOfActionIsOptions=yesterday&dateOfActionToggle=multi&legislativeAction=Any&sponsorState=One&member=&sponsorTypes%5B%5D=sponsor&sponsorTypeBool=OR&dateOfSponsorshipOperator=equal&dateOfSponsorshipStartDate=&dateOfSponsorshipEndDate=&dateOfSponsorshipIsOptions=yesterday&committeeActivity%5B%5D=0&committeeActivity%5B%5D=3&committeeActivity%5B%5D=11&committeeActivity%5B%5D=12&committeeActivity%5B%5D=4&committeeActivity%5B%5D=2&committeeActivity%5B%5D=5&committeeActivity%5B%5D=9&satellite=null&search=&submitted=Submitted).
 
-      1. the congressional legislation search was done by filtering for legislation that included the following keywords in the bill title or summary: "abortion", "reproductive healthcare", "reproduction"
-      2. the search only includes those bills that could become laws
-      3. in downloading the search results, choose the following attributes:
-         1. Title
-         2. Latest Summary
-         3. Date Proposed
-         4. Amendment Text (Latest)
-         5. Amends Amendment
+      1. The congressional legislation search was done by filtering for legislation that included the following keywords in the bill title or summary: "abortion", "reproductive healthcare", "reproduction."
+      2. The search-only includes those bills that could become laws.
+      3. In downloading the search results, choose the following attributes: Title, Latest Summary, Date Proposed, Amendment Text (Latest), Amends Amendment.
 
 ### Instructions to Run the Project
 
