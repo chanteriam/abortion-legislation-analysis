@@ -33,6 +33,6 @@ SCOTUS_DATA_FILE_CLEANED = os.path.join(
 )
 
 # general
-# Cluster numbers determined in exercise 3
+# cluster numbers determined in exercise 3
 OPTIMAL_CONGRESS_CLUSTERS = 32
 OPTIMAL_SCOTUS_CLUSTERS = 6
