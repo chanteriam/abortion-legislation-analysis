@@ -130,7 +130,7 @@ def run_ner() -> None:
             ("cleaned_summary", "cleaned_summary_ner"),
         ]
     )
-    save(congress_ner.ner_df, congress_ner.save_path)
+    save_df_to_file(congress_ner.ner_df, congress_ner.save_path)
 
     # apply NER to SCOTUS opinions
     logging.debug("Applying NER to SCOTUS opinions...")
@@ -141,4 +141,4 @@ def run_ner() -> None:
         file_name="scotus_cases_ner.fea",
     )
     scotus_ner.process()
-    save(scotus_ner.ner_df, scotus_ner.save_path)
+    save_df_to_file(scotus_ner.ner_df, scotus_ner.save_path)
