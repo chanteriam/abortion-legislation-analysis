@@ -41,4 +41,4 @@ cluster-data:
 # run all commands
 .PHONY: run
 run:
-	make get-legislation-data clean-data
+	make get-legislation-data --all

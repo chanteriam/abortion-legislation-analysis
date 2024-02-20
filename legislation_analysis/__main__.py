@@ -31,6 +31,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
+        "--all",
+        "-a",
+        action="store_true",
+        help="runs all applications processes",
+    )
+
+    parser.add_argument(
         "--congress",
         action="store_true",
         help="pulls legislation text from api.congress.gov",
@@ -77,22 +84,22 @@ def main() -> None:
 
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
-    if args.congress:
+    if args.all or args.congress:
         download_congress_data()
 
-    if args.scotus:
+    if args.all or args.scotus:
         download_scotus_data()
 
-    if args.clean:
+    if args.all or args.clean:
         run_data_cleaner()
 
-    if args.tokenize:
+    if args.all or args.tokenize:
         run_data_tokenizer()
 
-    if args.pos_tag:
+    if args.all or args.pos_tag:
         run_pos_tagger()
 
-    if args.cluster:
+    if args.all or args.cluster:
         run_hierarchy_complete_clustering()
         run_hierarchy_ward_clustering()
         run_knn_clustering()
