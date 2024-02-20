@@ -14,10 +14,12 @@ from nltk.corpus import wordnet, words
 from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
     CONGRESS_DATA_FILE,
+    MISC_DICTIONARY_ENTRIES,
 )
-
-from legislation_analysis.utils.functions import load_file_to_df, get_legal_dictionary
-from legislation_analysis.utils.constants import MISC_DICTIONARY_ENTRIES
+from legislation_analysis.utils.functions import (
+    get_legal_dictionary,
+    load_file_to_df,
+)
 
 
 nltk.download("words")
@@ -238,13 +240,14 @@ class Cleaner:
         for split_point in range(1, len(word)):
             prefix = word[:split_point]
 
-            # If the prefix is a valid word and the suffix either forms a valid word
-            # or can be split into valid words (recursively checked),
+            # If the prefix is a valid word and the suffix either forms a valid
+            # word or can be split into valid words (recursively checked),
             # consider this point as a potential best split
             if cls.is_valid_word(prefix):
                 best_split_point = split_point
 
-        # If a split point is found, split the word and recursively process the suffix
+        # If a split point is found, split the word and recursively process the
+        # suffix
         if best_split_point is not None:
             return [word[:best_split_point]] + cls.find_internal_splits(
                 word[best_split_point:]
@@ -276,12 +279,16 @@ class Cleaner:
                 continue
 
             # check if the word is a valid word or contains a number
-            if cls.is_valid_word(word.lower()) or any(char.isdigit() for char in word):
+            if cls.is_valid_word(word.lower()) or any(
+                char.isdigit() for char in word
+            ):
                 new_words.append(word)
                 continue
 
             # check if one word was split by a space
-            combined_word, idxs, add_type = cls.combine_with_surrounding(words, idx)
+            combined_word, idxs, add_type = cls.combine_with_surrounding(
+                words, idx
+            )
             if combined_word:
                 # for forward, we skip the next words
                 if add_type == "skip":

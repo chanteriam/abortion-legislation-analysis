@@ -8,10 +8,11 @@ import os
 import spacy
 
 from legislation_analysis.utils.constants import (
-    PROCESSED_DATA_PATH,
     NLP_MAX_CHAR_LENGTH,
+    PROCESSED_DATA_PATH,
 )
-from legislation_analysis.utils.functions import load_file_to_df, save
+from legislation_analysis.utils.functions import load_file_to_df
+
 
 nlp = spacy.load("en_core_web_sm")
 

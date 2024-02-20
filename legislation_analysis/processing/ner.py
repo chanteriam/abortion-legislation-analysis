@@ -4,18 +4,18 @@ Apply Named Entity Recognition (NER) to the text of the legislation.
 
 import logging
 import os
+from collections import defaultdict
 
 import spacy
 from sentence_transformers import SentenceTransformer
-import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from collections import defaultdict
 
 from legislation_analysis.utils.constants import (
-    PROCESSED_DATA_PATH,
     NLP_MAX_CHAR_LENGTH,
+    PROCESSED_DATA_PATH,
 )
-from legislation_analysis.utils.functions import load_file_to_df, save
+from legislation_analysis.utils.functions import load_file_to_df
+
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 nlp = spacy.load("en_core_web_sm")
@@ -72,7 +72,7 @@ class NER:
         """
         new_ner = []
         # Edit entity labels
-        for i, (name, label) in enumerate(ner):
+        for _i, (name, label) in enumerate(ner):
             if "ammendment" in name.lower():
                 new_ner.append((name, "LAW"))
             elif "case" in name.lower() or "v." in name.lower():
@@ -81,7 +81,15 @@ class NER:
                 new_ner.append((name, label))
 
         # Remove unimportant entities
-        important_labels = ["PERSON", "ORG", "GPE", "LAW", "DATE", "EVENT", "CASE"]
+        important_labels = [
+            "PERSON",
+            "ORG",
+            "GPE",
+            "LAW",
+            "DATE",
+            "EVENT",
+            "CASE",
+        ]
         new_ner = [ent for ent in new_ner if ent[1] in important_labels]
 
         return new_ner
@@ -172,7 +180,8 @@ class NER:
         for label, embeddings in embeddings_by_label.items():
             similarity_matrix = cosine_similarity(embeddings)
 
-            # Flag to mark entities that have been aggregated to avoid double counting
+            # Flag to mark entities that have been aggregated to avoid double
+            # counting
             aggregated = [False] * len(embeddings)
 
             for i in range(len(embeddings)):
@@ -190,13 +199,16 @@ class NER:
                         similar_entities.append(entities_by_label[label][j])
                         aggregated[j] = True  # Mark as aggregated
 
-                # Choose the canonical name as the longest name among similar entities
+                # Choose the canonical name as the longest name among similar
+                # entities
                 canonical_name = max(similar_entities, key=len)
-                canonical_entities[(canonical_name, label)] += len(similar_entities)
+                canonical_entities[(canonical_name, label)] += len(
+                    similar_entities
+                )
 
         return canonical_entities
 
-    def process(self, cols_to_ner=[("cleaned_text", "cleaned_text_ner")]) -> None:
+    def process(self, cols_to_ner=None) -> None:
         """
         Process the text of the legislation to apply Named Entity Recognition
         (NER).
@@ -204,6 +216,8 @@ class NER:
         parameters:
             cols_to_ner (list): columns to apply NER to.
         """
+        if cols_to_ner is None:
+            cols_to_ner = [("cleaned_text", "cleaned_text_ner")]
         self.ner_df = self.df.copy()
 
         # Apply NER to the text of the legislation
@@ -214,41 +228,6 @@ class NER:
         # Aggregate NER data
         for col in cols_to_ner:
             logging.debug(f"\tAggregating NER data for {col[0]}...")
-            self.ner_df[f"{col[1]}_agg"] = self.ner_df[col[1]].apply(self.aggregate_ner)
-
-
-def main() -> None:
-    """
-    Main function to apply Named Entity Recognition (NER) to the text of the
-    legislation.
-    """
-    logging.info(
-        """
-        Applying Named Entity Recognition (NER) to the
-        text of the legislation..."""
-    )
-
-    # Apply NER to congressional legislation
-    logging.debug("Applying NER to congressional legislation...")
-    congress_ner = NER(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
-        ),
-        file_name="congress_legislation_ner.fea",
-    )
-    congress_ner.process(
-        cols_to_ner=[
-            ("cleaned_text", "cleaned_text_ner"),
-            ("cleaned_summary", "cleaned_summary_ner"),
-        ]
-    )
-    save(congress_ner.ner_df, congress_ner.save_path)
-
-    # Apply NER to SCOTUS opinions
-    logging.debug("Applying NER to SCOTUS opinions...")
-    scotus_ner = NER(
-        file_path=os.path.join(PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"),
-        file_name="scotus_cases_ner.fea",
-    )
-    scotus_ner.process()
-    save(scotus_ner.ner_df, scotus_ner.save_path)
+            self.ner_df[f"{col[1]}_agg"] = self.ner_df[col[1]].apply(
+                self.aggregate_ner
+            )

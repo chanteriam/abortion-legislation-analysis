@@ -1,13 +1,13 @@
 import logging
+import os
 import time
 from io import BytesIO
-import os
 
 import pandas as pd
 import requests
+from bs4 import BeautifulSoup
 from PyPDF2 import PdfReader
 
-from bs4 import BeautifulSoup
 from legislation_analysis.utils.constants import LEGAL_DICTIONARY_FILE
 
 
@@ -53,7 +53,9 @@ def get_legal_dictionary() -> set:
 
     # get the html content
     html_content = requests.get(url).text
-    soup = BeautifulSoup(html_content, "html.parser").find("div", class_="lexicon-list")
+    soup = BeautifulSoup(html_content, "html.parser").find(
+        "div", class_="lexicon-list"
+    )
 
     # get the legal terms
     for term in soup.find_all("dt"):
