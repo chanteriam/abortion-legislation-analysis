@@ -7,7 +7,10 @@ import os
 
 import spacy
 
-from legislation_analysis.utils.constants import PROCESSED_DATA_PATH
+from legislation_analysis.utils.constants import (
+    NLP_MAX_CHAR_LENGTH,
+    PROCESSED_DATA_PATH,
+)
 from legislation_analysis.utils.functions import load_file_to_df
 
 
@@ -32,7 +35,7 @@ class POSTagger:
         self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
-    def tag_text(text: str) -> [str]:
+    def tag_text(text: str) -> list:
         """
         Tags the text of the legislation.
 
@@ -43,7 +46,7 @@ class POSTagger:
         return [(token.text, token.pos_) for token in doc]
 
     @classmethod
-    def pos_tag(cls, text: str) -> [str]:
+    def pos_tag(cls, text: str) -> list:
         """
         Applies Part-of-Speech (POS) tagging to the text of the legislation.
 
@@ -53,19 +56,18 @@ class POSTagger:
         returns:
             tagged (list): text with POS tagging applied.
         """
-        max_chunk_size = 999980
         tagged = []
 
         if not text or str(text).lower() == "nan":
             return None
 
         # Check if text exceeds the max length and needs to be chunked
-        if len(text) > max_chunk_size:
+        if len(text) > NLP_MAX_CHAR_LENGTH:
             start = 0
             while start < len(text):
                 # Determine the end index of the current chunk, trying not to
                 # split words
-                end = start + max_chunk_size
+                end = start + NLP_MAX_CHAR_LENGTH
                 if end < len(text) and not text[end].isspace():
                     # Try to move the end index to the next space to avoid
                     # splitting a word
@@ -82,7 +84,7 @@ class POSTagger:
         return tagged
 
     @staticmethod
-    def extract_tags_of_interest(tags: [str], tags_of_interest: [str]) -> [str]:
+    def extract_tags_of_interest(tags: list, tags_of_interest: list) -> list:
         """
         Extracts parts of speech of interest from the POS tagging.
 

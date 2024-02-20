@@ -2,6 +2,7 @@ import logging
 import os
 
 from legislation_analysis.processing.clean import Cleaner
+from legislation_analysis.processing.ner import NER
 from legislation_analysis.processing.pos_tagger import POSTagger
 from legislation_analysis.processing.tokenizer import Tokenizer
 from legislation_analysis.utils.constants import (
@@ -23,7 +24,7 @@ def run_data_cleaner() -> None:
     )
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
 
-    # Clean congressional legislation
+    # clean congressional legislation
     logging.info("Cleaning Congress Data...")
     congress_cleaner.process(
         cols_to_clean=[
@@ -33,7 +34,7 @@ def run_data_cleaner() -> None:
     )
     save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
 
-    # Clean SCOTUS opinions
+    # clean SCOTUS opinions
     logging.info("Cleaning SCOTUS Data...")
     scotus_cleaner.process()
     save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
@@ -50,7 +51,7 @@ def run_data_tokenizer() -> None:
         SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea"
     )
 
-    # Tokenize congressional legislation
+    # tokenize congressional legislation
     logging.info("Tokenizing Congress Data...")
     congress_tokenizer.process(
         cols_to_tokenize=[
@@ -60,7 +61,7 @@ def run_data_tokenizer() -> None:
     )
     save(congress_tokenizer.tokenized_df, congress_tokenizer.save_path)
 
-    # Tokenize SCOTUS opinions
+    # tokenize SCOTUS opinions
     logging.info("Tokenizing SCOTUS Data...")
     scotus_tokenizer.process()
     save(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
@@ -85,7 +86,7 @@ def run_pos_tagger() -> None:
         file_name="scotus_cases_pos.fea",
     )
 
-    # Apply POS tagging to congressional legislation
+    # apply POS tagging to congressional legislation
     logging.info("Applying POS tagging to congressional text...")
     congress_pos.process(
         cols_to_apply_pos=[
@@ -96,7 +97,46 @@ def run_pos_tagger() -> None:
     )
     save(congress_pos.pos_df, congress_pos.save_path)
 
-    # Apply POS tagging to SCOTUS opinions
+    # apply POS tagging to SCOTUS opinions
     logging.info("Applying POS tagging to SCOTUS text...")
     scotus_pos.process(tags_of_interest=tags_of_interest)
     save(scotus_pos.pos_df, scotus_pos.save_path)
+
+
+def run_ner() -> None:
+    """
+    Main function to apply Named Entity Recognition (NER) to the text of the
+    legislation.
+    """
+    logging.info(
+        """
+        Applying Named Entity Recognition (NER) to the
+        text of the legislation..."""
+    )
+
+    # apply NER to congressional legislation
+    logging.debug("Applying NER to congressional legislation...")
+    congress_ner = NER(
+        file_path=os.path.join(
+            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
+        ),
+        file_name="congress_legislation_ner.fea",
+    )
+    congress_ner.process(
+        cols_to_ner=[
+            ("cleaned_text", "cleaned_text_ner"),
+            ("cleaned_summary", "cleaned_summary_ner"),
+        ]
+    )
+    save(congress_ner.ner_df, congress_ner.save_path)
+
+    # apply NER to SCOTUS opinions
+    logging.debug("Applying NER to SCOTUS opinions...")
+    scotus_ner = NER(
+        file_path=os.path.join(
+            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
+        ),
+        file_name="scotus_cases_ner.fea",
+    )
+    scotus_ner.process()
+    save(scotus_ner.ner_df, scotus_ner.save_path)
