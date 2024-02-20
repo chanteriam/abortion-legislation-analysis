@@ -39,7 +39,7 @@ class Tokenizer:
         self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
-    def tokenize_and_normalize(text: str, extra_stop: [str] = None) -> dict:
+    def tokenize_and_normalize(text: str, extra_stop: list = None) -> dict:
         """
         Tokenizes and normalizes text into sentences and words.
 
@@ -54,13 +54,13 @@ class Tokenizer:
             extra_stop = []
         processed = {"sents": [], "words": [], "words_norm": []}
 
-        # Use spaCy for sentence segmentation and initial tokenization
+        # sentence segmentation and initial tokenization
         doc = nlp(text.lower())
         sentences = list(doc.sents)
         processed["sents"] = [sent.text.strip() for sent in sentences]
 
         for token in doc:
-            # Check if token meets criteria
+            # check if token meets criteria
             if (
                 not token.is_stop
                 and not token.is_punct
@@ -91,7 +91,7 @@ class Tokenizer:
                 .apply(lambda x: self.tokenize_and_normalize(x))
             )
 
-            # Unpack processed text into separate columns
+            # unpack processed text into separate columns
             self.tokenized_df[f"{new_col}_sents"] = self.tokenized_df[
                 new_col
             ].apply(lambda x: x["sents"])
@@ -102,5 +102,5 @@ class Tokenizer:
                 new_col
             ].apply(lambda x: x["words_norm"])
 
-            # Drop the intermediate column
+            # drop the intermediate column
             self.tokenized_df.drop(columns=[new_col], inplace=True)

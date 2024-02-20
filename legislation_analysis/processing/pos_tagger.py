@@ -35,7 +35,7 @@ class POSTagger:
         self.save_path = os.path.join(PROCESSED_DATA_PATH, self.file_name)
 
     @staticmethod
-    def tag_text(text: str) -> [str]:
+    def tag_text(text: str) -> list:
         """
         Tags the text of the legislation.
 
@@ -46,7 +46,7 @@ class POSTagger:
         return [(token.text, token.pos_) for token in doc]
 
     @classmethod
-    def pos_tag(cls, text: str) -> [str]:
+    def pos_tag(cls, text: str) -> list:
         """
         Applies Part-of-Speech (POS) tagging to the text of the legislation.
 
@@ -84,7 +84,7 @@ class POSTagger:
         return tagged
 
     @staticmethod
-    def extract_tags_of_interest(tags: [str], tags_of_interest: [str]) -> [str]:
+    def extract_tags_of_interest(tags: list, tags_of_interest: list) -> list:
         """
         Extracts parts of speech of interest from the POS tagging.
 

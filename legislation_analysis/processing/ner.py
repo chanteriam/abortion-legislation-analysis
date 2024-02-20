@@ -33,8 +33,8 @@ class NER:
 
     def __init__(
         self,
-        file_path,
-        file_name,
+        file_path: str,
+        file_name: str,
     ):
         self.df = load_file_to_df(file_path)
         self.file_name = file_name
@@ -51,7 +51,7 @@ class NER:
             ner_dict (dict): Dictionary of Named Entity Recognition (NER) data.
 
         Returns:
-            ner_dict (dict): Updated NER data with entities from the chunk.
+            ner_lst (list): Updated NER data with entities from the chunk.
         """
         doc = nlp(text)
         for ent in doc.ents:
@@ -68,10 +68,11 @@ class NER:
             ner (list): Named Entity Recognition (NER) data.
 
         Returns:
-            ner (list): Post-processed Named Entity Recognition (NER) data.
+            (list): Post-processed Named Entity Recognition (NER) data.
         """
         new_ner = []
-        # Edit entity labels
+
+        # edit entity labels
         for _i, (name, label) in enumerate(ner):
             if "ammendment" in name.lower():
                 new_ner.append((name, "LAW"))
@@ -80,7 +81,7 @@ class NER:
             else:
                 new_ner.append((name, label))
 
-        # Remove unimportant entities
+        # remove unimportant entities
         important_labels = [
             "PERSON",
             "ORG",
@@ -90,12 +91,11 @@ class NER:
             "EVENT",
             "CASE",
         ]
-        new_ner = [ent for ent in new_ner if ent[1] in important_labels]
 
-        return new_ner
+        return [ent for ent in new_ner if ent[1] in important_labels]
 
     @classmethod
-    def ner(cls, text: str) -> dict:
+    def ner(cls, text: str) -> list:
         """
         Applies Named Entity Recognition (NER) to the text of the legislation,
         considering maximum character length.
@@ -104,35 +104,36 @@ class NER:
             text (str): Text to apply NER to.
 
         Returns:
-            ner (dict): Named Entity Recognition (NER) data.
+            (list): Named Entity Recognition (NER) data.
         """
         ner = []
 
         if not text or str(text).lower() == "nan":
             return ner
 
-        # Initialize starting point for chunking
+        # initialize starting point for chunking
         start = 0
         text_length = len(text)
 
         while start < text_length:
-            # If remaining text is shorter than max_chunk_size,
+            # if remaining text is shorter than max_chunk_size,
             # adjust end to length of text
             end = min(start + NLP_MAX_CHAR_LENGTH, text_length)
 
-            # Move the end to the nearest whitespace to avoid splitting words
+            # move the end to the nearest whitespace to avoid splitting words
             if end < text_length:
                 while end > start and not text[end].isspace():
                     end -= 1
 
-            # Ensure we don't create an infinite loop
+            # ensure we don't create an infinite loop
             if end == start:
                 break
 
             chunk = text[start:end]
             ner = cls.apply_ner(chunk, ner)
 
-            start = end  # Move to the next chunk
+            # move to the next chunk
+            start = end
 
         return cls.post_process_ner(ner)
 
@@ -166,40 +167,40 @@ class NER:
         Returns:
             ner_dict (dict): Aggregated Named Entity Recognition (NER) data.
         """
-        # Group entities by their label
+        # group entities by their label
         entities_by_label = cls.group_ent_by_label(entities)
 
-        # Generate Embeddings for Each Group
+        # generate Embeddings for Each Group
         embeddings_by_label = {}
         for label, names in entities_by_label.items():
             embeddings_by_label[label] = model.encode(names)
 
-        # Compute Similarity and Aggregate Within Groups
+        # compute similarity and aggregate within groups
         threshold = 0.70
         canonical_entities = defaultdict(int)
         for label, embeddings in embeddings_by_label.items():
             similarity_matrix = cosine_similarity(embeddings)
 
-            # Flag to mark entities that have been aggregated to avoid double
+            # flag to mark entities that have been aggregated to avoid double
             # counting
             aggregated = [False] * len(embeddings)
 
             for i in range(len(embeddings)):
-                # Skip already aggregated entities
+                # skip already aggregated entities
                 if aggregated[i]:
                     continue
 
                 aggregated[i] = True
 
-                # Initialize aggregation with the current entity
+                # initialize aggregation with the current entity
                 similar_entities = [entities_by_label[label][i]]
 
                 for j in range(i + 1, len(embeddings)):
                     if similarity_matrix[i, j] > threshold:
                         similar_entities.append(entities_by_label[label][j])
-                        aggregated[j] = True  # Mark as aggregated
+                        aggregated[j] = True
 
-                # Choose the canonical name as the longest name among similar
+                # choose the canonical name as the longest name among similar
                 # entities
                 canonical_name = max(similar_entities, key=len)
                 canonical_entities[(canonical_name, label)] += len(
@@ -213,7 +214,7 @@ class NER:
 
         return canonical_entities_tuples
 
-    def process(self, cols_to_ner=None) -> None:
+    def process(self, cols_to_ner: list = None) -> None:
         """
         Process the text of the legislation to apply Named Entity Recognition
         (NER).
@@ -225,12 +226,12 @@ class NER:
             cols_to_ner = [("cleaned_text", "cleaned_text_ner")]
         self.ner_df = self.df.copy()
 
-        # Apply NER to the text of the legislation
+        # apply NER to the text of the legislation
         for col in cols_to_ner:
             logging.debug(f"\tApplying NER to {col[0]}...")
             self.ner_df[col[1]] = self.ner_df[col[0]].apply(self.ner)
 
-        # Aggregate NER data
+        # aggregate NER data
         for col in cols_to_ner:
             logging.debug(f"\tAggregating NER data for {col[0]}...")
             self.ner_df[f"{col[1]}_agg"] = self.ner_df[col[1]].apply(

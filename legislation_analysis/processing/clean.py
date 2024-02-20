@@ -41,8 +41,8 @@ class Cleaner:
 
     def __init__(
         self,
-        file_path=CONGRESS_DATA_FILE,
-        file_name="congress_legislation_cleaned.fea",
+        file_path: str = CONGRESS_DATA_FILE,
+        file_name: str = "congress_legislation_cleaned.fea",
     ):
         self.df = load_file_to_df(file_path)
         self.file_name = file_name
@@ -197,7 +197,7 @@ class Cleaner:
         for direction in [1, -1]:  # Forward and backward
             combined_word = words[current_index]
             idxs = []
-            add_type = None  # skip, pop
+            add_type = None
 
             # check surroundings
             for j in range(1, cls.ITER_LIMIT + 1):
@@ -235,25 +235,24 @@ class Cleaner:
         if len(word) <= 1 or cls.is_valid_word(word):
             return [word]
 
-        # Initialize variables to track the best split
+        # initialize variables to track best split
         best_split_point = None
         for split_point in range(1, len(word)):
             prefix = word[:split_point]
 
-            # If the prefix is a valid word and the suffix either forms a valid
+            # if the prefix is a valid word and suffix either forms a valid
             # word or can be split into valid words (recursively checked),
             # consider this point as a potential best split
             if cls.is_valid_word(prefix):
                 best_split_point = split_point
 
-        # If a split point is found, split the word and recursively process the
-        # suffix
+        # if a split point is found, split word and recursively process suffix
         if best_split_point is not None:
             return [word[:best_split_point]] + cls.find_internal_splits(
                 word[best_split_point:]
             )
 
-        # No valid split found, return the word as is
+        # no valid split found, return word as is
         return [word]
 
     @classmethod
@@ -267,7 +266,6 @@ class Cleaner:
         returns:
             text (str): spell checked text.
         """
-
         words = text.split(" ")
         new_words = []
         ignore = []
@@ -300,7 +298,7 @@ class Cleaner:
                 new_words.append(combined_word)
                 continue
 
-            # check if two words were combined or mispelled
+            # check if two words were combined or misspelled
             splits = cls.find_internal_splits(word)
             new_words.extend(splits)
 
