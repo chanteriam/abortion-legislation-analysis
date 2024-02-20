@@ -101,7 +101,7 @@ class SCOTUSDataExtractor:
         if not pdf_tag:
             return None
 
-        logging.debug(f"\t\tpdf tag:{pdf_tag}")
+        logging.debug(f"\tpdf tag:{pdf_tag}")
 
         pdf_url = pdf_tag["href"]
 
