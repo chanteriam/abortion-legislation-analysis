@@ -20,16 +20,13 @@ import pandas as pd
 import requests
 
 from legislation_analysis.utils.constants import (
-    API_DATA_PATH,
     CONGRESS_API_KEY,
     CONGRESS_API_ROOT_URL,
     CONGRESS_ROOT_URL,
-    RAW_DATA_PATH,
 )
 from legislation_analysis.utils.functions import (
     extract_pdf_text,
     load_file_to_df,
-    save,
 )
 
 
@@ -230,20 +227,3 @@ class CongressAPI:
             ~self.processed_df.loc[:, "text"].isna(), :
         ].copy()
         self.processed_df.rename(columns={"text": "raw_text"}, inplace=True)
-
-
-def main() -> None:
-    """
-    Iterates through legislation csv search results and extracts the text of
-    each bill. Saves the results to a new csv titled file_name_text.csv.
-    """
-    file_path = os.path.join(RAW_DATA_PATH, "congress_abortion_legislation.csv")
-    file_name = os.path.basename(file_path).split(".")[0]
-
-    cleaner = CongressAPI(file_path)
-    cleaner.process()
-
-    save(
-        cleaner.processed_df,
-        os.path.join(API_DATA_PATH, f"{file_name}_full-text.fea"),
-    )

@@ -3,8 +3,19 @@
 import argparse
 import logging
 
-from legislation_analysis.api import congress, scotus
-from legislation_analysis.processing import clean, tokenize
+from legislation_analysis.api.service import (
+    download_congress_data,
+    download_scotus_data,
+)
+from legislation_analysis.clustering.service import (
+    run_hierarchy_complete_clustering,
+    run_hierarchy_ward_clustering,
+    run_knn_clustering,
+)
+from legislation_analysis.processing.service import (
+    run_data_cleaner,
+    run_data_tokenizer,
+)
 
 
 logging.basicConfig(
@@ -43,6 +54,12 @@ def main() -> None:
     )
 
     parser.add_argument(
+        "--cluster",
+        action="store_true",
+        help="cluster the data",
+    )
+
+    parser.add_argument(
         "--debug",
         "-v",
         action="store_true",
@@ -54,16 +71,21 @@ def main() -> None:
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     if args.congress:
-        congress.main()
+        download_congress_data()
 
     if args.scotus:
-        scotus.main()
+        download_scotus_data()
 
     if args.clean:
-        clean.main()
+        run_data_cleaner()
 
     if args.tokenize:
-        tokenize.main()
+        run_data_tokenizer()
+
+    if args.cluster:
+        run_hierarchy_complete_clustering()
+        run_hierarchy_ward_clustering()
+        run_knn_clustering()
 
 
 if __name__ == "__main__":

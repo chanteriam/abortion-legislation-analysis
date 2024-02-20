@@ -14,14 +14,10 @@ from nltk.corpus import wordnet, words
 from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
     CONGRESS_DATA_FILE,
-    SCOTUS_DATA_FILE,
-    MISC_DICTIONARY_ENTRIES,
 )
-from legislation_analysis.utils.functions import (
-    load_file_to_df,
-    save,
-    get_legal_dictionary,
-)
+
+from legislation_analysis.utils.functions import load_file_to_df, get_legal_dictionary
+from legislation_analysis.utils.constants import MISC_DICTIONARY_ENTRIES
 
 
 nltk.download("words")
@@ -326,26 +322,3 @@ class Cleaner:
             )
 
         self.cleaned_df = cleaned_df
-
-
-def main() -> None:
-    """
-    Runs data cleaner.
-    """
-    congress_cleaner = Cleaner(CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea")
-    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
-
-    # Clean congressional legislation
-    logging.debug("Cleaning Congress Data...")
-    congress_cleaner.process(
-        cols_to_clean=[
-            ("raw_text", "cleaned_text"),
-            ("latest summary", "cleaned_summary"),
-        ],
-    )
-    save(congress_cleaner.cleaned_df, congress_cleaner.save_path)
-
-    # Clean SCOTUS opinions
-    logging.debug("Cleaning SCOTUS Data...")
-    scotus_cleaner.process()
-    save(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
