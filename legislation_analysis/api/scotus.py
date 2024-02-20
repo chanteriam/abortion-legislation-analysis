@@ -81,7 +81,7 @@ class SCOTUSDataExtractor:
     @staticmethod
     def get_pdf_url(case_url: str) -> Optional[str]:
         """
-        Gets the pdf url for a given piece of legislation.
+        Gets the PDF url for a given piece of legislation.
 
         parameters:
             case_url (str): url to the case.
@@ -89,7 +89,7 @@ class SCOTUSDataExtractor:
         returns:
             pdf_url (str): url to the pdf.
         """
-        logging.debug(f"\tGetting pdf url from {case_url}.")
+        logging.debug(f"\tGetting PDF url from {case_url}.")
 
         time.sleep(3.6)
         request = requests.get(case_url)
@@ -132,7 +132,7 @@ class SCOTUSDataExtractor:
 
     def process(self) -> None:
         """
-        Processes the SCOTUS data, extracting the decision data and pdf urls.
+        Processes the SCOTUS data, extracting the decision data and PDF urls.
         """
         request = requests.get(self.url)
 
