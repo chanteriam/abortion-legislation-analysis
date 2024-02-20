@@ -206,7 +206,12 @@ class NER:
                     similar_entities
                 )
 
-        return canonical_entities
+        # convert to list of tuples
+        canonical_entities_tuples = []
+        for (name, label), count in canonical_entities.items():
+            canonical_entities_tuples.append((name, label, str(count)))
+
+        return canonical_entities_tuples
 
     def process(self, cols_to_ner=None) -> None:
         """
