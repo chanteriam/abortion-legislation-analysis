@@ -49,7 +49,7 @@ class KNN(BaseClustering):
         )
 
     def cluster_parts_of_speech(self) -> None:
-        logging.debug("Starting K-Nearest Neighbor clustering.")
+        logging.debug("Starting K-Nearest Neighbor clustering...")
         vectors = self._vectorizer.fit_transform(
             self._df["joined_text_pos_tags_of_interest"]
         )
@@ -58,8 +58,8 @@ class KNN(BaseClustering):
         )
         cluster_algo.fit(vectors.toarray())
         self._df["knn_clusters"] = cluster_algo.labels_
-        logging.debug("Finished K-Nearest Neighbor clustering.")
-        logging.debug("Saving K-Nearest Neighbor assignments.")
+        logging.debug("Finished K-Nearest Neighbor clustering...")
+        logging.debug("Saving K-Nearest Neighbor assignments...")
         save_df_to_file(self._df, self._save_path)
 
     def visualize(self) -> None:

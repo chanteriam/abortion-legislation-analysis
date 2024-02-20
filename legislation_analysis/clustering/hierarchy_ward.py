@@ -47,7 +47,7 @@ class HierarchyWard(BaseClustering):
         )
 
     def cluster_parts_of_speech(self) -> None:
-        logging.debug("Starting Hierarchy Ward clustering.")
+        logging.debug("Starting Hierarchy Ward clustering...")
         vectors = self._vectorizer.fit_transform(
             self._df["joined_text_pos_tags_of_interest"]
         )
@@ -62,8 +62,8 @@ class HierarchyWard(BaseClustering):
         )
 
         self._df["hw_clusters"] = cluster_algo
-        logging.debug("Finished Hierarchy Ward clustering.")
-        logging.debug("Saving Hierarchy Ward assignments.")
+        logging.debug("Finished Hierarchy Ward clustering...")
+        logging.debug("Saving Hierarchy Ward assignments...")
         save_df_to_file(self._df, self._save_path)
 
     def visualize(self) -> None:

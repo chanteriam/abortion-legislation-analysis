@@ -83,7 +83,7 @@ class Tokenizer:
         self.tokenized_df = self.df.copy()
 
         for col, new_col in cols_to_tokenize:
-            logging.debug(f"\tTokenizing and normalizing {col}.")
+            logging.debug(f"\tTokenizing and normalizing {col}...")
             self.tokenized_df[new_col] = (
                 self.tokenized_df[col]
                 .dropna()

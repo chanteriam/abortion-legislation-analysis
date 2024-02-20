@@ -108,7 +108,7 @@ class CongressAPI:
             CONGRESS_API_ROOT_URL
         ), "URL does not start with legislation root url."
 
-        logging.debug(f"\tExtracting text url from {api_url}.")
+        logging.debug(f"\tExtracting text url from {api_url}...")
 
         time.sleep(3.6)  # to prevent overloading the api
         request = requests.get(api_url)
@@ -154,7 +154,7 @@ class CongressAPI:
         returns:
             text (str): text of the legislation.
         """
-        logging.debug(f"\tExtracting text from {text_url}.")
+        logging.debug(f"\tExtracting text from {text_url}...")
 
         request = requests.get(text_url)
         soup = bs4.BeautifulSoup(request.text, "html.parser")
@@ -167,7 +167,7 @@ class CongressAPI:
         """
 
         # load data
-        logging.debug(f"Loading data from {self.file_path}.")
+        logging.debug(f"Loading data from {self.file_path}...")
         df = load_file_to_df(self.file_path)
 
         # get header row
@@ -181,11 +181,11 @@ class CongressAPI:
         self.df.columns = [c.lower() for c in list(self.df.columns)]
 
         # extract legislation information
-        logging.debug("Extracting legislation information.")
+        logging.debug("Extracting legislation information...")
         self.processed_df = self.extract_legislation_details(self.df)
 
         # extract legislation api url
-        logging.debug("Extracting legislation api url.")
+        logging.debug("Extracting legislation api url...")
 
         self.processed_df.loc[:, "api_url"] = self.processed_df.apply(
             lambda x: self.get_api_url(
@@ -195,7 +195,7 @@ class CongressAPI:
         )
 
         # extract legislation text url
-        logging.debug("Extracting legislation text url.")
+        logging.debug("Extracting legislation text url...")
         self.processed_df.loc[:, "text_url"] = self.processed_df.loc[
             :, "api_url"
         ].apply(lambda x: self.extract_text_url(x))

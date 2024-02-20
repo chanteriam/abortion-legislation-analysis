@@ -47,7 +47,7 @@ class HierarchyComplete(BaseClustering):
         )
 
     def cluster_parts_of_speech(self) -> None:
-        logging.debug("Starting Hierarchy Complete clustering..")
+        logging.debug("Starting Hierarchy Complete clustering...")
         vectors = self._vectorizer.fit_transform(
             self._df["joined_text_pos_tags_of_interest"]
         )
@@ -64,8 +64,8 @@ class HierarchyComplete(BaseClustering):
         )
 
         self._df["hc_clusters"] = cluster_algo
-        logging.debug("Finished Hierarchy Complete clustering.")
-        logging.debug("Saving Hierarchy Complete assignments.")
+        logging.debug("Finished Hierarchy Complete clustering...")
+        logging.debug("Saving Hierarchy Complete assignments...")
         save_df_to_file(self._df, self._save_path)
 
     def visualize(self) -> None:

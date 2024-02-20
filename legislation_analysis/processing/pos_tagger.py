@@ -121,15 +121,15 @@ class POSTagger:
 
         # extract all part of speach elements
         for col in cols_to_apply_pos:
-            logging.debug(f"\tApplying POS tagging to {col[0]}.")
+            logging.debug(f"\tApplying POS tagging to {col[0]}...")
             self.pos_df[col[1]] = self.pos_df[col[0]].apply(self.pos_tag)
 
         # isolate parts of speech of interest
         if tags_of_interest:
-            logging.debug("\tExtracting tags of interest.")
+            logging.debug("\tExtracting tags of interest...")
 
             for col in cols_to_apply_pos:
-                logging.debug(f"\tExtracting tags of interest from {col[1]}.")
+                logging.debug(f"\tExtracting tags of interest from {col[1]}...")
                 col_name = f"{col[1]}_tags_of_interest"
 
                 self.pos_df[col_name] = self.pos_df[col[1]].apply(
