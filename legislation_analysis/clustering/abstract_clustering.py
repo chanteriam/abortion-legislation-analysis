@@ -19,7 +19,7 @@ class BaseClustering(ABC):
 
     @staticmethod
     def cluster_scoring(df_column: str, labels: np.ndarray) -> None:
-        # Leaving this as print, since it's for the notebooks
+        # Using print since it's for the notebooks
         print("Cluster scoring:")
         print(
             f"\tHomogeneity: "
