@@ -203,7 +203,9 @@ class NER:
                 # choose the canonical name as the longest name among similar
                 # entities
                 canonical_name = max(similar_entities, key=len)
-                canonical_entities[(canonical_name, label)] += len(similar_entities)
+                canonical_entities[(canonical_name, label)] += len(
+                    similar_entities
+                )
 
         # convert to list of tuples
         canonical_entities_tuples = []
@@ -232,4 +234,6 @@ class NER:
         # aggregate NER data
         for col in cols_to_ner:
             logging.debug(f"\tAggregating NER data for {col[0]}...")
-            self.ner_df[f"{col[1]}_agg"] = self.ner_df[col[1]].apply(self.aggregate_ner)
+            self.ner_df[f"{col[1]}_agg"] = self.ner_df[col[1]].apply(
+                self.aggregate_ner
+            )
