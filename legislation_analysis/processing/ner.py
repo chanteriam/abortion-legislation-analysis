@@ -59,7 +59,7 @@ class NER:
         return ner_lst
 
     @staticmethod
-    def post_process(ner: list) -> list:
+    def __post_process(ner: list) -> list:
         """
         Post-processes Named Entity Recognition (NER) data to edit entity labels
         and remove unimportant entities.
@@ -135,7 +135,7 @@ class NER:
             # move to the next chunk
             start = end
 
-        return cls.post_process(ner)
+        return cls.__post_process(ner)
 
     @staticmethod
     def group_ent_by_label(entities: list) -> dict:
