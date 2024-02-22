@@ -1,4 +1,3 @@
-import logging
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -20,20 +19,21 @@ class BaseClustering(ABC):
 
     @staticmethod
     def cluster_scoring(df_column: str, labels: np.ndarray) -> None:
-        logging.info("Cluster scoring:")
-        logging.info(
+        # Leaving this as print, since it's for the notebooks
+        print("Cluster scoring:")
+        print(
             f"\tHomogeneity: "
             f"{sklearn.metrics.homogeneity_score(df_column, labels):0.3f}"
         )
-        logging.info(
+        print(
             f"\tCompleteness: "
             f"{sklearn.metrics.completeness_score(df_column, labels):0.3f}"
         )
-        logging.info(
+        print(
             f"\tV-measure: "
             f"{sklearn.metrics.v_measure_score(df_column, labels):0.3f}"
         )
-        logging.info(
+        print(
             "\tAdjusted Rand Score: "
             f"{sklearn.metrics.adjusted_rand_score(df_column, labels):0.3f}"
         )
