@@ -73,7 +73,7 @@ class NER:
         new_ner = []
 
         # edit entity labels
-        for _, (name, label) in enumerate(ner):
+        for name, label in ner:
             if "ammendment" in name.lower() or "act" in name.lower():
                 new_ner.append((name, "LAW"))
             elif "case" in name.lower() or "v." in name.lower():
@@ -203,9 +203,7 @@ class NER:
                 # choose the canonical name as the longest name among similar
                 # entities
                 canonical_name = max(similar_entities, key=len)
-                canonical_entities[(canonical_name, label)] += len(
-                    similar_entities
-                )
+                canonical_entities[(canonical_name, label)] += len(similar_entities)
 
         # convert to list of tuples
         canonical_entities_tuples = []
@@ -234,6 +232,4 @@ class NER:
         # aggregate NER data
         for col in cols_to_ner:
             logging.debug(f"\tAggregating NER data for {col[0]}...")
-            self.ner_df[f"{col[1]}_agg"] = self.ner_df[col[1]].apply(
-                self.aggregate_ner
-            )
+            self.ner_df[f"{col[1]}_agg"] = self.ner_df[col[1]].apply(self.aggregate_ner)
