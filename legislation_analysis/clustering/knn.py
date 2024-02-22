@@ -159,7 +159,7 @@ class KNN(BaseClustering):
 
         plt.show()
 
-        # Leaving this as print, since it's for the notebooks
+        # Using print since it's for the notebooks
         print(
             f"For n_clusters = {self.__n_clusters}, The average "
             f"silhouette_score is : {silhouette_avg:.3f}"
