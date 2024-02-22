@@ -27,18 +27,18 @@ class HierarchyWard(BaseClustering):
         file_path: str,
         file_name: str,
     ):
-        self._df = load_file_to_df(file_path)
+        self.__df = load_file_to_df(file_path)
         if "congress" in file_name:
-            self._n_clusters = OPTIMAL_CONGRESS_CLUSTERS
-            self._title_suffix = "Congressional Legislation"
+            self.__n_clusters = OPTIMAL_CONGRESS_CLUSTERS
+            self.__title_suffix = "Congressional Legislation"
         else:
-            self._n_clusters = OPTIMAL_SCOTUS_CLUSTERS
-            self._title_suffix = "SCOTUS Decisions"
-        self._save_path = os.path.join(CLUSTERED_DATA_PATH, file_name)
+            self.__n_clusters = OPTIMAL_SCOTUS_CLUSTERS
+            self.__title_suffix = "SCOTUS Decisions"
+        self.__save_path = os.path.join(CLUSTERED_DATA_PATH, file_name)
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
         # only have a maximum of 1000 features.
-        self._vectorizer = sklearn.feature_extraction.text.TfidfVectorizer(
+        self.__vectorizer = sklearn.feature_extraction.text.TfidfVectorizer(
             max_df=0.5,
             max_features=1000,
             min_df=3,
@@ -48,8 +48,8 @@ class HierarchyWard(BaseClustering):
 
     def cluster_parts_of_speech(self) -> None:
         logging.debug("Starting Hierarchy Ward clustering...")
-        vectors = self._vectorizer.fit_transform(
-            self._df["joined_text_pos_tags_of_interest"]
+        vectors = self.__vectorizer.fit_transform(
+            self.__df["joined_text_pos_tags_of_interest"]
         )
 
         vectors.todense()
@@ -58,22 +58,22 @@ class HierarchyWard(BaseClustering):
 
         linkage_matrix = scipy.cluster.hierarchy.ward(vector_matrix.toarray())
         cluster_algo = scipy.cluster.hierarchy.fcluster(
-            linkage_matrix, self._n_clusters, "maxclust"
+            linkage_matrix, self.__n_clusters, "maxclust"
         )
 
-        self._df["hw_clusters"] = cluster_algo
+        self.__df["hw_clusters"] = cluster_algo
         logging.debug("Finished Hierarchy Ward clustering...")
         logging.debug("Saving Hierarchy Ward assignments...")
-        save_df_to_file(self._df, self._save_path)
+        save_df_to_file(self.__df, self.__save_path)
 
     def visualize(self) -> None:
         plt.title(
             "Hierarchical Complete Clustering Dendrogram "
-            f"of {self._title_suffix}"
+            f"of {self.__title_suffix}"
         )
         plt.xlabel("Cluster Size")
-        vectors = self._vectorizer.fit_transform(
-            self._df["joined_text_pos_tags_of_interest"]
+        vectors = self.__vectorizer.fit_transform(
+            self.__df["joined_text_pos_tags_of_interest"]
         )
 
         vectors.todense()
@@ -82,7 +82,7 @@ class HierarchyWard(BaseClustering):
 
         linkage_matrix = scipy.cluster.hierarchy.ward(vector_matrix.toarray())
         cluster_algo = scipy.cluster.hierarchy.fcluster(
-            linkage_matrix, self._n_clusters, "maxclust"
+            linkage_matrix, self.__n_clusters, "maxclust"
         )
         scipy.cluster.hierarchy.dendrogram(
             cluster_algo, p=5, truncate_mode="level"
