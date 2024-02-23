@@ -26,11 +26,10 @@ class TopicModeling:
     parameters:
         file_path (str): path to the file to apply topic modeling to.
         save_name (str): name of the file to save the topic modeling data to.
-        testing (bool): whether to run in testing mode.
         column (str): column to apply topic modeling to.
         max_df (float): maximum document frequency for the tfidf vectorizer.
         min_df (int): minimum document frequency for the tfidf vectorizer.
-        stop_words (str): stop words to use for the tfidf vectorizer.
+        topic_ranges (tuple): range of topics to search for the optimal number of
     """
 
     def __init__(
