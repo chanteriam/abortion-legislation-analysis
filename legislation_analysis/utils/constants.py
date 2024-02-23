@@ -6,8 +6,10 @@ PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API_DATA_PATH = os.path.join(PROJECT_PATH, "data", "api")
 CLEANED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "cleaned")
 CLUSTERED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "clustered")
+TOPIC_MODELING_PATH = os.path.join(PROJECT_PATH, "data", "topic_modeling")
 PROCESSED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "processed")
 RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
+MODELED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "modeled")
 
 # api
 CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY")
@@ -29,6 +31,7 @@ CONGRESS_DATA_FILE_CLEANED = os.path.join(
 )
 CONGRESS_DATA_CLUSTERED_FILE_NAME = "congress_legislation_clustered.fea"
 CONGRESS_DATA_POS_TAGGED_FILE_NAME = "congress_legislation_pos.fea"
+CONGRESS_DATA_FILE_TOPIC_MODELED_NAME = "congress_legislation_topic_modeled.fea"
 CONGRESS_DATA_POS_TAGGED_FILE = os.path.join(
     PROCESSED_DATA_PATH, CONGRESS_DATA_POS_TAGGED_FILE_NAME
 )
@@ -40,6 +43,7 @@ SCOTUS_DATA_FILE_CLEANED = os.path.join(
 )
 SCOTUS_DATA_FILE_CLUSTERED_NAME = "scotus_cases_clustered.fea"
 SCOTUS_DATA_FILE_POS_TAGGED_NAME = "scotus_cases_pos.fea"
+SCOTUS_DATA_FILE_TOPIC_MODELED_NAME = "scotus_cases_topic_modeled.fea"
 SCOTUS_DATA_FILE_POS_TAGGED = os.path.join(
     PROCESSED_DATA_PATH, SCOTUS_DATA_FILE_POS_TAGGED_NAME
 )
@@ -70,3 +74,7 @@ OPTIMAL_SCOTUS_CLUSTERS = 6
 
 # NLP
 NLP_MAX_CHAR_LENGTH = 999980
+
+# topic modeling
+MIN_NUM_TOPICS = 2
+MAX_NUM_TOPICS = 30
