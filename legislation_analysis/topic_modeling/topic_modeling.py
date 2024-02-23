@@ -7,17 +7,14 @@ import os
 import gensim
 import numpy as np
 import pandas as pd
-from gensim.models.coherencemodel import CoherenceModel
-from scipy.stats import loguniform, randint
+from scipy.stats import randint, uniform, loguniform
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import KFold
 
 from legislation_analysis.utils.classes.visualizer import Visualizer
 from legislation_analysis.utils.constants import (
-    MAX_NUM_TOPICS_CONGRESS,
-    MIN_NUM_TOPICS_CONGRESS,
     MODELED_DATA_PATH,
-    TOPIC_MODEL_TRAINING_ITERATIONS,
+    MIN_NUM_TOPICS_CONGRESS,
+    MAX_NUM_TOPICS_CONGRESS,
 )
 from legislation_analysis.utils.functions import load_file_to_df
 
@@ -29,26 +26,21 @@ class TopicModeling:
     parameters:
         file_path (str): path to the file to apply topic modeling to.
         save_name (str): name of the file to save the topic modeling data to.
+        testing (bool): whether to run in testing mode.
         column (str): column to apply topic modeling to.
         max_df (float): maximum document frequency for the tfidf vectorizer.
         min_df (int): minimum document frequency for the tfidf vectorizer.
         stop_words (str): stop words to use for the tfidf vectorizer.
-        topic_ranges (tuple): range of topics to test.
-        k_folds (int): number of folds to use for cross-validation.
     """
 
     def __init__(
         self,
         file_path: str,
         save_name: str,
-        column: str = "text_pos_tags_of_interest",
+        column: str = "cleaned_text",
         max_df: float = 0.8,
         min_df: int = 5,
-        topic_ranges: tuple = (
-            MIN_NUM_TOPICS_CONGRESS,
-            MAX_NUM_TOPICS_CONGRESS,
-        ),
-        k_folds: int = 5,
+        topic_ranges: tuple = (MIN_NUM_TOPICS_CONGRESS, MAX_NUM_TOPICS_CONGRESS),
     ):
         # file loading and saving
         self.df = load_file_to_df(file_path)
@@ -76,13 +68,12 @@ class TopicModeling:
         self.lda_output = None
         self.lda_topics_df = None
         self.coherence_scores = None
-        self.kf = KFold(n_splits=k_folds, shuffle=True, random_state=42)
+        self.topic_ranges = topic_ranges
 
         # model parameters
-        self.optimal_alpha = (
-            self.optimal_eta
-        ) = self.optimal_passes = self.optimal_topics = None
-        self.topic_ranges = topic_ranges
+        self.optimal_alpha = self.optimal_eta = self.optimal_passes = (
+            self.optimal_topics
+        ) = None
 
     def get_corpus(self) -> None:
         """
@@ -125,101 +116,83 @@ class TopicModeling:
             else self.corpusmm
         )
 
-    def cross_validated_coherence(self, params, texts, dictionary):
+    def coherence(self, model: gensim.models.LdaModel) -> float:
         """
-        Computes cross-validated coherence score for given LDA parameters.
+        Computes the coherence of the LDA model.
 
         parameters:
-            params (dict): LDA parameters to test.
-            texts (list): List of texts to evaluate.
-            dictionary (gensim.corpora.Dictionary): Dictionary of the corpus.
+            model (gensim.models.LdaModel): LDA model to compute coherence for.
+        """
+        if f"{self.column}_reduced" not in self.df.columns:
+            raise ValueError(
+                """Column not Found: The column must be reduced before
+                computing coherence. Use get_corpus."""
+            )
+        coherence_model_lda = gensim.models.CoherenceModel(
+            model=model,
+            texts=self.df[f"{self.column}_reduced"],
+            dictionary=self.dictionary,
+            coherence="c_v",
+        )
+        return coherence_model_lda.get_coherence()
+
+    def random_search(self, iterations: int = 50) -> tuple:
+        """
+        Finds the optimal parameters for the LDA model by using random search.
+
+        parameters:
+            iterations (int): Number of iterations to run.
 
         returns:
-            (float) Average coherence score across all folds.
-        """
-        scores = []
-
-        for train_idx, test_idx in self.kf.split(texts):
-            # Split texts into training and validation sets
-            train_texts = [texts[i] for i in train_idx]
-            test_texts = [texts[i] for i in test_idx]
-
-            # Convert texts to corpus format
-            train_corpus = [dictionary.doc2bow(text) for text in train_texts]
-
-            # Train LDA model on training set
-            model = gensim.models.LdaModel(
-                corpus=train_corpus, id2word=dictionary, **params
-            )
-
-            # Evaluate model coherence on validation set
-            coherence_model_lda = CoherenceModel(
-                model=model,
-                texts=test_texts,
-                dictionary=dictionary,
-                coherence="c_v",
-            )
-            scores.append(coherence_model_lda.get_coherence())
-
-        # Return the average coherence score across all folds
-        return np.mean(scores)
-
-    def random_search(
-        self,
-        dictionary,
-        corpus,
-        texts,
-        iterations=TOPIC_MODEL_TRAINING_ITERATIONS,
-    ):
-        """
-        Performs random search with cross-validation to find optimal LDA
-        parameters.
-
-        parameters:
-            dictionary (gensim.corpora.Dictionary): Dictionary of the corpus.
-            corpus (list): Corpus of the data.
-            texts (list): Texts of the data.
-            iterations (int): Number of iterations to perform.
+            (tuple) Optimal parameters for the LDA model.
         """
         best_score = float("-inf")
         best_params = None
-
         for _iter in range(iterations):
-            # Sample parameters
+            # sample hyperparameters
             params = {
-                "num_topics": randint(
-                    self.topic_ranges[0], self.topic_ranges[1]
-                ).rvs(),
-                "alpha": loguniform(0.01, 1).rvs(),
-                "eta": loguniform(0.01, 1).rvs(),
+                "num_topics": randint(self.topic_ranges[0], self.topic_ranges[1]).rvs(),
+                "alpha": loguniform(0.001, 1).rvs(),
+                "eta": loguniform(0.001, 1).rvs(),
                 "passes": randint(10, 50).rvs(),
             }
 
             print(
-                f"""
-                \t(Iteration {_iter + 1} of {iterations})
-                Testing parameters: {params}..."""
+                f"\t(Iteration {_iter+1} of {iterations}) Trying parameters: {params}"
             )
 
-            # Compute cross-validated coherence
-            score = self.cross_validated_coherence(params, texts, dictionary)
+            # train LDA model with sampled hyperparameters
+            model = gensim.models.LdaModel(
+                corpus=self.corpus, id2word=self.dictionary, **params
+            )
 
-            if score > best_score:
-                best_score = score
+            # evaluate model
+            coherence_score = self.coherence(model)
+
+            print(f"\t\tCoherence Score: {coherence_score:.2f}")
+
+            # update best model if current model is better
+            if coherence_score > best_score:
+                best_score = coherence_score
                 best_params = params
 
-        # After finding optimal parameters, retrain model on the full corpus
-        self.lda_model = gensim.models.LdaModel(
-            corpus=corpus,
-            id2word=dictionary,
-            num_topics=best_params["num_topics"],
-            alpha=best_params["alpha"],
-            eta=best_params["eta"],
-            passes=best_params["passes"],
-        )
+        print(f"Best Score: {best_score}")
+        print(f"Best Params: {best_params}")
 
-        print(
-            f"Optimal Parameters: {best_params}, Coherence Score: {best_score}"
+        # save best parameters
+        self.optimal_topics = best_params["num_topics"]
+        self.optimal_alpha = best_params["alpha"]
+        self.optimal_eta = best_params["eta"]
+        self.optimal_passes = best_params["passes"]
+
+        # build the model
+        self.lda_model = gensim.models.LdaModel(
+            corpus=self.corpus,
+            id2word=self.dictionary,
+            num_topics=self.optimal_topics,
+            alpha=self.optimal_alpha,
+            eta=self.optimal_eta,
+            passes=self.optimal_passes,
         )
 
     def get_topics(self, num_words: int = 10) -> list:
@@ -252,6 +225,9 @@ class TopicModeling:
     def gen_topic_model(self) -> None:
         """
         Generates the LDA model for the corpus.
+
+        parameters:
+            visualize (bool): Whether to visualize the coherence scores.
         """
         # process column
         if isinstance(
@@ -264,7 +240,7 @@ class TopicModeling:
         print("Getting corpus...")
         self.get_corpus()
 
-        print("Finding optimal number of topics...")
+        print("Finding optimal parameters...")
         self.random_search()
 
         print("Getting topics...")
