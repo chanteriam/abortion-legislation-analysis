@@ -1,8 +1,4 @@
-import logging
 from abc import ABC, abstractmethod
-
-import numpy as np
-import sklearn
 
 
 class BaseTopicModeling(ABC):

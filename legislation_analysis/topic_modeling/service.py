@@ -3,15 +3,14 @@ Services for topic modeling.
 """
 
 import logging
-import os
 
 from legislation_analysis.topic_modeling.topic_modeling import TopicModeling
 from legislation_analysis.utils.constants import (
-    SCOTUS_DATA_FILE_TOPIC_MODELED_NAME,
-    MODELED_DATA_PATH,
     CONGRESS_DATA_FILE_TOPIC_MODELED_NAME,
     CONGRESS_DATA_POS_TAGGED_FILE,
+    NUM_SCOTUS_CASES,
     SCOTUS_DATA_FILE_POS_TAGGED,
+    SCOTUS_DATA_FILE_TOPIC_MODELED_NAME,
 )
 
 
@@ -22,17 +21,20 @@ def run_topic_modeling() -> None:
     # run topic modeling for Congressional legislation
     logging.info("Starting topic modeling for Congressional legislation...")
     congress_tm = TopicModeling(
-        CONGRESS_DATA_POS_TAGGED_FILE,
-        os.path.join(MODELED_DATA_PATH, CONGRESS_DATA_FILE_TOPIC_MODELED_NAME),
-        "text_pos_tags_of_interest",
+        file_path=CONGRESS_DATA_POS_TAGGED_FILE,
+        save_name=CONGRESS_DATA_FILE_TOPIC_MODELED_NAME,
+        testing=True,
+        column="text_pos_tags_of_interest",
     )
     congress_tm.gen_topic_model(True)
 
     # run topic modeling for SCOTUS decisions
     logging.info("Starting topic modeling for SCOTUS decisions...")
     scotus_tm = TopicModeling(
-        SCOTUS_DATA_FILE_POS_TAGGED,
-        os.path.join(MODELED_DATA_PATH, SCOTUS_DATA_FILE_TOPIC_MODELED_NAME),
-        "text_pos_tags_of_interest",
+        file_path=SCOTUS_DATA_FILE_POS_TAGGED,
+        save_name=SCOTUS_DATA_FILE_TOPIC_MODELED_NAME,
+        testing=True,
+        column="text_pos_tags_of_interest",
+        min_df=NUM_SCOTUS_CASES // 5,
     )
     scotus_tm.gen_topic_model(True)

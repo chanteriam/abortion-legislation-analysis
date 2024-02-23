@@ -1,28 +1,23 @@
-import logging
+"""
+Implements the TopicModeling class, which applies standard topic modeling
+"""
+
+import itertools
 import os
 
-import matplotlib.pyplot as plt
-import scipy
-import sklearn
-from sklearn.feature_extraction.text import TfidfVectorizer
 import gensim
-from kneed import KneeLocator
 import numpy as np
 import pandas as pd
-
-from legislation_analysis.topic_modeling.abstract_topic_modeling import (
-    BaseTopicModeling,
-)
-from legislation_analysis.utils.constants import (
-    TOPIC_MODELING_PATH,
-    MIN_NUM_TOPICS,
-    MAX_NUM_TOPICS,
-)
-from legislation_analysis.utils.functions import (
-    load_file_to_df,
-)
+from kneed import KneeLocator
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from legislation_analysis.utils.classes.visualizer import Visualizer
+from legislation_analysis.utils.constants import (
+    MAX_NUM_TOPICS,
+    MIN_NUM_TOPICS,
+    MODELED_DATA_PATH,
+)
+from legislation_analysis.utils.functions import load_file_to_df
 
 
 class TopicModeling:
@@ -31,29 +26,56 @@ class TopicModeling:
 
     parameters:
         file_path (str): path to the file to apply topic modeling to.
-        file_name (str): name of the file to save the topic modeling data to.
+        save_name (str): name of the file to save the topic modeling data to.
+        testing (bool): whether to run in testing mode.
+        column (str): column to apply topic modeling to.
+        max_df (float): maximum document frequency for the tfidf vectorizer.
+        min_df (int): minimum document frequency for the tfidf vectorizer.
+        stop_words (str): stop words to use for the tfidf vectorizer.
     """
 
-    def __init__(self, file_path: str, file_name: str, column: str = "cleaned_text"):
+    def __init__(
+        self,
+        file_path: str,
+        save_name: str,
+        testing: bool = False,
+        column: str = "cleaned_text",
+        max_df: float = 0.8,
+        min_df: int = 5,
+        stop_words: str = "english",
+    ):
+        # file loading and saving
         self.df = load_file_to_df(file_path)
-        self.file_name = file_name
+        self.save_name = save_name
         self.serial_path = os.path.join(
-            TOPIC_MODELING_PATH, self.file_name.split(".")[0] + "_corpus.mm"
+            MODELED_DATA_PATH, self.file_name.split(".")[0] + "_corpus.mm"
         )
-        self.save_path = os.path.join(TOPIC_MODELING_PATH, self.file_name)
-        self.tfidf_vectorizer = TfidfVectorizer(
-            max_df=0.9, min_df=len(self.df) // 4, stop_words="english"
-        )
-        self.visualizer = Visualizer()
-        self.column = column
+        self.save_path = os.path.join(MODELED_DATA_PATH, self.save_name)
 
-        self.corpusm = None
+        # corpus generation
+        self.tfidf_vectorizer = TfidfVectorizer(
+            max_df=max_df, min_df=min_df, stop_words=stop_words
+        )
+        self.corpusmm = None
         self.tfidf = None
         self.dictionary = None
         self.corpus = None
+
+        # visualization
+        self.visualizer = Visualizer()
+
+        # model building
+        self.column = column
+        self.testing = testing
         self.lda_model = None
         self.lda_output = None
-        self.optimal_topics = None
+        self.lda_topics_df = None
+        self.coherence_scores = None
+
+        # model parameters
+        self.optimal_alpha = (
+            self.optimal_eta
+        ) = self.optimal_passes = self.optimal_topics = None
 
     def get_corpus(self) -> None:
         """
@@ -84,31 +106,31 @@ class TopicModeling:
             else self.dictionary
         )
 
-        # create corpus if not already done and serialize if the file does not exist
-        if not self.corpus:
-            self.corpus = [
-                self.dictionary.doc2bow(text) for text in self.df[column_reduced]
-            ]
-            if not os.path.exists(self.serial_path):
-                gensim.corpora.MmCorpus.serialize(self.serial_path, self.corpus)
-            self.corpusmm = (
-                gensim.corpora.MmCorpus(self.serial_path)
-                if not self.corpusmm
-                else self.corpusmm
-            )
+        # create corpus if not already done and serialize if the file does not
+        # exist
+        self.corpus = [
+            self.dictionary.doc2bow(text) for text in self.df[column_reduced]
+        ]
+        gensim.corpora.MmCorpus.serialize(self.serial_path, self.corpus)
+        self.corpusmm = (
+            gensim.corpora.MmCorpus(self.serial_path)
+            if not self.corpusmm
+            else self.corpusmm
+        )
 
-    def lda(self, num_topics: int = 10) -> None:
+    def lda(self, num_topics: int = 10, passes: int = 15) -> None:
         """
         Applies the LDA model to the corpus.
 
         parameters:
             num_topics (int): Number of topics to model.
+            passes (int): Number of passes to model.
         """
         return gensim.models.LdaModel(
             self.corpusmm,
             num_topics=num_topics,
             id2word=self.dictionary,
-            passes=15,
+            passes=passes,
             random_state=100,
         )
 
@@ -119,9 +141,9 @@ class TopicModeling:
         parameters:
             model (gensim.models.LdaModel): LDA model to compute coherence for.
         """
-        if not f"{self.column}_reduced" in self.df.columns:
+        if f"{self.column}_reduced" not in self.df.columns:
             raise ValueError(
-                """Column not Found: The column must be reduced before 
+                """Column not Found: The column must be reduced before
                 computing coherence. Use get_corpus."""
             )
         coherence_model_lda = gensim.models.CoherenceModel(
@@ -131,6 +153,74 @@ class TopicModeling:
             coherence="c_v",
         )
         return coherence_model_lda.get_coherence()
+
+    def grid_search(
+        self,
+        alpha_list,
+        eta_list,
+        passes_list,
+        topic_range,
+        visualize: bool = False,
+    ) -> tuple:
+        """
+        Finds the optimal parameters for the LDA model by using grid search.
+
+        parameters:
+            alpha_list (list): List of alpha values to search.
+            eta_list (list): List of eta values to search.
+            passes_list (list): List of passes values to search.
+            topic_range (range): Range of topics to search.
+            visualize (bool): Whether to visualize the coherence scores.
+
+        returns:
+            (tuple) Optimal parameters for the LDA model.
+        """
+        results = []
+        grid = list(
+            itertools.product(alpha_list, eta_list, passes_list, topic_range)
+        )
+
+        for alpha, eta, passes, num_topics in grid:
+            print(
+                f"""Training LDA model with alpha={alpha},
+                  eta={eta}, passes={passes}, num_topics={num_topics}"""
+            )
+
+            model = gensim.models.LdaModel(
+                corpus=self.corpusmm,
+                id2word=self.dictionary,
+                num_topics=num_topics,
+                alpha=alpha,
+                eta=eta,
+                passes=passes,
+                random_state=100,
+            )
+
+            coherence = self.coherence(model)
+            results.append((alpha, eta, passes, num_topics, coherence))
+
+            if visualize:
+                pass
+
+        # Find the combination with the highest coherence score
+        optimal_params = max(results, key=lambda x: x[-1])
+        print("Optimal parameters:", optimal_params)
+
+        # Optionally, set your class attributes to use the optimal parameters
+        (
+            self.optimal_alpha,
+            self.optimal_eta,
+            self.optimal_passes,
+            self.optimal_topics,
+        ) = optimal_params[:-1]
+        self.lda_model = self.lda(
+            self.optimal_topics,
+            alpha=self.optimal_alpha,
+            eta=self.optimal_eta,
+            passes=self.optimal_passes,
+        )
+
+        return optimal_params
 
     def find_optimal_num_topics(self, visualize: bool = False) -> None:
         """
@@ -159,7 +249,7 @@ class TopicModeling:
         # "elbow" in the coherence values. Kneed is used to find the elbow.
         print("\tCalculating elbow...")
         kneedle = KneeLocator(
-            [i for i in range(MIN_NUM_TOPICS, MAX_NUM_TOPICS + 1)],
+            list(range(MIN_NUM_TOPICS, MAX_NUM_TOPICS + 1)),
             coherence_scores,
             curve="convex",
             direction="increasing",
@@ -168,7 +258,7 @@ class TopicModeling:
         # visualize coherence scores
         print("\tVisualizing coherence scores...")
         if visualize:
-            x = [i for i in range(MIN_NUM_TOPICS, MAX_NUM_TOPICS + 1)]
+            x = list(range(MIN_NUM_TOPICS, MAX_NUM_TOPICS + 1))
             self.visualizer.visualize(
                 "line",
                 x,
@@ -180,8 +270,32 @@ class TopicModeling:
 
         # set optimal number of topics
         print("\tSetting optimal number of topics...")
+        self.coherence_scores = coherence_scores
         self.optimal_topics = kneedle.elbow
         self.lda_model = self.lda(self.optimal_topics)
+
+    def find_optimal_parameters(self, visualize: bool = False):
+        """
+        Finds the optimal parameters for the LDA model by using either grid
+        search or finding only the optimal number of topics with default
+        parameters.
+
+        parameters:
+            visualize (bool): Whether to visualize the coherence scores.
+        """
+        # fine optimal parameters using grid search
+        if not self.testing:
+            self.grid_search(
+                alpha_list=[0.01, 0.1, "symmetric", "asymmetric"],
+                eta_list=[0.01, 0.1, "symmetric"],
+                passes_list=[10, 20],
+                topic_range=range(MIN_NUM_TOPICS, MAX_NUM_TOPICS + 1),
+                visualize=visualize,
+            )
+
+        # find optimal number of topics with default parameters
+        else:
+            self.find_optimal_num_topics(visualize=visualize)
 
     def get_topics(self, num_words: int = 10) -> list:
         """
@@ -196,6 +310,19 @@ class TopicModeling:
         return self.lda_model.show_topics(
             num_topics=self.optimal_topics, num_words=num_words, formatted=False
         )
+
+    def get_topic_df(self) -> None:
+        """
+        Generates a dataframe of topics and their words.
+        """
+        topics = self.get_topics()
+        df_cols = [f"topic_{i}" for i in range(1, self.optimal_topics + 1)]
+        df_dict = {col: [] for col in df_cols}
+        for i, col in enumerate(df_cols):
+            for word, _ in topics[i][1]:
+                df_dict[col].append(word)
+
+        self.lda_topics_df = pd.DataFrame(df_dict)
 
     def gen_topic_model(self, visualize: bool = False) -> None:
         """
@@ -216,9 +343,11 @@ class TopicModeling:
         self.get_corpus()
 
         print("Finding optimal number of topics...")
-        self.find_optimal_num_topics(visualize)
+        self.find_optimal_parameters(visualize)
 
         print("Generating LDA model...")
         self.lda_output = self.lda_model.show_topics(
             num_topics=self.optimal_topics, num_words=10, formatted=False
         )
+
+        self.get_topic_df()

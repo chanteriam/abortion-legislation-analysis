@@ -6,7 +6,6 @@ PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API_DATA_PATH = os.path.join(PROJECT_PATH, "data", "api")
 CLEANED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "cleaned")
 CLUSTERED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "clustered")
-TOPIC_MODELING_PATH = os.path.join(PROJECT_PATH, "data", "topic_modeling")
 PROCESSED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "processed")
 RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
 MODELED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "modeled")
@@ -77,4 +76,7 @@ NLP_MAX_CHAR_LENGTH = 999980
 
 # topic modeling
 MIN_NUM_TOPICS = 2
-MAX_NUM_TOPICS = 30
+MAX_NUM_TOPICS = 40
+
+# misc
+NUM_SCOTUS_CASES = 13

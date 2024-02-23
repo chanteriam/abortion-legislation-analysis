@@ -1,6 +1,6 @@
-import matplotlib.pyplot as plt
-import matplotlib.cm
 import random
+
+import matplotlib.pyplot as plt
 
 
 class Visualizer:
@@ -18,7 +18,7 @@ class Visualizer:
             "line": plt.plot,
             "heatmap": self.heatmap,
         }
-        self.plt = None
+        self.plts = {}
 
     def generate_random_color(self) -> tuple:
         """
@@ -48,7 +48,9 @@ class Visualizer:
             colors.append(color)
         return colors
 
-    def heatmap(self, x: str, y: str, title: str, x_label: str, y_label: str) -> None:
+    def heatmap(
+        self, x: str, y: str, title: str, x_label: str, y_label: str
+    ) -> None:
         """
         Creates a heatmap.
 
@@ -63,7 +65,13 @@ class Visualizer:
         pass
 
     def visualize(
-        self, _type: str, x: list, y: list, title: str, x_label: str, y_label: str
+        self,
+        _type: str,
+        x: list,
+        y: list,
+        title: str,
+        x_label: str,
+        y_label: str,
     ) -> None:
         """
         Visualizes the data.
@@ -89,6 +97,6 @@ class Visualizer:
             plt.title(title)
             plt.xlabel(x_label)
             plt.ylabel(y_label)
-            self.plt = plt
+            self.plts[title] = plt
         else:
             self.visualization_types[_type](x, y, title, x_label, y_label)
