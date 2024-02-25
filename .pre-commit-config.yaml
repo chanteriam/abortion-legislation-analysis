@@ -43,7 +43,8 @@ repos:
         exclude: data/
       - id: nbqa-isort
         exclude: data/
-
+        args:
+          - --profile=black
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
