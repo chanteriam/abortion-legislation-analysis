@@ -175,6 +175,23 @@ tests-mypy = ["mypy (>=1.6)", "pytest-mypy-plugins"]
 tests-no-zope = ["attrs[tests-mypy]", "cloudpickle", "hypothesis", "pympler", "pytest (>=4.3.0)", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "babe"
+version = "0.0.7"
+description = "Data access and analysis of baby names statistics"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "babe-0.0.7-py3-none-any.whl", hash = "sha256:660b6f1647012e517e1cfdfe362d52949a451fd8ba220d620513f912a04e2c77"},
+    {file = "babe-0.0.7.tar.gz", hash = "sha256:746bf5184236d682de6f0a2b9b26d5dfc1d44a031eb12f30b6fc2451976b0ded"},
+]
+
+[package.dependencies]
+graze = "*"
+pandas = "*"
+py2store = "*"
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.12.3"
 description = "Screen-scraping library"
@@ -515,6 +532,22 @@ pydantic = ">=1.7.4,<1.8 || >1.8,<1.8.1 || >1.8.1,<3.0.0"
 srsly = ">=2.4.0,<3.0.0"
 
 [[package]]
+name = "config2py"
+version = "0.1.27"
+description = "Simplified reading and writing configurations from various sources and formats"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "config2py-0.1.27-py3-none-any.whl", hash = "sha256:bc5bcf5b67e3dcd1ea423901fad250013203c0fec36f199415fdfc9f3fa30e3f"},
+    {file = "config2py-0.1.27.tar.gz", hash = "sha256:69a4ee4a1946f36bdcb716b1a5d68e56341e3bf16ec0299f69d4ce078f9e9eef"},
+]
+
+[package.dependencies]
+dol = "*"
+i2 = "*"
+
+[[package]]
 name = "conllu"
 version = "4.5.3"
 description = "CoNLL-U Parser parses a CoNLL-U formatted string into a nested python dictionary"
@@ -738,6 +771,18 @@ python-versions = "*"
 files = [
     {file = "distlib-0.3.8-py2.py3-none-any.whl", hash = "sha256:034db59a0b96f8ca18035f36290806a9a6e6bd9d1ff91e45a7f172eb17e51784"},
     {file = "distlib-0.3.8.tar.gz", hash = "sha256:1530ea13e350031b6312d8580ddb6b27a104275a31106523b8f123787f494f64"},
+]
+
+[[package]]
+name = "dol"
+version = "0.2.38"
+description = "Base builtin tools make and transform data object layers (dols)."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "dol-0.2.38-py3-none-any.whl", hash = "sha256:b995b47e1866a99c5d3732482ce2cac2aa77f7ac9890892e34c0d76b9b92c57c"},
+    {file = "dol-0.2.38.tar.gz", hash = "sha256:b32b7978e2aa6194d1720ebdd3a3a1f800599051f5ccb303dad630633395b0bd"},
 ]
 
 [[package]]
@@ -1072,6 +1117,22 @@ test = ["POT", "mock", "pytest", "pytest-cov", "testfixtures", "visdom (>=0.1.8,
 test-win = ["POT", "mock", "pytest", "pytest-cov", "testfixtures"]
 
 [[package]]
+name = "graze"
+version = "0.1.14"
+description = "Cache (a tiny part of) the internet"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "graze-0.1.14-py3-none-any.whl", hash = "sha256:ee6be878af2cc19423d9e6e0f5c1dc3ab38a6ecb37ac986020559f703c6f0572"},
+    {file = "graze-0.1.14.tar.gz", hash = "sha256:0ea1e81ca1f84dccad4cede325d29a446d82f89d294ff4478e21664e009dbbc7"},
+]
+
+[package.dependencies]
+py2store = "*"
+requests = "*"
+
+[[package]]
 name = "huggingface-hub"
 version = "0.20.3"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
@@ -1105,6 +1166,18 @@ torch = ["torch"]
 typing = ["types-PyYAML", "types-requests", "types-simplejson", "types-toml", "types-tqdm", "types-urllib3", "typing-extensions (>=4.8.0)"]
 
 [[package]]
+name = "i2"
+version = "0.1.8"
+description = "Creating"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "i2-0.1.8-py3-none-any.whl", hash = "sha256:5fb08b576ffb788194e37208933fd9a82de0d8f0ae0a270af87e2a62e6a32bb4"},
+    {file = "i2-0.1.8.tar.gz", hash = "sha256:09cb4dc7aacb4af5615d09e3881694b96584a6c62b9f708daff28ba32491779b"},
+]
+
+[[package]]
 name = "identify"
 version = "2.5.35"
 description = "File identification library for Python"
@@ -1130,6 +1203,22 @@ files = [
     {file = "idna-3.6-py3-none-any.whl", hash = "sha256:c05567e9c24a6b9faaa835c4821bad0590fbb9d5779e7caa6e1cc4978e7eb24f"},
     {file = "idna-3.6.tar.gz", hash = "sha256:9ecdbbd083b06798ae1e86adcbfe8ab1479cf864e4ee30fe4e46a003d12491ca"},
 ]
+
+[[package]]
+name = "importlib-resources"
+version = "6.1.2"
+description = "Read resources from Python packages"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "importlib_resources-6.1.2-py3-none-any.whl", hash = "sha256:9a0a862501dc38b68adebc82970140c9e4209fc99601782925178f8386339938"},
+    {file = "importlib_resources-6.1.2.tar.gz", hash = "sha256:308abf8474e2dba5f867d279237cd4076482c3de7104a40b41426370e891549b"},
+]
+
+[package.extras]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy", "pytest-ruff (>=0.2.1)", "zipp (>=3.17)"]
 
 [[package]]
 name = "iniconfig"
@@ -1789,6 +1878,20 @@ files = [
 ]
 
 [[package]]
+name = "names-dataset"
+version = "3.1.0"
+description = "The python library to handle names"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "names-dataset-3.1.0.tar.gz", hash = "sha256:69eea12c9d97e1ae32b6db955bb9b39f7816eb2727d3c6abc726cb475ad160ac"},
+]
+
+[package.dependencies]
+pycountry = "*"
+
+[[package]]
 name = "networkx"
 version = "3.2.1"
 description = "Python package for creating and manipulating graphs and networks"
@@ -2377,6 +2480,25 @@ files = [
 test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
 
 [[package]]
+name = "py2store"
+version = "0.1.20"
+description = "Tools to create simple and consistent interfaces to complicated and varied data sources."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "py2store-0.1.20.tar.gz", hash = "sha256:8fe1e15a9c55ed442ddcda7e8ac529e1baddf1e31ba78bff413be3715ad45134"},
+]
+
+[package.dependencies]
+config2py = "*"
+dol = "*"
+importlib_resources = "*"
+
+[package.extras]
+test = ["pytest"]
+
+[[package]]
 name = "pyarrow"
 version = "15.0.0"
 description = "Python library for Apache Arrow"
@@ -2435,6 +2557,18 @@ python-versions = ">=3.5"
 files = [
     {file = "pyarrow_hotfix-0.6-py3-none-any.whl", hash = "sha256:dcc9ae2d220dff0083be6a9aa8e0cdee5182ad358d4931fce825c545e5c89178"},
     {file = "pyarrow_hotfix-0.6.tar.gz", hash = "sha256:79d3e030f7ff890d408a100ac16d6f00b14d44a502d7897cd9fc3e3a534e9945"},
+]
+
+[[package]]
+name = "pycountry"
+version = "23.12.11"
+description = "ISO country, subdivision, language, currency and script definitions and their translations"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pycountry-23.12.11-py3-none-any.whl", hash = "sha256:2ff91cff4f40ff61086e773d61e72005fe95de4a57bfc765509db05695dc50ab"},
+    {file = "pycountry-23.12.11.tar.gz", hash = "sha256:00569d82eaefbc6a490a311bfa84a9c571cff9ddbf8b0a4f4e7b4f868b4ad925"},
 ]
 
 [[package]]
@@ -4504,4 +4638,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5dea30f51c5da5f393493f1c9c8afa72943626ba485b11859d417be2307d1beb"
+content-hash = "daf039f1b7d038f3785975fe7743b35772ce22f664682505589d668305abd378"

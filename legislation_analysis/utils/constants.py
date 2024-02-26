@@ -63,10 +63,12 @@ MISC_DICTIONARY_ENTRIES = {
     "eisenstadt",
     "baird",
     "griswold",
+    "gonzales",
     "doe",
     "hodgson",
     "webster",
     "maher",
+    "arg",
 }
 MISC_STATE_ABBREVIATIONS = {
     "a.s.",

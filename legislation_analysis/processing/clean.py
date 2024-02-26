@@ -9,6 +9,7 @@ import re
 
 import nltk
 import pandas as pd
+from names_dataset import NameDataset
 from nltk.corpus import wordnet, words
 
 from legislation_analysis.utils.constants import (
@@ -39,6 +40,7 @@ class Cleaner:
     DICTIONARY = set(words.words()) | MISC_DICTIONARY_ENTRIES
     ITER_LIMIT = 4
     LEGAL_DICTIONARY = get_legal_dictionary()
+    NAMES_DATASET = NameDataset()
 
     def __init__(
         self,
@@ -86,11 +88,8 @@ class Cleaner:
                 if "," in new_word or (
                     "." in new_word and "https" not in new_word
                 ):
-                    words = (
-                        new_word.split(",")
-                        if "," in new_word
-                        else new_word.split(".")
-                    )
+                    split_char = "," if "," in new_word else "."
+                    words = new_word.split(split_char)
 
                     # if words are combined with a period, retain all but the
                     # last period
@@ -101,7 +100,9 @@ class Cleaner:
                         if i == len(words) - 1:
                             new_split_text.append(w.strip().strip("_"))
                         else:
-                            new_split_text.append(w.strip().strip("_") + ".")
+                            new_split_text.append(
+                                w.strip().strip("_") + split_char
+                            )
                 else:
                     new_split_text.append(new_word)
 
@@ -187,6 +188,11 @@ class Cleaner:
             word = word.replace(punc, "")
 
         word = word.lower()
+
+        # check if word is a name
+        potential_name = cls.NAMES_DATASET.search(word)
+        if potential_name["first_name"] or potential_name["last_name"]:
+            return True
 
         return (
             bool(wordnet.synsets(word))
@@ -332,6 +338,9 @@ class Cleaner:
             cols_to_clean (list): columns to clean.
         """
         cleaned_df = self.df.copy()
+
+        if not cols_to_clean:
+            cols_to_clean = [("raw_text", "cleaned_text")]
 
         for col in cols_to_clean:
             logging.debug(f"\tCleaning {col[0]}...")
