@@ -29,7 +29,7 @@ def run_data_cleaner() -> None:
     congress_cleaner.process(
         cols_to_clean=[
             ("raw_text", "cleaned_text"),
-            ("latest summary", "cleaned_summary"),
+            ("raw_summary", "cleaned_summary"),
         ],
     )
     save_df_to_file(congress_cleaner.cleaned_df, congress_cleaner.save_path)

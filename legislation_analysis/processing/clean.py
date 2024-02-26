@@ -16,9 +16,9 @@ from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
     CONGRESS_DATA_FILE,
     MISC_DICTIONARY_ENTRIES,
-    MISC_STATE_ABBREVIATIONS,
 )
 from legislation_analysis.utils.functions import (
+    get_gpo_dictionary,
     get_legal_dictionary,
     load_file_to_df,
 )
@@ -41,6 +41,7 @@ class Cleaner:
     ITER_LIMIT = 4
     LEGAL_DICTIONARY = get_legal_dictionary()
     NAMES_DATASET = NameDataset()
+    GPO_ABBREVS = get_gpo_dictionary()
 
     def __init__(
         self,
@@ -164,7 +165,7 @@ class Cleaner:
             return False
 
         # these abbreviations contain punction and are valid
-        if word.lower() in MISC_STATE_ABBREVIATIONS:
+        if word.lower() in cls.GPO_ABBREVS:
             return True
 
         punctuation = [
@@ -351,5 +352,8 @@ class Cleaner:
             cleaned_df[new_col] = cleaned_df[new_col].apply(
                 lambda x: self.clean_text(x)
             )
+
+            # remove old column
+            cleaned_df.drop(col, axis=1, inplace=True)
 
         self.cleaned_df = cleaned_df

@@ -5,12 +5,12 @@ Implements the TopicModeling class, which applies standard topic modeling
 import os
 
 import gensim
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import loguniform, randint
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from legislation_analysis.utils.classes.visualizer import Visualizer
 from legislation_analysis.utils.constants import (
     MAX_NUM_TOPICS_CONGRESS,
     MIN_NUM_TOPICS_CONGRESS,
@@ -63,9 +63,6 @@ class TopicModeling:
         self.dictionary = None
         self.corpus = None
 
-        # visualization
-        self.visualizer = Visualizer()
-
         # model building
         self.column = column
         self.lda_model = None
@@ -81,6 +78,10 @@ class TopicModeling:
         # model outputs
         self.lda_topics_df = None
         self.topics_by_text_df = None
+
+        # visualizations
+        self.heatmap = None
+        self.barchart = None
 
     def get_corpus(self) -> None:
         """
@@ -238,7 +239,7 @@ class TopicModeling:
         """
         Generates a dataframe of texts and their topic distributions
         """
-        self.topics_by_text_df = pd.DataFrame(
+        lda_df = pd.DataFrame(
             {
                 "title": self.df["title"],
                 "topics": [
@@ -247,6 +248,22 @@ class TopicModeling:
                 ],
             }
         )
+
+        # create a column for each topic probability
+        topic_prod_dict = {
+            i: [0] * len(lda_df) for i in range(self.optimal_topics)
+        }
+
+        # add probabilites
+        for index, topicTuples in enumerate(lda_df["topics"]):
+            for topicNum, prob in topicTuples:
+                topic_prod_dict[topicNum][index] = prob
+
+        # Update the DataFrame
+        for topicNum in range(self.optimal_topics):
+            lda_df["topic_{}".format(topicNum)] = topic_prod_dict[topicNum]
+
+        self.topics_by_text_df = lda_df
 
     def gen_topic_model(self) -> None:
         """
@@ -274,3 +291,127 @@ class TopicModeling:
 
         print("Getting text topics...")
         self.get_text_topics_df()
+
+    def get_random_indices(df_len, num_indices):
+        """
+        Generate a list of random indices.
+
+        parameters:
+          df_len (int): Length of the dataframe.
+          num_indices (int): Number of indices to generate.
+
+        returns:
+          (list) random indices from the dataframe
+        """
+        if num_indices > df_len:
+            return list(range(df_len))
+
+        random_indices = np.random.choice(df_len, num_indices, replace=False)
+        random_indices = list(random_indices)
+        random_indices.sort()
+
+        return random_indices
+
+    def get_heat_map(self, title, indices=None):
+        """
+        Generates a heatmap of the topics.
+
+        parameters:
+            indices (list): List of indices to plot.
+        """
+        if indices is None:
+            indices = self.get_random_indices(len(self.topics_by_text_df), 15)
+        else:
+            indices = indices
+
+        ldaDFVisNames = list(self.topics_by_text_df["title"])
+        ldaDFV = self.topics_by_text_df.loc[indices, :][
+            ["topic_%d" % x for x in indices]
+        ]
+        ldaDFVis = ldaDFV.values
+        K = self.optimal_topics
+        topic_labels = ["Topic #{}".format(k) for k in range(K)]
+
+        plt.pcolor(ldaDFVis, norm=None, cmap="Reds")
+        plt.yticks(np.arange(ldaDFVis.shape[0]) + 0.5, ldaDFVisNames)
+        plt.xticks(np.arange(ldaDFVis.shape[1]) + 0.5, topic_labels)
+        plt.title(title)
+
+        # flip the y-axis so the texts are in the order we anticipate
+        plt.gca().invert_yaxis()
+
+        # rotate the ticks on the x-axis
+        plt.xticks(rotation=90)
+
+        # add a legend
+        plt.colorbar(cmap="Reds")
+        plt.tight_layout()  # fixes margins
+        self.heat_map = plt
+
+    def get_bar_chart(self, title, indices=None):
+        """
+        Generates a bar chart of the topics.
+
+        parameters:
+            indices (list): List of indices to plot.
+        """
+        if indices is None:
+            indices = self.get_random_indices(len(self.topics_by_text_df), 15)
+        else:
+            indices = indices
+
+        N = len(indices)
+
+        K = self.optimal_topics
+        ind = np.arange(N)
+        width = 0.5
+        plots = []
+        height_cumulative = np.zeros(N)
+
+        ldaDFVisNames = list(self.topics_by_text_df["title"])
+        ldaDFV = self.topics_by_text_df.loc[indices, :][
+            ["topic_%d" % x for x in indices]
+        ]
+        ldaDFVis = ldaDFV.values
+
+        for k in range(K):
+            color = plt.cm.coolwarm(k / K, 1)
+            if k == 0:
+                p = plt.bar(ind, ldaDFVis[:, k], width, color=color)
+            else:
+                p = plt.bar(
+                    ind,
+                    ldaDFVis[:, k],
+                    width,
+                    bottom=height_cumulative,
+                    color=color,
+                )
+            height_cumulative += ldaDFVis[:, k]
+            plots.append(p)
+
+        plt.ylim(
+            (0, 1)
+        )  # proportions sum to 1, so the height of the stacked bars is 1
+        plt.ylabel("Topics")
+
+        plt.title(title)
+        plt.xticks(ind + width / 2, ldaDFVisNames, rotation="vertical")
+
+        plt.yticks(np.arange(0, 1, 10))
+        topic_labels = ["Topic #{}".format(k) for k in range(K)]
+        plt.legend(
+            [p[0] for p in plots],
+            topic_labels,
+            loc="center left",
+            frameon=True,
+            bbox_to_anchor=(1, 0.5),
+        )
+
+        self.bar_chart = plt
+
+    def visualize(self):
+        """
+        Generates visualizations for the topic models.
+        """
+        self.get_heat_map()
+        self.get_bar_chart()

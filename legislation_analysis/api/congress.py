@@ -22,6 +22,7 @@ import requests
 from legislation_analysis.utils.constants import (
     CONGRESS_API_KEY,
     CONGRESS_API_ROOT_URL,
+    CONGRESS_COLUMNS_API,
     CONGRESS_ROOT_URL,
 )
 from legislation_analysis.utils.functions import (
@@ -43,6 +44,25 @@ class CongressAPI:
         self.file_name = os.path.basename(file_path).split(".")[0]
         self.processed_df = None
         self.df = None
+
+    def get_df(self) -> None:
+        """
+        Sets self.df by extracting data from the file path and reformatting
+        columns.
+        """
+        # load data
+        df = load_file_to_df(self.file_path)
+
+        # get header row
+        first_col = df.iloc[:, 0]
+        header_row = list(first_col).index("Legislation Number")
+        col_row = list(df.iloc[header_row, 0:]).index(np.nan)
+
+        # reformat columns
+        df = df.iloc[:, :col_row].copy()
+        df.columns = list(df.iloc[header_row, :col_row])
+        self.df = df.iloc[header_row + 1 :, :].reset_index(drop=True).copy()
+        self.df.columns = [c.lower() for c in list(self.df.columns)]
 
     @staticmethod
     def extract_legislation_details(df: pd.DataFrame) -> pd.DataFrame:
@@ -144,7 +164,7 @@ class CongressAPI:
         return url
 
     @staticmethod
-    def extract_text(text_url: str) -> str:
+    def extract_html_text(text_url: str) -> str:
         """
         Extracts the text of a given piece of legislation.
 
@@ -161,24 +181,62 @@ class CongressAPI:
 
         return soup.text
 
+    def extract_text(self) -> None:
+        """
+        Extracts either html or pdf text for each legislation.
+        """
+        # extract html text
+        self.processed_df.loc[
+            (self.processed_df.loc[:, "text_url"].str[-3:] == "htm"),
+            "text",
+        ] = self.processed_df.loc[
+            (self.processed_df.loc[:, "text_url"].str[-3:] == "htm"),
+            "text_url",
+        ].apply(
+            lambda x: self.extract_html_text(x)
+        )
+
+        # extract pdf text
+        self.processed_df.loc[
+            (self.processed_df.loc[:, "text_url"].str[-3:] == "pdf"),
+            "text",
+        ] = self.processed_df.loc[
+            (self.processed_df.loc[:, "text_url"].str[-3:] == "pdf"),
+            "text_url",
+        ].apply(
+            lambda x: extract_pdf_text(x)
+        )
+
+    def post_process(self) -> None:
+        """
+        Post-processing dataframe, including dropping null values and renaming
+        columns.
+        """
+        # remove rows with null text values
+        self.processed_df = self.processed_df.loc[
+            ~self.processed_df.loc[:, "text"].isna(), :
+        ].copy()
+        self.processed_df.rename(columns={"text": "raw_text"}, inplace=True)
+
+        # keep relevant columns
+        self.processed.rename(
+            columns={
+                "legislation number": "legislation_number",
+                "latest summary": "raw_summary",
+            },
+            inplace=True,
+        )
+        self.processed_df = self.processed_df.loc[
+            :, CONGRESS_COLUMNS_API
+        ].copy()
+
     def process(self) -> None:
         """
         Processing function for extracting text from legislation search results.
         """
-
         # load data
         logging.debug(f"Loading data from {self.file_path}...")
-        df = load_file_to_df(self.file_path)
-
-        # get header row
-        first_col = df.iloc[:, 0]
-        header_row = list(first_col).index("Legislation Number")
-        col_row = list(df.iloc[header_row, 0:]).index(np.nan)
-
-        df = df.iloc[:, :col_row].copy()
-        df.columns = list(df.iloc[header_row, :col_row])
-        self.df = df.iloc[header_row + 1 :, :].reset_index(drop=True).copy()
-        self.df.columns = [c.lower() for c in list(self.df.columns)]
+        self.get_df()
 
         # extract legislation information
         logging.debug("Extracting legislation information...")
@@ -200,30 +258,10 @@ class CongressAPI:
             :, "api_url"
         ].apply(lambda x: self.extract_text_url(x))
 
-        # extract htm text
-        self.processed_df.loc[
-            (self.processed_df.loc[:, "text_url"].str[-3:] == "htm"),
-            "text",
-        ] = self.processed_df.loc[
-            (self.processed_df.loc[:, "text_url"].str[-3:] == "htm"),
-            "text_url",
-        ].apply(
-            lambda x: self.extract_text(x)
-        )
+        # extract text
+        logging.debug("Extracting legislation text...")
+        self.extract_text()
 
-        # extract pdf text
-        self.processed_df.loc[
-            (self.processed_df.loc[:, "text_url"].str[-3:] == "pdf"),
-            "text",
-        ] = self.processed_df.loc[
-            (self.processed_df.loc[:, "text_url"].str[-3:] == "pdf"),
-            "text_url",
-        ].apply(
-            lambda x: extract_pdf_text(x)
-        )
-
-        # remove rows with null text values
-        self.processed_df = self.processed_df.loc[
-            ~self.processed_df.loc[:, "text"].isna(), :
-        ].copy()
-        self.processed_df.rename(columns={"text": "raw_text"}, inplace=True)
+        # post process
+        logging.debug("Post-processing self.processed_df...")
+        self.post_process()

@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import time
 from io import BytesIO
 
@@ -8,7 +9,10 @@ import requests
 from bs4 import BeautifulSoup
 from PyPDF2 import PdfReader
 
-from legislation_analysis.utils.constants import LEGAL_DICTIONARY_FILE
+from legislation_analysis.utils.constants import (
+    GPO_ABBREVS_FILE,
+    LEGAL_DICTIONARY_FILE,
+)
 
 
 def extract_pdf_text(pdf_url: str) -> str:
@@ -68,11 +72,70 @@ def get_legal_dictionary() -> set:
         else:
             legal_terms.add(term)
 
+    # save the terms to a file
     with open(LEGAL_DICTIONARY_FILE, "w") as file:
         for term in legal_terms:
             file.write(term + "\n")
 
     return legal_terms
+
+
+def get_gpo_dictionary() -> set:
+    """
+    Scrapes common state abbreviations from
+    https://en.wikipedia.org/wiki/List_of_U.S._state_and_territory_abbreviations
+
+    returns:
+        gpo_terms (set): set of gpo/state abbreviation terms.
+    """
+    if os.path.exists(GPO_ABBREVS_FILE):
+        with open(GPO_ABBREVS_FILE, "r") as file:
+            return set(file.read().split())
+
+    url = "https://en.wikipedia.org/wiki/List_of_U.S._state_and_territory_abbreviations"
+
+    # get the html content
+    html_content = requests.get(url).text
+    table = (
+        BeautifulSoup(html_content, "html.parser").find("table").find("tbody")
+    )
+
+    # get the state abbreviations
+    gpos = []
+    aps = []
+    others = []
+    for row in table.find_all("tr")[11:]:
+        gpos.append(row.find_all("td")[-3].text)
+        aps.append(row.find_all("td")[-2].text)
+        others.append(row.find_all("td")[-1].text)
+
+    # process terms
+    gpos = [gpo.replace("\xa0", " ").lower() for gpo in gpos if len(gpo) > 0]
+    aps = [ap.replace("\xa0", " ").lower() for ap in aps if len(ap) > 0]
+    others = [
+        other.replace("\xa0", " ").lower().strip("\n")
+        for other in others
+        if len(other.strip("\n")) > 0
+    ]
+
+    others_2 = []
+    for other in others:
+        other = re.sub(r"\[.\]?", "", other)
+        if "," in other or "&" in other:
+            split = ", " if "," in other else " & "
+            others_2.extend(other.split(split))
+            continue
+        others_2.append(other)
+
+    # build dictionary
+    gpo_terms = set(gpos + aps + others_2)
+
+    # save the terms to a file
+    with open(GPO_ABBREVS_FILE, "w") as file:
+        for term in gpo_terms:
+            file.write(term + "\n")
+
+    return gpo_terms
 
 
 def load_file_to_df(file_path: str) -> pd.DataFrame:
