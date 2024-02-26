@@ -14,7 +14,6 @@ from legislation_analysis.utils.constants import (
     SCOTUS_DATA_URL,
     SCOTUS_ROOT_URL,
 )
-from legislation_analysis.utils.functions import extract_pdf_text
 
 
 class SCOTUSDataExtractor:
@@ -124,11 +123,9 @@ class SCOTUSDataExtractor:
         request = requests.get(case_url)
         soup = bs4.BeautifulSoup(request.text, "html.parser")
 
-        text = soup.find(
+        return soup.find(
             "div", class_="-display-inline-block text-left"
         ).get_text()
-
-        return text
 
     def process(self) -> None:
         """
@@ -138,18 +135,6 @@ class SCOTUSDataExtractor:
 
         # get case data
         self.extract_case_data(request)
-        self.df.loc[:, "pdf_url"] = self.df.loc[:, "case_url"].apply(
-            lambda x: self.get_pdf_url(x)
-        )
-
-        # if pdf not available, extract text from html
-        self.df.loc[self.df.loc[:, "pdf_url"].isna(), "raw_text"] = self.df.loc[
-            self.df.loc[:, "pdf_url"].isna(), "case_url"
-        ].apply(lambda x: self.extract_html_text(x))
-
-        # extract text from pdf
-        self.df.loc[
-            ~(self.df.loc[:, "pdf_url"].isna()), "raw_text"
-        ] = self.df.loc[~(self.df.loc[:, "pdf_url"].isna()), "pdf_url"].apply(
-            lambda x: extract_pdf_text(x)
+        self.df["raw_text"] = self.df["case_url"].apply(
+            lambda x: self.extract_html_text(x)
         )

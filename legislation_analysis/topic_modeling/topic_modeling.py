@@ -7,14 +7,15 @@ import os
 import gensim
 import numpy as np
 import pandas as pd
-from scipy.stats import randint, uniform, loguniform
+from scipy.stats import loguniform, randint
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from legislation_analysis.utils.classes.visualizer import Visualizer
 from legislation_analysis.utils.constants import (
-    MODELED_DATA_PATH,
-    MIN_NUM_TOPICS_CONGRESS,
     MAX_NUM_TOPICS_CONGRESS,
+    MIN_NUM_TOPICS_CONGRESS,
+    MODELED_DATA_PATH,
+    TOPIC_MODEL_TRAINING_ITERATIONS,
 )
 from legislation_analysis.utils.functions import load_file_to_df
 
@@ -29,17 +30,21 @@ class TopicModeling:
         column (str): column to apply topic modeling to.
         max_df (float): maximum document frequency for the tfidf vectorizer.
         min_df (int): minimum document frequency for the tfidf vectorizer.
-        topic_ranges (tuple): range of topics to search for the optimal number of
+        topic_ranges (tuple): range of topics to search for the optimal number
+                              of
     """
 
     def __init__(
         self,
         file_path: str,
         save_name: str,
-        column: str = "cleaned_text",
+        column: str = "text_pos_tags_of_interest",
         max_df: float = 0.8,
         min_df: int = 5,
-        topic_ranges: tuple = (MIN_NUM_TOPICS_CONGRESS, MAX_NUM_TOPICS_CONGRESS),
+        topic_ranges: tuple = (
+            MIN_NUM_TOPICS_CONGRESS,
+            MAX_NUM_TOPICS_CONGRESS,
+        ),
     ):
         # file loading and saving
         self.df = load_file_to_df(file_path)
@@ -65,14 +70,17 @@ class TopicModeling:
         self.column = column
         self.lda_model = None
         self.lda_output = None
-        self.lda_topics_df = None
         self.coherence_scores = None
         self.topic_ranges = topic_ranges
 
         # model parameters
-        self.optimal_alpha = self.optimal_eta = self.optimal_passes = (
-            self.optimal_topics
-        ) = None
+        self.optimal_alpha = (
+            self.optimal_eta
+        ) = self.optimal_passes = self.optimal_topics = None
+
+        # model outputs
+        self.lda_topics_df = None
+        self.topics_by_text_df = None
 
     def get_corpus(self) -> None:
         """
@@ -135,7 +143,9 @@ class TopicModeling:
         )
         return coherence_model_lda.get_coherence()
 
-    def random_search(self, iterations: int = 50) -> tuple:
+    def random_search(
+        self, iterations: int = TOPIC_MODEL_TRAINING_ITERATIONS
+    ) -> tuple:
         """
         Finds the optimal parameters for the LDA model by using random search.
 
@@ -150,14 +160,17 @@ class TopicModeling:
         for _iter in range(iterations):
             # sample hyperparameters
             params = {
-                "num_topics": randint(self.topic_ranges[0], self.topic_ranges[1]).rvs(),
+                "num_topics": randint(
+                    self.topic_ranges[0], self.topic_ranges[1]
+                ).rvs(),
                 "alpha": loguniform(0.001, 1).rvs(),
                 "eta": loguniform(0.001, 1).rvs(),
                 "passes": randint(10, 50).rvs(),
             }
 
             print(
-                f"\t(Iteration {_iter+1} of {iterations}) Trying parameters: {params}"
+                f"""\t(Iteration {_iter+1} of {iterations})
+                Trying parameters: {params}"""
             )
 
             # train LDA model with sampled hyperparameters
@@ -208,7 +221,7 @@ class TopicModeling:
             num_topics=self.optimal_topics, num_words=num_words, formatted=False
         )
 
-    def get_topic_df(self) -> None:
+    def get_lda_topics_df(self) -> None:
         """
         Generates a dataframe of topics and their words.
         """
@@ -220,6 +233,20 @@ class TopicModeling:
                 df_dict[col].append(word)
 
         self.lda_topics_df = pd.DataFrame(df_dict)
+
+    def get_text_topics_df(self) -> None:
+        """
+        Generates a dataframe of texts and their topic distributions
+        """
+        self.topics_by_text_df = pd.DataFrame(
+            {
+                "title": self.df["title"],
+                "topics": [
+                    self.lda_model[self.dictionary.doc2bow(red_col)]
+                    for red_col in self.df[f"{self.column}_reduced"]
+                ],
+            }
+        )
 
     def gen_topic_model(self) -> None:
         """
@@ -242,5 +269,8 @@ class TopicModeling:
         print("Finding optimal parameters...")
         self.random_search()
 
-        print("Getting topics...")
-        self.get_topic_df()
+        print("Getting topic words...")
+        self.get_lda_topics_df()
+
+        print("Getting text topics...")
+        self.get_text_topics_df()

@@ -15,6 +15,7 @@ from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
     CONGRESS_DATA_FILE,
     MISC_DICTIONARY_ENTRIES,
+    MISC_STATE_ABBREVIATIONS,
 )
 from legislation_analysis.utils.functions import (
     get_legal_dictionary,
@@ -82,8 +83,15 @@ class Cleaner:
 
             # check if words are combined with a period
             for new_word in new_words:
-                if "." in new_word:
-                    words = new_word.split(".")
+                if "," in new_word or (
+                    "." in new_word and "https" not in new_word
+                ):
+                    words = (
+                        new_word.split(",")
+                        if "," in new_word
+                        else new_word.split(".")
+                    )
+
                     # if words are combined with a period, retain all but the
                     # last period
                     combined_words = [
@@ -128,11 +136,14 @@ class Cleaner:
 
         # remove special characters
         cleaned_text = re.sub(
-            r"[^a-zA-Z0-9\s\,\.\?\;\:\)\(\[\]\"\'\-]", "", cleaned_text
-        )
+            r"[^a-zA-Z0-9\s\,\.\?\;\:\)\(\[\]\"\'\-\/]", "", cleaned_text
+        ).replace("\xa0", "")
 
         # remove excess whitespace
         cleaned_text = re.sub(r"\s+", " ", cleaned_text).strip()
+
+        # remove excess periods
+        cleaned_text = re.sub(r"\.{2,}", ".", cleaned_text)
 
         return Cleaner.spell_check(cleaned_text)
 
@@ -150,6 +161,10 @@ class Cleaner:
         # Exclude single letters except 'a'
         if len(word) == 1 and word != "a":
             return False
+
+        # these abbreviations contain punction and are valid
+        if word.lower() in MISC_STATE_ABBREVIATIONS:
+            return True
 
         punctuation = [
             ",",
@@ -277,8 +292,10 @@ class Cleaner:
                 continue
 
             # check if the word is a valid word or contains a number
-            if cls.is_valid_word(word.lower()) or any(
-                char.isdigit() for char in word
+            if (
+                cls.is_valid_word(word.lower())
+                or any(char.isdigit() for char in word)
+                or ("https" in word)
             ):
                 new_words.append(word)
                 continue

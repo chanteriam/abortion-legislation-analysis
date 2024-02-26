@@ -6,12 +6,12 @@ from legislation_analysis.topic_modeling.topic_modeling import TopicModeling
 from legislation_analysis.utils.constants import (
     CONGRESS_DATA_FILE_CLEANED,
     CONGRESS_DATA_FILE_TOPIC_MODELED_NAME,
+    MAX_NUM_TOPICS_CONGRESS,
+    MAX_NUM_TOPICS_SCOTUS,
+    MIN_NUM_TOPICS_CONGRESS,
+    MIN_NUM_TOPICS_SCOTUS,
     SCOTUS_DATA_FILE_CLEANED,
     SCOTUS_DATA_FILE_TOPIC_MODELED_NAME,
-    MIN_NUM_TOPICS_CONGRESS,
-    MAX_NUM_TOPICS_CONGRESS,
-    MIN_NUM_TOPICS_SCOTUS,
-    MAX_NUM_TOPICS_SCOTUS,
 )
 
 
