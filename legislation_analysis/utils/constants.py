@@ -23,7 +23,7 @@ SCOTUS_DATA_URL = (
 # congress data files
 CONGRESS_DATA_CLEANED_FILE_NAME = "congress_legislation_cleaned.fea"
 CONGRESS_DATA_POS_TAGGED_FILE_NAME = "congress_legislation_pos.fea"
-CONGRESS_DATA_CLUSTERED_NAME_FILE_NAME = "congress_legislation_clustered.fea"
+CONGRESS_DATA_CLUSTERED_FILE_NAME = "congress_legislation_clustered.fea"
 
 CONGRESS_DATA_FILE = os.path.join(
     API_DATA_PATH, "congress_abortion_legislation_full-text.csv"
@@ -35,7 +35,7 @@ CONGRESS_DATA_POS_TAGGED_FILE = os.path.join(
     PROCESSED_DATA_PATH, CONGRESS_DATA_POS_TAGGED_FILE_NAME
 )
 CONGRESS_DATA_CLUSTERED_FILE = os.path.join(
-    CLUSTERED_DATA_PATH, CONGRESS_DATA_CLUSTERED_NAME_FILE_NAME
+    CLUSTERED_DATA_PATH, CONGRESS_DATA_CLUSTERED_FILE_NAME
 )
 
 # scotus data files
