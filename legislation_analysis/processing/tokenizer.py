@@ -9,7 +9,7 @@ import os
 import spacy
 
 from legislation_analysis.utils.constants import (
-    CONGRESS_DATA_CLEANED_FILE,
+    CONGRESS_DATA_FILE_CLEANED,
     PROCESSED_DATA_PATH,
 )
 from legislation_analysis.utils.functions import load_file_to_df
@@ -30,7 +30,7 @@ class Tokenizer:
 
     def __init__(
         self,
-        file_path: str = CONGRESS_DATA_CLEANED_FILE,
+        file_path: str = CONGRESS_DATA_FILE_CLEANED,
         file_name: str = "congress_legislation_tokenized.fea",
     ):
         self.df = load_file_to_df(file_path)
