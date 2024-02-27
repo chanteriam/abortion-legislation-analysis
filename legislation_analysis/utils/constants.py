@@ -25,7 +25,7 @@ CONGRESS_DATA_FILE = os.path.join(
     API_DATA_PATH, "congress_abortion_legislation_full-text.csv"
 )
 CONGRESS_DATA_CLEANED_FILE_NAME = "congress_legislation_cleaned.fea"
-CONGRESS_DATA_FILE_CLEANED = os.path.join(
+CONGRESS_DATA_CLEANED_FILE = os.path.join(
     CLEANED_DATA_PATH, CONGRESS_DATA_CLEANED_FILE_NAME
 )
 CONGRESS_DATA_CLUSTERED_FILE_NAME = "congress_legislation_clustered.fea"
