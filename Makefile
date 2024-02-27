@@ -14,12 +14,12 @@ get-legislation-data:
 	python -m legislation_analysis --congress --scotus -d
 
 # Individual function commands
-.PHONY: congress-data
-congress-data:
+.PHONY: get-congress-data
+get-congress-data:
 	python -m legislation_analysis --congress -d
 
-.PHONY: scotus-data
-scotus-data:
+.PHONY: get-scotus-data
+get-scotus-data:
 	python -m legislation_analysis --scotus -d
 
 .PHONY: clean-data
