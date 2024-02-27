@@ -1,5 +1,4 @@
 import logging
-import os
 
 from legislation_analysis.processing.clean import Cleaner
 from legislation_analysis.processing.ner import NER
@@ -12,11 +11,11 @@ from legislation_analysis.utils.constants import (
     CONGRESS_DATA_POS_TAGGED_FILE_NAME,
     CONGRESS_DATA_TOKENIZED_FILE,
     CONGRESS_DATA_TOKENIZED_FILE_NAME,
-    PROCESSED_DATA_PATH,
     SCOTUS_DATA_CLEANED_FILE,
     SCOTUS_DATA_CLEANED_FILE_NAME,
     SCOTUS_DATA_FILE,
     SCOTUS_DATA_POS_TAGGED_FILE_NAME,
+    SCOTUS_DATA_TOKENIZED_FILE,
     SCOTUS_DATA_TOKENIZED_FILE_NAME,
 )
 from legislation_analysis.utils.functions import save_df_to_file
@@ -87,9 +86,7 @@ def run_pos_tagger() -> None:
         file_name=CONGRESS_DATA_POS_TAGGED_FILE_NAME,
     )
     scotus_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
+        file_path=SCOTUS_DATA_TOKENIZED_FILE,
         file_name=SCOTUS_DATA_POS_TAGGED_FILE_NAME,
     )
 
@@ -138,9 +135,7 @@ def run_ner() -> None:
     # apply NER to SCOTUS opinions
     logging.debug("Applying NER to SCOTUS opinions...")
     scotus_ner = NER(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
+        file_path=SCOTUS_DATA_TOKENIZED_FILE,
         file_name="scotus_cases_ner.fea",
     )
     scotus_ner.process()
