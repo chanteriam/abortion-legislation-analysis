@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from gensim.corpora import Dictionary
-from gensim.models.coherencemodel import CoherenceModel
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from legislation_analysis.utils.constants import TFIDF_FILTER_THRESHOLD
@@ -26,6 +25,7 @@ class BaseTopicModeling(ABC):
         max_df: float = 0.8,
         min_df: int = 5,
         topic_ranges: tuple = (2, 30),
+        model=None,
     ):
         self.df = load_file_to_df(file_path)
         self.save_name = save_name
@@ -39,7 +39,7 @@ class BaseTopicModeling(ABC):
         self.corpus = None
 
         # model building
-        self.lda_model = None
+        self.lda_model = model
         self.topic_ranges = topic_ranges
 
     def prepare_corpus(self):
@@ -91,23 +91,9 @@ class BaseTopicModeling(ABC):
     def get_topics(self, num_words: int) -> None:
         pass
 
+    @abstractmethod
     def compute_coherence(self, model) -> float:
-        """
-        Computes the coherence score for the given LDA model.
-
-        parameters:
-            model (LdaModel/LdaSeqModel): LDA model to compute coherence for.
-
-        returns:
-            (float) Coherence score for the given LDA model.
-        """
-        coherence_model = CoherenceModel(
-            model=model,
-            texts=self.df["filtered_tokens"],
-            dictionary=self.dictionary,
-            coherence="c_v",
-        )
-        return coherence_model.get_coherence()
+        pass
 
     @abstractmethod
     def random_search(self) -> None:

@@ -3,11 +3,11 @@ Implements the TopicModeling class, which applies dynamic topic modeling to
 congressional legislations.
 """
 
-import logging
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from gensim.models.coherencemodel import CoherenceModel
 from gensim.models.ldaseqmodel import LdaSeqModel
 from scipy.stats import randint, uniform
 
@@ -15,8 +15,6 @@ from legislation_analysis.topic_modeling.abstract_topic_modeling import (
     BaseTopicModeling,
 )
 from legislation_analysis.utils.constants import (
-    MAX_NUM_TOPICS_CONGRESS,
-    MIN_NUM_TOPICS_CONGRESS,
     MODELED_DATA_PATH,
     TOPIC_MODEL_TRAINING_ITERATIONS,
 )
@@ -46,9 +44,10 @@ class DynamicTopicModeling(BaseTopicModeling):
         max_df: float = 0.8,
         min_df: int = 5,
         topic_ranges: tuple = (
-            MIN_NUM_TOPICS_CONGRESS,
-            MAX_NUM_TOPICS_CONGRESS,
+            2,
+            15,
         ),
+        model=None,
     ) -> None:
         super().__init__(
             file_path=file_path,
@@ -57,6 +56,7 @@ class DynamicTopicModeling(BaseTopicModeling):
             max_df=max_df,
             min_df=min_df,
             topic_ranges=topic_ranges,
+            model=model,
         )
 
         # getting time series attributes
@@ -67,10 +67,9 @@ class DynamicTopicModeling(BaseTopicModeling):
             range(self.min_congress, self.max_congress, PERIOD_GAP)
         )
         self.bills_per_congressional_period = [0] * NUM_BILL_PERIODS
-        self.topics_by_period = {i: [] for i in range(NUM_BILL_PERIODS)}
+        self.topics_by_period = {i: {} for i in range(NUM_BILL_PERIODS)}
 
         # model building
-        self.lda_model = None
         self.optimal_params = {"num_topics": None, "chain_variance": None}
 
     def append_bill_to_period(self, congress_num: int) -> None:
@@ -90,9 +89,8 @@ class DynamicTopicModeling(BaseTopicModeling):
         Optionall visualizes the number of legislations over time.
         """
         self.df["congress_num"].apply(self.append_bill_to_period)
-        self.df.sort_values(by=["congress_num"], inplace=True).reset_index(
-            drop=True
-        )
+        self.df.sort_values(by=["congress_num"], inplace=True)
+        self.df = self.df.reset_index(drop=True)
 
     def get_bills_per_congress(self, visualize=False) -> None:
         """
@@ -115,6 +113,57 @@ class DynamicTopicModeling(BaseTopicModeling):
                 self.bills_per_congress["num_bills"],
             )
 
+    def compute_ind_coherence(self, model, time, num_words=10) -> float:
+        """
+        Computes the coherence score for and individual time period.
+
+        parameters:
+            model (LdaSeqModel): The LDA model.
+            time (int): The time period to consider.
+
+        returns:
+            (float) The coherence score.
+        """
+        topics = []
+        for topic_idx in range(model.num_topics):
+            topic_terms = sorted(
+                model.print_topics(time=time)[topic_idx],
+                key=lambda x: x[1],
+                reverse=True,
+            )
+            top_terms = [term for term, _ in topic_terms[:num_words]]
+            topics.append(top_terms)
+
+        # compute coherence using extracted topics
+        if time == 0:
+            texts = self.df["filtered_tokens"][
+                : self.bills_per_congressional_period[0]
+            ]
+        else:
+            texts = self.df["filtered_tokens"][
+                sum(self.bills_per_congressional_period[:time]) : sum(
+                    self.bills_per_congressional_period[: time + 1]
+                )
+            ]
+        coherence_model = CoherenceModel(
+            topics=topics,
+            texts=texts,
+            dictionary=self.dictionary,
+            coherence="u_mass",
+        )
+        return coherence_model.get_coherence()
+
+    def compute_coherence(self, model) -> float:
+        """
+        Computes the average coherence score across time periods.
+        """
+        return np.mean(
+            [
+                self.compute_ind_coherence(model, time=i)
+                for i in range(NUM_BILL_PERIODS)
+            ]
+        )
+
     def random_search(self, iterations=TOPIC_MODEL_TRAINING_ITERATIONS) -> None:
         """
         Performs random search for the optimal number of topics.
@@ -128,7 +177,7 @@ class DynamicTopicModeling(BaseTopicModeling):
                 "chain_variance": uniform(0.005, 0.05).rvs(),
             }
 
-            logging.debug(
+            print(
                 f"""\t(Iteration {_iter+1} of {iterations})
                 Trying parameters: {params}"""
             )
@@ -139,17 +188,20 @@ class DynamicTopicModeling(BaseTopicModeling):
                 time_slice=self.bills_per_congressional_period,
                 **params,
             )
+
+            print("\t\tModel Trained")
+
             score = self.compute_coherence(model)
 
-            logging.debug(f"\t\tCoherence Score: {score:.2f}")
+            print(f"\t\tCoherence Score: {score:.2f}")
 
             if score > best_score:
                 best_score = score
                 self.optimal_params = params
                 self.lda_model = model
 
-        logging.debug(f"Best Score: {best_score}")
-        logging.debug(f"Best Params: {self.optimal_params}")
+        print(f"Best Score: {best_score}")
+        print(f"Best Params: {self.optimal_params}")
 
         # save model
         self.lda_model.save(os.path.join(MODELED_DATA_PATH, self.save_name))
@@ -163,12 +215,22 @@ class DynamicTopicModeling(BaseTopicModeling):
             num_words (int): The number of words to display for each topic.
         """
         for i in range(NUM_BILL_PERIODS):
-            self.topics_by_period[i] = sorted(
-                self.lda_model.print_topics(num_words=num_words, time=i)[1],
-                key=lambda x: x[0],
-            )
+            for j in range(self.optimal_params["num_topics"]):
+                self.topics_by_period[i][j] = sorted(
+                    self.lda_model.print_topics(time=i)[j],
+                    key=lambda x: x[0],
+                )
 
     def gen_topic_model(self) -> None:
-        """ """
+        """
+        Generates the dynamic topic model.
+        """
+        self.get_bills_per_congress_period()
         self.prepare_corpus()
-        self.random_search()
+
+        if not self.lda_model:
+            self.random_search()
+        else:
+            self.optimal_params = {
+                "num_topics": self.lda_model.num_topics,
+            }

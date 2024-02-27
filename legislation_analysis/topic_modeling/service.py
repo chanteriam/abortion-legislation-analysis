@@ -4,6 +4,9 @@ Services for topic modeling.
 
 import logging
 
+from legislation_analysis.topic_modeling.dynamic_topic_modeling import (
+    DynamicTopicModeling,
+)
 from legislation_analysis.topic_modeling.topic_modeling import TopicModeling
 from legislation_analysis.utils.constants import (
     CONGRESS_DATA_FILE_POS_TAGGED,
@@ -40,3 +43,17 @@ def run_topic_modeling() -> None:
         min_df=SCOTUS_MIN_DF,
     )
     scotus_topic_modeling.gen_topic_model()
+
+
+def run_dynamic_topic_modeling() -> None:
+    """
+    Runs dynamic topic modeling for Congressional legislation.
+    """
+    logging.info(
+        "Running dynamic topic modeling for Congressional legislation..."
+    )
+    dynamic_topic_modeling = DynamicTopicModeling(
+        file_path=CONGRESS_DATA_FILE_POS_TAGGED,
+        save_name=CONGRESS_TOPIC_MODEL,
+    )
+    dynamic_topic_modeling.gen_topic_model()

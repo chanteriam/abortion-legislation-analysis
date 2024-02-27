@@ -8,6 +8,7 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from gensim.models.coherencemodel import CoherenceModel
 from gensim.models.ldamodel import LdaModel
 from scipy.stats import loguniform, randint
 
@@ -44,6 +45,7 @@ class TopicModeling(BaseTopicModeling):
         max_df: float = 0.8,
         min_df: int = 5,
         topic_ranges: tuple = (2, 30),
+        model=None,
     ):
         super().__init__(
             file_path=file_path,
@@ -52,6 +54,7 @@ class TopicModeling(BaseTopicModeling):
             max_df=max_df,
             min_df=min_df,
             topic_ranges=topic_ranges,
+            model=model,
         )
 
         # saving model parameters
@@ -65,6 +68,24 @@ class TopicModeling(BaseTopicModeling):
         # model outputs
         self.topics_by_words_df = None
         self.topics_by_text_df = None
+
+    def compute_coherence(self, model) -> float:
+        """
+        Computes the coherence score for the given LDA model.
+
+        parameters:
+            model (LdaModel/LdaSeqModel): LDA model to compute coherence for.
+
+        returns:
+            (float) Coherence score for the given LDA model.
+        """
+        coherence_model = CoherenceModel(
+            model=model,
+            texts=self.df["filtered_tokens"],
+            dictionary=self.dictionary,
+            coherence="c_v",
+        )
+        return coherence_model.get_coherence()
 
     def random_search(self, iterations=TOPIC_MODEL_TRAINING_ITERATIONS):
         """
@@ -178,7 +199,11 @@ class TopicModeling(BaseTopicModeling):
         Main method to generate and evaluate the LDA topic model.
         """
         self.prepare_corpus()
-        self.random_search()
+
+        if not self.lda_model:
+            self.random_search()
+        else:
+            self.optimal_params["num_topics"] = self.lda_model.num_topics
         self.get_topics_by_words_df()
         self.get_text_topics_df()
 
