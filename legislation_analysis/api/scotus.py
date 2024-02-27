@@ -11,6 +11,7 @@ import pandas as pd
 import requests
 
 from legislation_analysis.utils.constants import (
+    SCOTUS_COLUMNS_API,
     SCOTUS_DATA_URL,
     SCOTUS_ROOT_URL,
 )
@@ -29,7 +30,7 @@ class SCOTUSDataExtractor:
         Initializes SCOTUSDataExtractor object.
         """
         self.url = scotus_url
-        self.df = None
+        self.processed_df = None
 
     def extract_case_data(self, request: requests.models.Response) -> None:
         """
@@ -75,7 +76,7 @@ class SCOTUSDataExtractor:
                 }
             )
 
-        self.df = pd.DataFrame(data)
+        self.processed_df = pd.DataFrame(data)
 
     @staticmethod
     def get_pdf_url(case_url: str) -> Optional[str]:
@@ -135,6 +136,7 @@ class SCOTUSDataExtractor:
 
         # get case data
         self.extract_case_data(request)
-        self.df["raw_text"] = self.df["case_url"].apply(
+        self.processed_df["raw_text"] = self.processed_df["case_url"].apply(
             lambda x: self.extract_html_text(x)
         )
+        self.processed_df = self.processed_df.loc[:, SCOTUS_COLUMNS_API]

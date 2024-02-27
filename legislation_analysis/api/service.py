@@ -16,11 +16,11 @@ def download_congress_data() -> None:
     file_path = os.path.join(RAW_DATA_PATH, "congress_abortion_legislation.csv")
     file_name = os.path.basename(file_path).split(".")[0]
 
-    cleaner = CongressAPI(file_path)
-    cleaner.process()
+    congress_api = CongressAPI(file_path)
+    congress_api.process()
 
     save_df_to_file(
-        cleaner.processed_df,
+        congress_api.processed_df,
         os.path.join(API_DATA_PATH, f"{file_name}_full-text.fea"),
     )
 
@@ -34,6 +34,7 @@ def download_scotus_data() -> None:
     scotus_api.process()
 
     # save data
-    scotus_api.df.to_csv(
-        os.path.join(API_DATA_PATH, "scotus_cases_full-text.csv"), index=False
+    save_df_to_file(
+        scotus_api.processed_df,
+        os.path.join(API_DATA_PATH, "scotus_cases_full-text.fea"),
     )

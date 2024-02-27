@@ -57,6 +57,13 @@ SCOTUS_TOPIC_MODEL = "scotus_tm.model"
 SCOTUS_DATA_FILE_POS_TAGGED = os.path.join(
     PROCESSED_DATA_PATH, SCOTUS_DATA_FILE_POS_TAGGED_NAME
 )
+SCOTUS_COLUMNS_API = [
+    "title",
+    "author",
+    "author_url",
+    "description",
+    "raw_text",
+]
 
 # general
 # cluster numbers determined in exercise 3

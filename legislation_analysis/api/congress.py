@@ -219,7 +219,7 @@ class CongressAPI:
         self.processed_df.rename(columns={"text": "raw_text"}, inplace=True)
 
         # keep relevant columns
-        self.processed.rename(
+        self.processed_df.rename(
             columns={
                 "legislation number": "legislation_number",
                 "latest summary": "raw_summary",
