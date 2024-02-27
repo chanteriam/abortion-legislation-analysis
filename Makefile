@@ -11,7 +11,7 @@ create-requirements:
 # Group level commands
 .PHONY: get-legislation-data
 get-legislation-data:
-	python -m legislation_analysis --congress-data --scotus-data
+	python -m legislation_analysis --congress --scotus -d
 
 # Individual function commands
 .PHONY: congress-data
