@@ -41,7 +41,7 @@ CONGRESS_DATA_CLUSTERED_FILE = os.path.join(
 # scotus data files
 SCOTUS_DATA_CLEANED_FILE_NAME = "scotus_cases_cleaned.fea"
 SCOTUS_DATA_POS_TAGGED_FILE_NAME = "scotus_cases_pos.fea"
-SCOTUS_DATA_FILE_CLUSTERED_FILE_NAME = "scotus_cases_clustered.fea"
+SCOTUS_DATA_CLUSTERED_FILE_NAME = "scotus_cases_clustered.fea"
 
 SCOTUS_DATA_FILE = os.path.join(API_DATA_PATH, "scotus_cases_full-text.csv")
 SCOTUS_DATA_CLEANED_FILE = os.path.join(
@@ -51,7 +51,7 @@ SCOTUS_DATA_POS_TAGGED_FILE = os.path.join(
     PROCESSED_DATA_PATH, SCOTUS_DATA_POS_TAGGED_FILE_NAME
 )
 SCOTUS_DATA_CLUSTERED_FILE = os.path.join(
-    CLUSTERED_DATA_PATH, SCOTUS_DATA_FILE_CLUSTERED_FILE_NAME
+    CLUSTERED_DATA_PATH, SCOTUS_DATA_CLUSTERED_FILE_NAME
 )
 
 # general
