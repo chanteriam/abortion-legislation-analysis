@@ -11,7 +11,6 @@ from legislation_analysis.utils.constants import (
     CONGRESS_DATA_FILE,
     CONGRESS_DATA_POS_TAGGED_FILE_NAME,
     CONGRESS_DATA_TOKENIZED_FILE,
-    CONGRESS_DATA_TOKENIZED_FILE_NAME,
     PROCESSED_DATA_PATH,
     SCOTUS_DATA_CLEANED_FILE,
     SCOTUS_DATA_CLEANED_FILE_NAME,
@@ -53,7 +52,7 @@ def run_data_tokenizer() -> None:
     Runs data tokenizer.
     """
     congress_tokenizer = Tokenizer(
-        CONGRESS_DATA_CLEANED_FILE, CONGRESS_DATA_TOKENIZED_FILE_NAME
+        CONGRESS_DATA_CLEANED_FILE, "congress_legislation_tokenized.fea"
     )
     scotus_tokenizer = Tokenizer(
         SCOTUS_DATA_CLEANED_FILE, SCOTUS_DATA_TOKENIZED_FILE_NAME
@@ -140,7 +139,7 @@ def run_ner() -> None:
     logging.debug("Applying NER to SCOTUS opinions...")
     scotus_ner = NER(
         file_path=os.path.join(
-            PROCESSED_DATA_PATH, SCOTUS_DATA_TOKENIZED_FILE_NAME
+            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
         ),
         file_name="scotus_cases_ner.fea",
     )
