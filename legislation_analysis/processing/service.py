@@ -13,6 +13,7 @@ from legislation_analysis.utils.constants import (
     PROCESSED_DATA_PATH,
     SCOTUS_DATA_FILE,
     SCOTUS_DATA_FILE_CLEANED,
+    SCOTUS_DATA_FILE_CLEANED_FILE_NAME,
     SCOTUS_DATA_FILE_POS_TAGGED_FILE_NAME,
 )
 from legislation_analysis.utils.functions import save_df_to_file
@@ -25,7 +26,9 @@ def run_data_cleaner() -> None:
     congress_cleaner = Cleaner(
         CONGRESS_DATA_FILE, CONGRESS_DATA_CLEANED_FILE_NAME
     )
-    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
+    scotus_cleaner = Cleaner(
+        SCOTUS_DATA_FILE, SCOTUS_DATA_FILE_CLEANED_FILE_NAME
+    )
 
     # clean congressional legislation
     logging.info("Cleaning Congress Data...")
