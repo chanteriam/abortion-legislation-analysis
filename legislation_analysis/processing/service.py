@@ -6,15 +6,15 @@ from legislation_analysis.processing.ner import NER
 from legislation_analysis.processing.pos_tagger import POSTagger
 from legislation_analysis.processing.tokenizer import Tokenizer
 from legislation_analysis.utils.constants import (
-    CONGRESS_DATA_CLEANED_FILE_NAME,
     CONGRESS_DATA_FILE,
     CONGRESS_DATA_FILE_CLEANED,
-    CONGRESS_DATA_POS_TAGGED_FILE_NAME,
+    CONGRESS_DATA_FILE_CLEANED_NAME,
+    CONGRESS_DATA_FILE_POS_TAGGED_NAME,
     PROCESSED_DATA_PATH,
+    SCOTUS_DATA_CLEANED_FILE_NAME,
     SCOTUS_DATA_FILE,
     SCOTUS_DATA_FILE_CLEANED,
-    SCOTUS_DATA_FILE_CLEANED_FILE_NAME,
-    SCOTUS_DATA_FILE_POS_TAGGED_FILE_NAME,
+    SCOTUS_DATA_POS_TAGGED_FILE_NAME,
 )
 from legislation_analysis.utils.functions import save_df_to_file
 
@@ -24,11 +24,9 @@ def run_data_cleaner() -> None:
     Runs data cleaner.
     """
     congress_cleaner = Cleaner(
-        CONGRESS_DATA_FILE, CONGRESS_DATA_CLEANED_FILE_NAME
+        CONGRESS_DATA_FILE, CONGRESS_DATA_FILE_CLEANED_NAME
     )
-    scotus_cleaner = Cleaner(
-        SCOTUS_DATA_FILE, SCOTUS_DATA_FILE_CLEANED_FILE_NAME
-    )
+    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, SCOTUS_DATA_CLEANED_FILE_NAME)
 
     # clean congressional legislation
     logging.info("Cleaning Congress Data...")
@@ -85,13 +83,13 @@ def run_pos_tagger() -> None:
         file_path=os.path.join(
             PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
         ),
-        file_name=CONGRESS_DATA_POS_TAGGED_FILE_NAME,
+        file_name=CONGRESS_DATA_FILE_POS_TAGGED_NAME,
     )
     scotus_pos = POSTagger(
         file_path=os.path.join(
             PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
         ),
-        file_name=SCOTUS_DATA_FILE_POS_TAGGED_FILE_NAME,
+        file_name=SCOTUS_DATA_POS_TAGGED_FILE_NAME,
     )
 
     # apply POS tagging to congressional legislation

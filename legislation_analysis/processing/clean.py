@@ -13,8 +13,8 @@ from nltk.corpus import wordnet, words
 
 from legislation_analysis.utils.constants import (
     CLEANED_DATA_PATH,
-    CONGRESS_DATA_CLEANED_FILE_NAME,
     CONGRESS_DATA_FILE,
+    CONGRESS_DATA_FILE_CLEANED_NAME,
     MISC_DICTIONARY_ENTRIES,
 )
 from legislation_analysis.utils.functions import (
@@ -43,7 +43,7 @@ class Cleaner:
     def __init__(
         self,
         file_path: str = CONGRESS_DATA_FILE,
-        file_name: str = CONGRESS_DATA_CLEANED_FILE_NAME,
+        file_name: str = CONGRESS_DATA_FILE_CLEANED_NAME,
     ):
         self.df = load_file_to_df(file_path)
         self.file_name = file_name
