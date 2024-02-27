@@ -10,6 +10,8 @@ from legislation_analysis.utils.constants import (
     CONGRESS_DATA_CLEANED_FILE_NAME,
     CONGRESS_DATA_FILE,
     CONGRESS_DATA_POS_TAGGED_FILE_NAME,
+    CONGRESS_DATA_TOKENIZED_FILE,
+    CONGRESS_DATA_TOKENIZED_FILE_NAME,
     PROCESSED_DATA_PATH,
     SCOTUS_DATA_CLEANED_FILE,
     SCOTUS_DATA_CLEANED_FILE_NAME,
@@ -50,7 +52,7 @@ def run_data_tokenizer() -> None:
     Runs data tokenizer.
     """
     congress_tokenizer = Tokenizer(
-        CONGRESS_DATA_CLEANED_FILE, "congress_legislation_tokenized.fea"
+        CONGRESS_DATA_CLEANED_FILE, CONGRESS_DATA_TOKENIZED_FILE_NAME
     )
     scotus_tokenizer = Tokenizer(
         SCOTUS_DATA_CLEANED_FILE, SCOTUS_DATA_TOKENIZED_FILE_NAME
@@ -81,9 +83,7 @@ def run_pos_tagger() -> None:
     """
     tags_of_interest = ["NOUN", "ADJ", "VERB", "ADV"]
     congress_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
-        ),
+        file_path=CONGRESS_DATA_TOKENIZED_FILE,
         file_name=CONGRESS_DATA_POS_TAGGED_FILE_NAME,
     )
     scotus_pos = POSTagger(
@@ -124,9 +124,7 @@ def run_ner() -> None:
     # apply NER to congressional legislation
     logging.debug("Applying NER to congressional legislation...")
     congress_ner = NER(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
-        ),
+        file_path=CONGRESS_DATA_TOKENIZED_FILE,
         file_name="congress_legislation_ner.fea",
     )
     congress_ner.process(
