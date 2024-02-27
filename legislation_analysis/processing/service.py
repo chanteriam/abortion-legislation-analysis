@@ -6,6 +6,7 @@ from legislation_analysis.processing.ner import NER
 from legislation_analysis.processing.pos_tagger import POSTagger
 from legislation_analysis.processing.tokenizer import Tokenizer
 from legislation_analysis.utils.constants import (
+    CONGRESS_DATA_CLEANED_FILE_NAME,
     CONGRESS_DATA_FILE,
     CONGRESS_DATA_FILE_CLEANED,
     CONGRESS_DATA_POS_TAGGED_FILE_NAME,
@@ -22,7 +23,7 @@ def run_data_cleaner() -> None:
     Runs data cleaner.
     """
     congress_cleaner = Cleaner(
-        CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea"
+        CONGRESS_DATA_FILE, CONGRESS_DATA_CLEANED_FILE_NAME
     )
     scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
 
