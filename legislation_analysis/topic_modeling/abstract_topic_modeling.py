@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from gensim.corpora import Dictionary
+from gensim.models import LdaModel
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from legislation_analysis.utils.constants import TFIDF_FILTER_THRESHOLD
@@ -25,7 +26,7 @@ class BaseTopicModeling(ABC):
         max_df: float = 0.8,
         min_df: int = 5,
         topic_ranges: tuple = (2, 30),
-        model=None,
+        model_fp: str = None,
     ):
         self.df = load_file_to_df(file_path)
         self.save_name = save_name
@@ -39,7 +40,7 @@ class BaseTopicModeling(ABC):
         self.corpus = None
 
         # model building
-        self.lda_model = model
+        self.lda_model = LdaModel.load(model_fp) if model_fp else None
         self.topic_ranges = topic_ranges
 
     def prepare_corpus(self):
@@ -96,7 +97,7 @@ class BaseTopicModeling(ABC):
         pass
 
     @abstractmethod
-    def random_search(self) -> None:
+    def random_search(self, iterations: int) -> None:
         pass
 
     @abstractmethod

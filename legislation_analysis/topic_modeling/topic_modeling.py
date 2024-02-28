@@ -35,6 +35,7 @@ class TopicModeling(BaseTopicModeling):
         min_df (int): minimum document frequency for TF-IDF vectorization.
         topic_ranges (tuple): range of topics to search for the optimal LDA
                               model.
+        model_fp (str): file path to a pre-trained LDA model.
     """
 
     def __init__(
@@ -45,7 +46,7 @@ class TopicModeling(BaseTopicModeling):
         max_df: float = 0.8,
         min_df: int = 5,
         topic_ranges: tuple = (2, 30),
-        model=None,
+        model_fp: str = None,
     ):
         super().__init__(
             file_path=file_path,
@@ -54,7 +55,7 @@ class TopicModeling(BaseTopicModeling):
             max_df=max_df,
             min_df=min_df,
             topic_ranges=topic_ranges,
-            model=model,
+            model_fp=model_fp,
         )
 
         # saving model parameters
@@ -69,7 +70,7 @@ class TopicModeling(BaseTopicModeling):
         self.topics_by_words_df = None
         self.topics_by_text_df = None
 
-    def compute_coherence(self, model) -> float:
+    def compute_coherence(self, model: LdaModel) -> float:
         """
         Computes the coherence score for the given LDA model.
 
@@ -87,7 +88,9 @@ class TopicModeling(BaseTopicModeling):
         )
         return coherence_model.get_coherence()
 
-    def random_search(self, iterations=TOPIC_MODEL_TRAINING_ITERATIONS):
+    def random_search(
+        self, iterations: int = TOPIC_MODEL_TRAINING_ITERATIONS
+    ) -> None:
         """
         Performs random search to find the optimal LDA model parameters.
 
@@ -194,7 +197,7 @@ class TopicModeling(BaseTopicModeling):
 
         self.topics_by_text_df = lda_df
 
-    def gen_topic_model(self):
+    def gen_topic_model(self) -> None:
         """
         Main method to generate and evaluate the LDA topic model.
         """
@@ -207,9 +210,12 @@ class TopicModeling(BaseTopicModeling):
         self.get_topics_by_words_df()
         self.get_text_topics_df()
 
-    def heatmap(self, num_docs=15):
+    def heatmap(self, num_docs: int = 15) -> None:
         """
         Generates a heatmap showing the distribution of topics across documents.
+
+        parameters:
+            num_docs (int): Number of documents to include in the heatmap.
         """
         # select a random subset of documents if the dataframe is larger
         # than num_docs
@@ -255,7 +261,7 @@ class TopicModeling(BaseTopicModeling):
         plt.tight_layout()
         plt.show()
 
-    def bar_chart(self, num_words=10):
+    def bar_chart(self, num_words: int = 10) -> None:
         """
         Generates a bar chart showing the importance of words within each topic.
 

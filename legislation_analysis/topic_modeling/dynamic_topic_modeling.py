@@ -34,6 +34,8 @@ class DynamicTopicModeling(BaseTopicModeling):
         save_name (str): The name to save the model.
         topic_ranges (tuple[int, int]): The range of topics to consider.
         min_df (float): The minimum document frequency for the TfidfVectorizer.
+        max_df (int): The maximum document frequency for the TfidfVectorizer.
+        model_fp (str): The file path to a pre-trained LDA model.
     """
 
     def __init__(
@@ -47,7 +49,7 @@ class DynamicTopicModeling(BaseTopicModeling):
             2,
             15,
         ),
-        model=None,
+        model_fp: str = None,
     ) -> None:
         super().__init__(
             file_path=file_path,
@@ -56,7 +58,7 @@ class DynamicTopicModeling(BaseTopicModeling):
             max_df=max_df,
             min_df=min_df,
             topic_ranges=topic_ranges,
-            model=model,
+            model_fp=model_fp,
         )
 
         # getting time series attributes
@@ -92,7 +94,7 @@ class DynamicTopicModeling(BaseTopicModeling):
         self.df.sort_values(by=["congress_num"], inplace=True)
         self.df = self.df.reset_index(drop=True)
 
-    def get_bills_per_congress(self, visualize=False) -> None:
+    def get_bills_per_congress(self, visualize: bool = False) -> None:
         """
         Groups the number of bills per congress.
         """
@@ -113,7 +115,9 @@ class DynamicTopicModeling(BaseTopicModeling):
                 self.bills_per_congress["num_bills"],
             )
 
-    def compute_ind_coherence(self, model, time, num_words=10) -> float:
+    def compute_ind_coherence(
+        self, model: LdaSeqModel, time: int, num_words: int = 10
+    ) -> float:
         """
         Computes the coherence score for and individual time period.
 
@@ -153,7 +157,7 @@ class DynamicTopicModeling(BaseTopicModeling):
         )
         return coherence_model.get_coherence()
 
-    def compute_coherence(self, model) -> float:
+    def compute_coherence(self, model: LdaSeqModel) -> float:
         """
         Computes the average coherence score across time periods.
         """
@@ -164,7 +168,9 @@ class DynamicTopicModeling(BaseTopicModeling):
             ]
         )
 
-    def random_search(self, iterations=TOPIC_MODEL_TRAINING_ITERATIONS) -> None:
+    def random_search(
+        self, iterations: int = TOPIC_MODEL_TRAINING_ITERATIONS
+    ) -> None:
         """
         Performs random search for the optimal number of topics.
         """
@@ -204,7 +210,9 @@ class DynamicTopicModeling(BaseTopicModeling):
         print(f"Best Params: {self.optimal_params}")
 
         # save model
-        self.lda_model.save(os.path.join(MODELED_DATA_PATH, self.save_name))
+        self.lda_model.save(
+            os.path.join(MODELED_DATA_PATH, f"{self.save_name}_dynamic")
+        )
 
     def get_topics(self, num_words: int = 10) -> None:
         """
