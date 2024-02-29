@@ -88,7 +88,6 @@ SCOTUS_TOPIC_MODEL_FILE = os.path.join(
     MODELED_DATA_PATH, SCOTUS_TOPIC_MODEL_FILE_NAME
 )
 
-
 SCOTUS_API_COLUMNS = [
     "title",
     "author",
