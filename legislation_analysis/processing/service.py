@@ -1,18 +1,24 @@
 import logging
-import os
 
 from legislation_analysis.processing.clean import Cleaner
 from legislation_analysis.processing.ner import NER
 from legislation_analysis.processing.pos_tagger import POSTagger
 from legislation_analysis.processing.tokenizer import Tokenizer
 from legislation_analysis.utils.constants import (
+    CONGRESS_DATA_CLEANED_FILE,
+    CONGRESS_DATA_CLEANED_FILE_NAME,
     CONGRESS_DATA_FILE,
-    CONGRESS_DATA_FILE_CLEANED,
+    CONGRESS_DATA_NER_FILE_NAME,
     CONGRESS_DATA_POS_TAGGED_FILE_NAME,
-    PROCESSED_DATA_PATH,
+    CONGRESS_DATA_TOKENIZED_FILE,
+    CONGRESS_DATA_TOKENIZED_FILE_NAME,
+    SCOTUS_DATA_CLEANED_FILE,
+    SCOTUS_DATA_CLEANED_FILE_NAME,
     SCOTUS_DATA_FILE,
-    SCOTUS_DATA_FILE_CLEANED,
-    SCOTUS_DATA_FILE_POS_TAGGED_NAME,
+    SCOTUS_DATA_NER_FILE_NAME,
+    SCOTUS_DATA_POS_TAGGED_FILE_NAME,
+    SCOTUS_DATA_TOKENIZED_FILE,
+    SCOTUS_DATA_TOKENIZED_FILE_NAME,
 )
 from legislation_analysis.utils.functions import save_df_to_file
 
@@ -24,8 +30,12 @@ def run_data_cleaner() -> None:
     # clean congressional legislation
     logging.info("Cleaning Congress Data...")
     congress_cleaner = Cleaner(
-        CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea"
+        CONGRESS_DATA_FILE, CONGRESS_DATA_CLEANED_FILE_NAME
     )
+    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, SCOTUS_DATA_CLEANED_FILE_NAME)
+
+    # clean congressional legislation
+    logging.info("Cleaning Congress Data...")
     congress_cleaner.process(
         cols_to_clean=[
             ("raw_text", "cleaned_text"),
@@ -36,7 +46,7 @@ def run_data_cleaner() -> None:
 
     # clean SCOTUS opinions
     logging.info("Cleaning SCOTUS Data...")
-    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
+    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, SCOTUS_DATA_CLEANED_FILE_NAME)
     scotus_cleaner.process()
     save_df_to_file(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
 
@@ -48,8 +58,11 @@ def run_data_tokenizer() -> None:
     # tokenize congressional legislation
     logging.info("Tokenizing Congress Data...")
     congress_tokenizer = Tokenizer(
-        CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.fea"
+        CONGRESS_DATA_CLEANED_FILE, CONGRESS_DATA_TOKENIZED_FILE_NAME
     )
+
+    # tokenize congressional legislation
+    logging.info("Tokenizing Congress Data...")
     congress_tokenizer.process(
         cols_to_tokenize=[
             ("cleaned_text", "tokenized_text"),
@@ -63,7 +76,7 @@ def run_data_tokenizer() -> None:
     # tokenize SCOTUS opinions
     logging.info("Tokenizing SCOTUS Data...")
     scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea"
+        SCOTUS_DATA_CLEANED_FILE, SCOTUS_DATA_TOKENIZED_FILE_NAME
     )
     scotus_tokenizer.process()
     save_df_to_file(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
@@ -79,9 +92,7 @@ def run_pos_tagger() -> None:
     # apply POS tagging to congressional legislation
     logging.info("Applying POS tagging to congressional text...")
     congress_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
-        ),
+        file_path=CONGRESS_DATA_TOKENIZED_FILE,
         file_name=CONGRESS_DATA_POS_TAGGED_FILE_NAME,
     )
     congress_pos.process(
@@ -96,10 +107,8 @@ def run_pos_tagger() -> None:
     # apply POS tagging to SCOTUS opinions
     logging.info("Applying POS tagging to SCOTUS text...")
     scotus_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
-        file_name=SCOTUS_DATA_FILE_POS_TAGGED_NAME,
+        file_path=SCOTUS_DATA_TOKENIZED_FILE,
+        file_name=SCOTUS_DATA_POS_TAGGED_FILE_NAME,
     )
     scotus_pos.process(tags_of_interest=tags_of_interest)
     save_df_to_file(scotus_pos.pos_df, scotus_pos.save_path)
@@ -119,10 +128,8 @@ def run_ner() -> None:
     # apply NER to congressional legislation
     logging.debug("Applying NER to congressional legislation...")
     congress_ner = NER(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
-        ),
-        file_name="congress_legislation_ner.fea",
+        file_path=CONGRESS_DATA_TOKENIZED_FILE,
+        file_name=CONGRESS_DATA_NER_FILE_NAME,
     )
     congress_ner.process(
         cols_to_ner=[
@@ -135,10 +142,8 @@ def run_ner() -> None:
     # apply NER to SCOTUS opinions
     logging.debug("Applying NER to SCOTUS opinions...")
     scotus_ner = NER(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
-        file_name="scotus_cases_ner.fea",
+        file_path=SCOTUS_DATA_TOKENIZED_FILE,
+        file_name=SCOTUS_DATA_NER_FILE_NAME,
     )
     scotus_ner.process()
     save_df_to_file(scotus_ner.ner_df, scotus_ner.save_path)

@@ -5,7 +5,7 @@ Roe v. Wade (1973) and Dobbs v. Jackson (2022) decisions, which established and 
 right, respectively. We have assembled a dataset of congressional legislation from 1973 to 2024 alongside a dataset of
 opinions from 13 pivotal Supreme Court cases.
 
-Our main research questions are:
+Our main research questions are as follows:
 
 1. How, if at all, has abortion discourse evolved between the two landmark decisions?
 2. What congressional legislation came as a direct result of, or in contradiction to, abortion-related SCOTUS decisions?
