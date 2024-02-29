@@ -30,12 +30,12 @@ CONGRESS_DATA_FILE_CLEANED = os.path.join(
 )
 CONGRESS_DATA_CLUSTERED_FILE_NAME = "congress_legislation_clustered.fea"
 CONGRESS_DATA_POS_TAGGED_FILE_NAME = "congress_legislation_pos.fea"
-CONGRESS_TOPIC_MODEL = "congress_tm.model"
-CONGRESS_DYN_TOPIC_MODEL = "congress_dyn_tm.model"
+CONGRESS_TOPIC_MODEL_FILE_NAME = "congress_tm.model"
+CONGRESS_DYN_TOPIC_MODEL_FILE_NAME = "congress_dyn_tm.model"
 CONGRESS_DATA_FILE_POS_TAGGED = os.path.join(
     PROCESSED_DATA_PATH, CONGRESS_DATA_POS_TAGGED_FILE_NAME
 )
-CONGRESS_COLUMNS_API = [
+CONGRESS_API_COLUMNS = [
     "title",
     "legislation_number",
     "congress",
@@ -57,7 +57,7 @@ SCOTUS_TOPIC_MODEL = "scotus_tm.model"
 SCOTUS_DATA_FILE_POS_TAGGED = os.path.join(
     PROCESSED_DATA_PATH, SCOTUS_DATA_FILE_POS_TAGGED_NAME
 )
-SCOTUS_COLUMNS_API = [
+SCOTUS_API_COLUMNS = [
     "title",
     "author",
     "author_url",

@@ -38,10 +38,10 @@ class Cleaner:
     """
 
     DICTIONARY = set(words.words()) | MISC_DICTIONARY_ENTRIES
+    GPO_ABBREVS = get_gpo_dictionary()
     ITER_LIMIT = 4
     LEGAL_DICTIONARY = get_legal_dictionary()
     NAMES_DATASET = NameDataset()
-    GPO_ABBREVS = get_gpo_dictionary()
 
     def __init__(
         self,

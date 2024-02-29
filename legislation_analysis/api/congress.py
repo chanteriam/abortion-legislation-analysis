@@ -20,9 +20,9 @@ import pandas as pd
 import requests
 
 from legislation_analysis.utils.constants import (
+    CONGRESS_API_COLUMNS,
     CONGRESS_API_KEY,
     CONGRESS_API_ROOT_URL,
-    CONGRESS_COLUMNS_API,
     CONGRESS_ROOT_URL,
 )
 from legislation_analysis.utils.functions import (
@@ -45,7 +45,7 @@ class CongressAPI:
         self.processed_df = None
         self.df = None
 
-    def get_df(self) -> None:
+    def set_df(self) -> None:
         """
         Sets self.df by extracting data from the file path and reformatting
         columns.
@@ -227,7 +227,7 @@ class CongressAPI:
             inplace=True,
         )
         self.processed_df = self.processed_df.loc[
-            :, CONGRESS_COLUMNS_API
+            :, CONGRESS_API_COLUMNS
         ].copy()
 
     def process(self) -> None:
@@ -236,7 +236,7 @@ class CongressAPI:
         """
         # load data
         logging.debug(f"Loading data from {self.file_path}...")
-        self.get_df()
+        self.set_df()
 
         # extract legislation information
         logging.debug("Extracting legislation information...")
@@ -256,7 +256,7 @@ class CongressAPI:
         logging.debug("Extracting legislation text url...")
         self.processed_df.loc[:, "text_url"] = self.processed_df.loc[
             :, "api_url"
-        ].apply(lambda x: self.extract_text_url(x))
+        ].apply(self.extract_text_url)
 
         # extract text
         logging.debug("Extracting legislation text...")

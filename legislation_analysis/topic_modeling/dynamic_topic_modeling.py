@@ -210,9 +210,7 @@ class DynamicTopicModeling(BaseTopicModeling):
         print(f"Best Params: {self.optimal_params}")
 
         # save model
-        self.lda_model.save(
-            os.path.join(MODELED_DATA_PATH, f"{self.save_name}_dynamic")
-        )
+        self.lda_model.save(os.path.join(MODELED_DATA_PATH, self.save_name))
 
     def get_topics(self, num_words: int = 10) -> None:
         """
