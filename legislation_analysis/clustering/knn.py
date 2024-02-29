@@ -29,18 +29,18 @@ class KNN(BaseClustering):
         file_path: str,
         file_name: str,
     ):
-        self._df = load_file_to_df(file_path)
+        self.__df = load_file_to_df(file_path)
         if "congress" in file_name:
-            self._n_clusters = OPTIMAL_CONGRESS_CLUSTERS
-            self._title_suffix = "Congressional Legislation"
+            self.__n_clusters = OPTIMAL_CONGRESS_CLUSTERS
+            self.__title_suffix = "Congressional Legislation"
         else:
-            self._n_clusters = OPTIMAL_SCOTUS_CLUSTERS
-            self._title_suffix = "SCOTUS Decisions"
+            self.__n_clusters = OPTIMAL_SCOTUS_CLUSTERS
+            self.__title_suffix = "SCOTUS Decisions"
         self._save_path = os.path.join(CLUSTERED_DATA_PATH, file_name)
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
         # only have a maximum of 1000 features.
-        self._vectorizer = sklearn.feature_extraction.text.TfidfVectorizer(
+        self.__vectorizer = sklearn.feature_extraction.text.TfidfVectorizer(
             max_df=0.5,
             max_features=1000,
             min_df=3,
@@ -50,28 +50,28 @@ class KNN(BaseClustering):
 
     def cluster_parts_of_speech(self) -> None:
         logging.debug("Starting K-Nearest Neighbor clustering...")
-        vectors = self._vectorizer.fit_transform(
-            self._df["joined_text_pos_tags_of_interest"]
+        vectors = self.__vectorizer.fit_transform(
+            self.__df["joined_text_pos_tags_of_interest"]
         )
         cluster_algo = sklearn.cluster.KMeans(
-            n_clusters=self._n_clusters, init="k-means++"
+            n_clusters=self.__n_clusters, init="k-means++"
         )
         cluster_algo.fit(vectors.toarray())
-        self._df["knn_clusters"] = cluster_algo.labels_
+        self.__df["knn_clusters"] = cluster_algo.labels_
         logging.debug("Finished K-Nearest Neighbor clustering...")
         logging.debug("Saving K-Nearest Neighbor assignments...")
-        save_df_to_file(self._df, self._save_path)
+        save_df_to_file(self.__df, self._save_path)
 
     def visualize(self) -> None:
-        vector_array = self._vectorizer.fit_transform(
-            self._df["knn_clusters"]
+        vector_array = self.__vectorizer.fit_transform(
+            self.__df["knn_clusters"]
         ).toarray()
         fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(15, 5))
         ax1.set_xlim([-0.1, 1])
-        ax1.set_ylim([0, len(vector_array) + (self._n_clusters + 1) * 10])
+        ax1.set_ylim([0, len(vector_array) + (self.__n_clusters + 1) * 10])
 
         cluster_algo = sklearn.cluster.KMeans(
-            n_clusters=self._n_clusters, init="k-means++"
+            n_clusters=self.__n_clusters, init="k-means++"
         )
         cluster_labels = cluster_algo.fit_predict(vector_array)
 
@@ -86,12 +86,12 @@ class KNN(BaseClustering):
 
         y_lower = 10
 
-        pca = sklearn.decomposition.PCA(n_components=self._n_clusters).fit(
+        pca = sklearn.decomposition.PCA(n_components=self.__n_clusters).fit(
             vector_array
         )
         reduced_data = pca.transform(vector_array)
 
-        for i in range(self._n_clusters):
+        for i in range(self.__n_clusters):
             ith_cluster_silhouette_values = sample_silhouette_values[
                 cluster_labels == i
             ]
@@ -101,7 +101,7 @@ class KNN(BaseClustering):
             size_cluster_i = ith_cluster_silhouette_values.shape[0]
             y_upper = y_lower + size_cluster_i
             cmap = matplotlib.cm.get_cmap("nipy_spectral")
-            color = cmap(float(i) / self._n_clusters)
+            color = cmap(float(i) / self.__n_clusters)
             ax1.fill_betweenx(
                 np.arange(y_lower, y_upper),
                 0,
@@ -115,7 +115,7 @@ class KNN(BaseClustering):
 
             y_lower = y_upper + 10
 
-        ax1.set_title(f"Silhouette Plot for {self._title_suffix}")
+        ax1.set_title(f"Silhouette Plot for {self.__title_suffix}")
         ax1.set_xlabel("Silhouette Coefficient Values")
         ax1.set_ylabel("Cluster labels")
 
@@ -126,7 +126,7 @@ class KNN(BaseClustering):
 
         # 2nd Plot showing the actual clusters formed
         cmap = matplotlib.cm.get_cmap("nipy_spectral")
-        colors = cmap(float(i) / self._n_clusters)
+        colors = cmap(float(i) / self.__n_clusters)
         ax2.scatter(
             reduced_data[:, 0],
             reduced_data[:, 1],
@@ -153,13 +153,14 @@ class KNN(BaseClustering):
         for i, c in enumerate(projected_centers):
             ax2.scatter(c[0], c[1], marker="$%d$" % i, alpha=1, s=50)
 
-        ax2.set_title(f"PCA of {self._title_suffix} Clusters")
+        ax2.set_title(f"PCA of {self.__title_suffix} Clusters")
         ax2.set_xlabel("Principle Component 1")
         ax2.set_ylabel("Principle Component 2")
 
         plt.show()
 
+        # Using print since it's for the notebooks
         print(
-            f"For n_clusters = {self._n_clusters}, The average "
+            f"For n_clusters = {self.__n_clusters}, The average "
             f"silhouette_score is : {silhouette_avg:.3f}"
         )
