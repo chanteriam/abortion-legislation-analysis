@@ -16,6 +16,7 @@ from legislation_analysis.utils.constants import (
     SCOTUS_DATA_CLEANED_FILE_NAME,
     SCOTUS_DATA_FILE,
     SCOTUS_DATA_NER_FILE_NAME,
+    SCOTUS_DATA_POS_TAGGED_FILE_NAME,
     SCOTUS_DATA_TOKENIZED_FILE,
     SCOTUS_DATA_TOKENIZED_FILE_NAME,
 )
@@ -78,7 +79,7 @@ def run_data_tokenizer() -> None:
     # tokenize SCOTUS opinions
     logging.info("Tokenizing SCOTUS Data...")
     scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea"
+        SCOTUS_DATA_CLEANED_FILE, "scotus_cases_tokenized.fea"
     )
     scotus_tokenizer.process()
     save_df_to_file(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
@@ -109,10 +110,8 @@ def run_pos_tagger() -> None:
     # apply POS tagging to SCOTUS opinions
     logging.info("Applying POS tagging to SCOTUS text...")
     scotus_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
-        file_name=SCOTUS_DATA_FILE_POS_TAGGED_NAME,
+        file_path=SCOTUS_DATA_TOKENIZED_FILE,
+        file_name=SCOTUS_DATA_POS_TAGGED_FILE_NAME,
     )
     scotus_pos.process(tags_of_interest=tags_of_interest)
     save_df_to_file(scotus_pos.pos_df, scotus_pos.save_path)
