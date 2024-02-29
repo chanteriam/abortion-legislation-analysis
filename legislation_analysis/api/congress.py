@@ -78,17 +78,41 @@ class CongressAPI:
             congress number, bill type, and bill number extracted.
         """
         new_df = df.copy()
+
         new_df.loc[:, "congress_num"] = new_df.loc[:, "congress"].apply(
-            lambda x: x.split(" ")[0][:-2]
+            lambda x: None if str(x).lower() == "nan" else x.split(" ")[0][:-2]
         )
-        new_df = new_df.loc[new_df.loc[:, "congress_num"] != "", :]
+        new_df = new_df.loc[
+            (new_df.loc[:, "congress_num"] != "")
+            & (~new_df.loc[:, "congress_num"].isna()),
+            :,
+        ]
 
         new_df.loc[:, "bill_type"] = new_df.loc[:, "legislation number"].apply(
-            lambda x: x.split(" ")[0].lower().replace(".", "")
+            lambda x: (
+                None
+                if str(x).lower() == "nan"
+                else x.split(" ")[0].lower().replace(".", "")
+            )
         )
+        new_df = new_df.loc[
+            (new_df.loc[:, "bill_type"] != "")
+            & (~new_df.loc[:, "bill_type"].isna()),
+            :,
+        ]
+
         new_df.loc[:, "bill_num"] = new_df.loc[:, "legislation number"].apply(
-            lambda x: int(x.split(" ")[1])
+            lambda x: (
+                None
+                if (str(x).lower() == "nan" or not x.split(" ")[-1].isnumeric())
+                else int(x.split(" ")[-1])
+            )
         )
+        new_df = new_df.loc[
+            (new_df.loc[:, "bill_num"] != "")
+            & (~new_df.loc[:, "bill_num"].isna()),
+            :,
+        ]
 
         return new_df
 
