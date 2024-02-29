@@ -9,6 +9,7 @@ CLUSTERED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "clustered")
 PROCESSED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "processed")
 RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
 MODELED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "modeled")
+PLOTTED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "plot")
 
 # api
 CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY")
@@ -30,6 +31,7 @@ CONGRESS_DATA_FILE_CLEANED = os.path.join(
 )
 CONGRESS_DATA_CLUSTERED_FILE_NAME = "congress_legislation_clustered.fea"
 CONGRESS_DATA_POS_TAGGED_FILE_NAME = "congress_legislation_pos.fea"
+CONGRESS_DATA_FILE_NER_NAME = "congress_legislation_ner.fea"
 CONGRESS_TOPIC_MODEL_FILE_NAME = "congress_tm.model"
 CONGRESS_DYN_TOPIC_MODEL_FILE_NAME = "congress_dyn_tm.model"
 CONGRESS_DATA_FILE_POS_TAGGED = os.path.join(
@@ -53,6 +55,7 @@ SCOTUS_DATA_FILE_CLEANED = os.path.join(
 )
 SCOTUS_DATA_FILE_CLUSTERED_NAME = "scotus_cases_clustered.fea"
 SCOTUS_DATA_FILE_POS_TAGGED_NAME = "scotus_cases_pos.fea"
+SCOTUS_DATA_FILE_NER_NAME = "scotus_cases_ner.fea"
 SCOTUS_TOPIC_MODEL = "scotus_tm.model"
 SCOTUS_DATA_FILE_POS_TAGGED = os.path.join(
     PROCESSED_DATA_PATH, SCOTUS_DATA_FILE_POS_TAGGED_NAME
