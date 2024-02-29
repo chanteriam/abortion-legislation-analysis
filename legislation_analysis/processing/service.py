@@ -46,7 +46,7 @@ def run_data_cleaner() -> None:
 
     # clean SCOTUS opinions
     logging.info("Cleaning SCOTUS Data...")
-    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
+    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, SCOTUS_DATA_CLEANED_FILE_NAME)
     scotus_cleaner.process()
     save_df_to_file(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
 
@@ -79,7 +79,7 @@ def run_data_tokenizer() -> None:
     # tokenize SCOTUS opinions
     logging.info("Tokenizing SCOTUS Data...")
     scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_CLEANED_FILE, "scotus_cases_tokenized.fea"
+        SCOTUS_DATA_CLEANED_FILE, SCOTUS_DATA_TOKENIZED_FILE_NAME
     )
     scotus_tokenizer.process()
     save_df_to_file(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
