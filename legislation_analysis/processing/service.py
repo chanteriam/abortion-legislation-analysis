@@ -21,23 +21,22 @@ def run_data_cleaner() -> None:
     """
     Runs data cleaner.
     """
+    # clean congressional legislation
+    logging.info("Cleaning Congress Data...")
     congress_cleaner = Cleaner(
         CONGRESS_DATA_FILE, "congress_legislation_cleaned.fea"
     )
-    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
-
-    # clean congressional legislation
-    logging.info("Cleaning Congress Data...")
     congress_cleaner.process(
         cols_to_clean=[
             ("raw_text", "cleaned_text"),
-            ("latest summary", "cleaned_summary"),
+            ("raw_summary", "cleaned_summary"),
         ],
     )
     save_df_to_file(congress_cleaner.cleaned_df, congress_cleaner.save_path)
 
     # clean SCOTUS opinions
     logging.info("Cleaning SCOTUS Data...")
+    scotus_cleaner = Cleaner(SCOTUS_DATA_FILE, "scotus_cases_cleaned.fea")
     scotus_cleaner.process()
     save_df_to_file(scotus_cleaner.cleaned_df, scotus_cleaner.save_path)
 
@@ -46,15 +45,11 @@ def run_data_tokenizer() -> None:
     """
     Runs data tokenizer.
     """
+    # tokenize congressional legislation
+    logging.info("Tokenizing Congress Data...")
     congress_tokenizer = Tokenizer(
         CONGRESS_DATA_FILE_CLEANED, "congress_legislation_tokenized.fea"
     )
-    scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea"
-    )
-
-    # tokenize congressional legislation
-    logging.info("Tokenizing Congress Data...")
     congress_tokenizer.process(
         cols_to_tokenize=[
             ("cleaned_text", "tokenized_text"),
@@ -67,6 +62,9 @@ def run_data_tokenizer() -> None:
 
     # tokenize SCOTUS opinions
     logging.info("Tokenizing SCOTUS Data...")
+    scotus_tokenizer = Tokenizer(
+        SCOTUS_DATA_FILE_CLEANED, "scotus_cases_tokenized.fea"
+    )
     scotus_tokenizer.process()
     save_df_to_file(scotus_tokenizer.tokenized_df, scotus_tokenizer.save_path)
 
@@ -77,21 +75,15 @@ def run_pos_tagger() -> None:
     a file.
     """
     tags_of_interest = ["NOUN", "ADJ", "VERB", "ADV"]
+
+    # apply POS tagging to congressional legislation
+    logging.info("Applying POS tagging to congressional text...")
     congress_pos = POSTagger(
         file_path=os.path.join(
             PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
         ),
         file_name=CONGRESS_DATA_POS_TAGGED_FILE_NAME,
     )
-    scotus_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
-        file_name=SCOTUS_DATA_FILE_POS_TAGGED_NAME,
-    )
-
-    # apply POS tagging to congressional legislation
-    logging.info("Applying POS tagging to congressional text...")
     congress_pos.process(
         cols_to_apply_pos=[
             ("cleaned_text", "text_pos"),
@@ -103,6 +95,12 @@ def run_pos_tagger() -> None:
 
     # apply POS tagging to SCOTUS opinions
     logging.info("Applying POS tagging to SCOTUS text...")
+    scotus_pos = POSTagger(
+        file_path=os.path.join(
+            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
+        ),
+        file_name=SCOTUS_DATA_FILE_POS_TAGGED_NAME,
+    )
     scotus_pos.process(tags_of_interest=tags_of_interest)
     save_df_to_file(scotus_pos.pos_df, scotus_pos.save_path)
 

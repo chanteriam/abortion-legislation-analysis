@@ -9,6 +9,7 @@ import re
 
 import nltk
 import pandas as pd
+from names_dataset import NameDataset
 from nltk.corpus import wordnet, words
 
 from legislation_analysis.utils.constants import (
@@ -17,6 +18,7 @@ from legislation_analysis.utils.constants import (
     MISC_DICTIONARY_ENTRIES,
 )
 from legislation_analysis.utils.functions import (
+    get_gpo_dictionary,
     get_legal_dictionary,
     load_file_to_df,
 )
@@ -36,8 +38,10 @@ class Cleaner:
     """
 
     DICTIONARY = set(words.words()) | MISC_DICTIONARY_ENTRIES
+    GPO_ABBREVS = get_gpo_dictionary()
     ITER_LIMIT = 4
     LEGAL_DICTIONARY = get_legal_dictionary()
+    NAMES_DATASET = NameDataset()
 
     def __init__(
         self,
@@ -82,8 +86,12 @@ class Cleaner:
 
             # check if words are combined with a period
             for new_word in new_words:
-                if "." in new_word:
-                    words = new_word.split(".")
+                if "," in new_word or (
+                    "." in new_word and "https" not in new_word
+                ):
+                    split_char = "," if "," in new_word else "."
+                    words = new_word.split(split_char)
+
                     # if words are combined with a period, retain all but the
                     # last period
                     combined_words = [
@@ -93,7 +101,9 @@ class Cleaner:
                         if i == len(words) - 1:
                             new_split_text.append(w.strip().strip("_"))
                         else:
-                            new_split_text.append(w.strip().strip("_") + ".")
+                            new_split_text.append(
+                                w.strip().strip("_") + split_char
+                            )
                 else:
                     new_split_text.append(new_word)
 
@@ -128,11 +138,14 @@ class Cleaner:
 
         # remove special characters
         cleaned_text = re.sub(
-            r"[^a-zA-Z0-9\s\,\.\?\;\:\)\(\[\]\"\'\-]", "", cleaned_text
-        )
+            r"[^a-zA-Z0-9\s\,\.\?\;\:\)\(\[\]\"\'\-\/]", "", cleaned_text
+        ).replace("\xa0", "")
 
         # remove excess whitespace
         cleaned_text = re.sub(r"\s+", " ", cleaned_text).strip()
+
+        # remove excess periods
+        cleaned_text = re.sub(r"\.{2,}", ".", cleaned_text)
 
         return Cleaner.spell_check(cleaned_text)
 
@@ -150,6 +163,10 @@ class Cleaner:
         # Exclude single letters except 'a'
         if len(word) == 1 and word != "a":
             return False
+
+        # these abbreviations contain punction and are valid
+        if word.lower() in cls.GPO_ABBREVS:
+            return True
 
         punctuation = [
             ",",
@@ -172,6 +189,11 @@ class Cleaner:
             word = word.replace(punc, "")
 
         word = word.lower()
+
+        # check if word is a name
+        potential_name = cls.NAMES_DATASET.search(word)
+        if potential_name["first_name"] or potential_name["last_name"]:
+            return True
 
         return (
             bool(wordnet.synsets(word))
@@ -277,8 +299,10 @@ class Cleaner:
                 continue
 
             # check if the word is a valid word or contains a number
-            if cls.is_valid_word(word.lower()) or any(
-                char.isdigit() for char in word
+            if (
+                cls.is_valid_word(word.lower())
+                or any(char.isdigit() for char in word)
+                or ("https" in word)
             ):
                 new_words.append(word)
                 continue
@@ -316,6 +340,9 @@ class Cleaner:
         """
         cleaned_df = self.df.copy()
 
+        if not cols_to_clean:
+            cols_to_clean = [("raw_text", "cleaned_text")]
+
         for col in cols_to_clean:
             logging.debug(f"\tCleaning {col[0]}...")
             col, new_col = col
@@ -325,5 +352,8 @@ class Cleaner:
             cleaned_df[new_col] = cleaned_df[new_col].apply(
                 lambda x: self.clean_text(x)
             )
+
+            # remove old column
+            cleaned_df.drop(col, axis=1, inplace=True)
 
         self.cleaned_df = cleaned_df
