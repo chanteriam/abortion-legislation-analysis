@@ -64,7 +64,7 @@ legislation.
 
       1. The congressional legislation search was done by filtering for legislation that included the following keywords in the bill title or summary: "abortion", "reproductive healthcare", "reproduction."
       2. The search-only includes those bills that could become laws.
-      3. In downloading the search results, choose the following attributes: Title, Latest Summary, Date Proposed, Amendment Text (Latest), Amends Amendment.
+      3. In downloading the search results, choose the following attributes: Title, Latest Summary, and Amendment Text (Latest).
 
 ### Instructions to Run the Project
 
