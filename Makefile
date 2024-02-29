@@ -34,9 +34,17 @@ tokenize-data:
 pos-tag-data:
 	python -m legislation_analysis --pos-tag -d
 
+.PHONY: ner-data
+ner-data:
+	python -m legislation_analysis --ner -d
+
 .PHONY: cluster-data
 cluster-data:
 	python -m legislation_analysis --cluster -d
+
+.PHONY: model-data
+model-data:
+	python -m legislation_analysis --model -d
 
 # run all commands
 .PHONY: run
