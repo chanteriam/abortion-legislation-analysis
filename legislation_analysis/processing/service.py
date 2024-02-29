@@ -60,9 +60,6 @@ def run_data_tokenizer() -> None:
     congress_tokenizer = Tokenizer(
         CONGRESS_DATA_CLEANED_FILE, CONGRESS_DATA_TOKENIZED_FILE_NAME
     )
-    scotus_tokenizer = Tokenizer(
-        SCOTUS_DATA_CLEANED_FILE, SCOTUS_DATA_TOKENIZED_FILE_NAME
-    )
 
     # tokenize congressional legislation
     logging.info("Tokenizing Congress Data...")
