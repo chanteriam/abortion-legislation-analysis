@@ -76,6 +76,7 @@ MISC_DICTIONARY_ENTRIES = {
     "roe",
     "wade",
     "breyer",
+    "bolton",
     "sotomayor",
     "kagan",
     "hellerstedt",

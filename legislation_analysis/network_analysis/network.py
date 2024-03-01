@@ -3,7 +3,6 @@ Implements a class for generating network analysis between congressional data
 and SCOTUS opinions.
 """
 
-
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -46,7 +45,7 @@ class NetworkAnalysis:
 
         # storing congress to scotus references
         self.scotus_refs = np.zeros(
-            (len(self.scotus_df), len(self.congress_df))
+            (len(self.congress_df), len(self.scotus_df))
         )
 
         # for embedding
@@ -65,7 +64,7 @@ class NetworkAnalysis:
         """
         laws = []
         for entity, _type, count in agg_ner:
-            if _type == "LAW":
+            if _type in ["LAW", "CASE"]:
                 laws.append((entity, count))
         return laws
 
@@ -132,50 +131,50 @@ class NetworkAnalysis:
 
         # adding nodes and edges for congress-to-congress references
         for i, row in enumerate(self.congress_refs):
-            source_name = index_to_name[i]
-            self.congress_network.add_node(source_name, type="congress")
+            # add the reffering congress legislation as a node
+            if any(reference_count > 1 for reference_count in row):
+                source_name = index_to_name[i]
+                self.congress_network.add_node(source_name, type="congress")
 
-            for j, count in enumerate(row):
-                if count > 0:
-                    target_name = index_to_name[j]
-                    if target_name != source_name:  # avoid self-loops
-                        self.congress_network.add_edge(
+                # add the referenced congress legislation as a node
+                for j, count in enumerate(row):
+                    if count > 1:
+                        target_name = index_to_name[j]
+                        if target_name != source_name:  # avoid self-loops
+                            self.congress_network.add_edge(
+                                source_name, target_name, weight=count
+                            )
+
+    def create_scotus_network(self):
+        """
+        Creates a network of congressional legislaiton references to SCOTUS
+        opinions.
+        """
+        congr_index_to_name = dict(
+            enumerate(self.congress_df["legislation_number"])
+        )
+        scotus_index_to_name = dict(enumerate(self.scotus_df["title"]))
+
+        # each row is a congress legislation and each column is a
+        # scotus opinion reference
+        for i, row in enumerate(self.scotus_refs):
+            # add the reffering congress legislation as a node
+            if any(reference_count > 0 for reference_count in row):
+                source_name = congr_index_to_name[i]
+                self.law_network.add_node(source_name, type="scotus")
+
+                # add the referenced scotus opinion as a node
+                for j, count in enumerate(row):
+                    if count > 1:
+                        target_name = scotus_index_to_name[j]
+                        self.law_network.add_edge(
                             source_name, target_name, weight=count
                         )
 
-    def create_total_network(self):
-        """
-        Creates a network including both congressional data and SCOTUS opinions.
-        """
-        # mapping index to congress legislation names
-        index_to_name = dict(enumerate(self.congress_df["legislation_number"]))
-
-        # extend index mapping to include SCOTUS opinions
-        offset = len(self.congress_df)
-        index_to_name.update(
-            {
-                i + offset: title
-                for i, title in enumerate(self.scotus_df["title"])
-            }
-        )
-
-        # combine reference matrices for a total view
-        total_refs = np.concatenate((self.congress_refs, self.scotus_refs))
-
-        for i, name in index_to_name.items():
-            self.law_network.add_node(
-                name, type="congress" if i < offset else "scotus"
-            )
-
-            for j, count in enumerate(total_refs[i]):
-                if count > 0:
-                    target_name = index_to_name[j]
-                    self.law_network.add_edge(name, target_name, weight=count)
-
     def plot_network(self) -> None:
         """
-        Plots a network graph of congressional legislation references to other
-        legislation and SCOTUS opinions.
+        Plots a network graph of congressional legislation references to SCOTUS
+        opinions.
         """
         # Assuming law_network is your graph
         pos = nx.spring_layout(
@@ -197,8 +196,8 @@ class NetworkAnalysis:
         nx.draw_networkx_labels(self.law_network, pos)
 
         plt.title(
-            """Abortion-Related Congressional Legislation
-            & SCOTUS Opinion Cross-References""",
+            """Abortion-Related Congressional Legislation SCOTUS Opinion
+            Cross-References""",
             fontsize=20,
         )
         plt.show()
