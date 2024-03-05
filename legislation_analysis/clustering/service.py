@@ -84,24 +84,24 @@ def run_hierarchy_ward_clustering() -> None:
     logging.info("Finished Hierarchy Ward clustering for SCOTUS decisions...")
 
 
-def run_kmeans_clustering() -> None:
+def run_k_means_clustering() -> None:
     """
     Runs K-Means clustering.
     """
     logging.info(
         "Starting K-Means clustering for " "Congressional legislation..."
     )
-    congress_kmeans = KMeansClustering(
+    congress_k_means = KMeansClustering(
         CONGRESS_DATA_FILE_POS_TAGGED, CONGRESS_DATA_CLUSTERED_FILE_NAME
     )
-    congress_kmeans.cluster_parts_of_speech()
+    congress_k_means.cluster_parts_of_speech()
     logging.info(
         "Finished K-Means clustering for " "Congressional legislation..."
     )
 
     logging.info("Starting K-Means clustering for SCOTUS decisions...")
-    scotus_kmeans = KMeansClustering(
+    scotus_k_means = KMeansClustering(
         SCOTUS_DATA_FILE_POS_TAGGED, SCOTUS_DATA_FILE_CLUSTERED_NAME
     )
-    scotus_kmeans.cluster_parts_of_speech()
+    scotus_k_means.cluster_parts_of_speech()
     logging.info("Finished K-Means clustering for SCOTUS decisions...")
