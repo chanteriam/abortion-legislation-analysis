@@ -9,6 +9,7 @@ CLUSTERED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "clustered")
 PROCESSED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "processed")
 RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
 MODELED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "modeled")
+PLOTTED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "plots")
 
 # api
 CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY")
