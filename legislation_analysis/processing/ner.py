@@ -59,7 +59,7 @@ class NER:
         return ner_lst
 
     @staticmethod
-    def __post_process(ner: list) -> list:
+    def post_process(ner: list) -> list:
         """
         Post-processes Named Entity Recognition (NER) data to edit entity labels
         and remove unimportant entities.
@@ -74,20 +74,25 @@ class NER:
 
         # edit entity labels
         for name, label in ner:
+            # fix labels
             if "ammendment" in name.lower() or "act" in name.lower():
-                new_ner.append((name, "LAW"))
+                label = "LAW"
             elif "case" in name.lower() or "v." in name.lower():
-                new_ner.append((name, "CASE"))
-            else:
-                new_ner.append((name, label))
+                label = "CASE"
+
+            # fix case names
+            if name.lower() == "doe v. bolt":
+                name = "Doe v. Bolton"
+            elif name.lower() == "gonzales v. car hart":
+                name = "Gonzales v. Carhart"
+
+            new_ner.append((name, label))
 
         # remove unimportant entities
         important_labels = [
             "PERSON",
             "ORG",
-            "GPE",
             "LAW",
-            "DATE",
             "EVENT",
             "CASE",
         ]
@@ -135,7 +140,7 @@ class NER:
             # move to the next chunk
             start = end
 
-        return cls.__post_process(ner)
+        return cls.post_process(ner)
 
     @staticmethod
     def group_ent_by_label(entities: list) -> dict:

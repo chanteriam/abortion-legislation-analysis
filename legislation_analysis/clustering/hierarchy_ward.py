@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 import scipy
 import sklearn
 
-from legislation_analysis.clustering.abstract_clustering import BaseClustering
+from legislation_analysis.clustering.base_clustering import BaseClustering
 from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
     OPTIMAL_CONGRESS_CLUSTERS,
     OPTIMAL_SCOTUS_CLUSTERS,
+    PLOTTED_DATA_PATH,
 )
 from legislation_analysis.utils.functions import (
     load_file_to_df,
@@ -49,14 +50,10 @@ class HierarchyWard(BaseClustering):
     def cluster_parts_of_speech(self) -> None:
         logging.debug("Starting Hierarchy Ward clustering...")
         vectors = self.__vectorizer.fit_transform(
-            self.__df["joined_text_pos_tags_of_interest"]
-        )
+            self.__df["text_pos_tags_of_interest"]
+        ).toarray()
 
-        vectors.todense()
-        vector_matrix = vectors * vectors.T
-        vector_matrix.setdiag(0)
-
-        linkage_matrix = scipy.cluster.hierarchy.ward(vector_matrix.toarray())
+        linkage_matrix = scipy.cluster.hierarchy.ward(vectors)
         cluster_algo = scipy.cluster.hierarchy.fcluster(
             linkage_matrix, self.__n_clusters, "maxclust"
         )
@@ -68,23 +65,23 @@ class HierarchyWard(BaseClustering):
 
     def visualize(self) -> None:
         plt.title(
-            "Hierarchical Complete Clustering Dendrogram "
-            f"of {self.__title_suffix}"
+            "Hierarchical Complete Clustering Dendrogram of {}".format(
+                self.__title_suffix
+            )
         )
         plt.xlabel("Cluster Size")
         vectors = self.__vectorizer.fit_transform(
-            self.__df["joined_text_pos_tags_of_interest"]
-        )
+            self.__df["text_pos_tags_of_interest"]
+        ).toarray()
 
-        vectors.todense()
-        vector_matrix = vectors * vectors.T
-        vector_matrix.setdiag(0)
-
-        linkage_matrix = scipy.cluster.hierarchy.ward(vector_matrix.toarray())
-        cluster_algo = scipy.cluster.hierarchy.fcluster(
-            linkage_matrix, self.__n_clusters, "maxclust"
-        )
+        linkage_matrix = scipy.cluster.hierarchy.ward(vectors)
         scipy.cluster.hierarchy.dendrogram(
-            cluster_algo, p=5, truncate_mode="level"
+            linkage_matrix, p=5, truncate_mode="level"
+        )
+
+        plt.savefig(
+            os.path.join(
+                PLOTTED_DATA_PATH, f"hierarchy_ward_{self.__title_suffix}.png"
+            )
         )
         plt.show()

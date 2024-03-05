@@ -9,6 +9,7 @@ CLUSTERED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "clustered")
 PROCESSED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "processed")
 RAW_DATA_PATH = os.path.join(PROJECT_PATH, "data", "raw")
 MODELED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "modeled")
+PLOTTED_DATA_PATH = os.path.join(PROJECT_PATH, "data", "plots")
 
 # api
 CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY")
@@ -24,7 +25,7 @@ SCOTUS_DATA_URL = (
 # congress data files
 CONGRESS_DATA_CLEANED_FILE_NAME = "congress_legislation_cleaned.fea"
 CONGRESS_DATA_TOKENIZED_FILE_NAME = "congress_legislation_tokenized.fea"
-CONGRESS_DATA_POS_TAGGED_FILE_NAME = "congress_legislation_pos.fea"
+SCOTUS_DATA_FILE_POS_TAGGED_NAME = "congress_legislation_pos.fea"
 CONGRESS_DATA_CLUSTERED_FILE_NAME = "congress_legislation_clustered.fea"
 CONGRESS_DATA_NER_FILE_NAME = "congress_legislation_ner.fea"
 CONGRESS_TOPIC_MODEL_FILE_NAME = "congress_tm.model"
@@ -40,7 +41,7 @@ CONGRESS_DATA_TOKENIZED_FILE = os.path.join(
     PROCESSED_DATA_PATH, CONGRESS_DATA_TOKENIZED_FILE_NAME
 )
 CONGRESS_DATA_POS_TAGGED_FILE = os.path.join(
-    PROCESSED_DATA_PATH, CONGRESS_DATA_POS_TAGGED_FILE_NAME
+    PROCESSED_DATA_PATH, SCOTUS_DATA_FILE_POS_TAGGED_NAME
 )
 CONGRESS_DATA_CLUSTERED_FILE = os.path.join(
     CLUSTERED_DATA_PATH, CONGRESS_DATA_CLUSTERED_FILE_NAME
@@ -135,13 +136,33 @@ OPTIMAL_SCOTUS_CLUSTERS = 6
 NLP_MAX_CHAR_LENGTH = 999980
 
 # topic modeling
-MIN_NUM_TOPICS_SCOTUS = 4
+DYNAMIC_TOPIC_MODEL_OPTIMAL_TOPICS = 10
+MAX_NUM_TOPICS_CONGRESS = 35
 MAX_NUM_TOPICS_SCOTUS = 10
 MIN_NUM_TOPICS_CONGRESS = 5
-MAX_NUM_TOPICS_CONGRESS = 35
-TOPIC_MODEL_TRAINING_ITERATIONS = 50
+MIN_NUM_TOPICS_SCOTUS = 4
 SCOTUS_MIN_DF = 2
 TFIDF_FILTER_THRESHOLD = 0.75
+TOPIC_MODEL_TRAINING_ITERATIONS = 50
 
 # misc
 NUM_SCOTUS_CASES = 14
+
+# visualization
+SCOTUS_ABBREVS = {
+    "Dobbs v. Jackson Women's Health Organization": "Dobbs v. Jackson",
+    "Gonzales v. Carhart": "Gonzales v. Carhart",
+    "Doe v. Bolton": "Doe v. Bolton",
+    "Whole Woman's Health v. Hellerstedt": "Health",
+    "Roe v. Wade": "Roe v. Wade",
+    "Stenberg v. Carhart": "Stenberg v. Carhart",
+    "Harris v. McRae": "Harris v. McRae",
+    # ruff: noqa: E501
+    "Planned Parenthood of Southeastern Pennsylvania v. Casey": "Planned Parenthood v. Casey",
+    "Webster v. Reproductive Health Services": "Webster v. Health Services",
+    "Maher v. Roe": "Maher v. Roe",
+    "Hodgson v. Minnesota": "Hodgson v. Minnesota",
+    "Planned Parenthood v. Danforth": "Planned Parenthood v. Danforth",
+    "Eisenstadt v. Baird": "Eisenstadt v. Baird",
+    "Griswold v. Connecticut": "Griswold v. Connecticut",
+}

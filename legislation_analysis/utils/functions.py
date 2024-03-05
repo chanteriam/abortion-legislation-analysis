@@ -174,6 +174,8 @@ def save_df_to_file(df: pd.DataFrame, file_path: str) -> None:
         df (pd.DataFrame): dataframe to save.
         file_path (str): path to save the dataframe to.
     """
+    if not os.path.exists(os.path.dirname(file_path)):
+        os.makedirs(os.path.dirname(file_path))
     ext = file_path.split(".")[-1].lower()
 
     if ext in ["pickle", "pkl"]:

@@ -1,6 +1,9 @@
 # Application folders
 legislation_analysis/data/
 
+# Scratch files
+scratch.ipynb
+
 # IDE files and misc.
 .idea
 .vscode

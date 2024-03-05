@@ -2,8 +2,8 @@
 Implements the TopicModeling class, which applies standard topic modeling
 """
 
-import logging
 import os
+import pickle
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -12,7 +12,7 @@ from gensim.models.coherencemodel import CoherenceModel
 from gensim.models.ldamodel import LdaModel
 from scipy.stats import loguniform, randint
 
-from legislation_analysis.topic_modeling.abstract_topic_modeling import (
+from legislation_analysis.topic_modeling.base_topic_modeling import (
     BaseTopicModeling,
 )
 from legislation_analysis.utils.constants import (
@@ -21,9 +21,9 @@ from legislation_analysis.utils.constants import (
 )
 
 
-class TopicModeling(BaseTopicModeling):
+class StaticTopicModeling(BaseTopicModeling):
     """
-    TopicModeling class for applying LDA topic modeling techniques to
+    StaticTopicModeling class for applying LDA topic modeling techniques to
     pre-tokenized textual data.
 
     parameters:
@@ -109,7 +109,7 @@ class TopicModeling(BaseTopicModeling):
                 "passes": randint(10, 50).rvs(),
             }
 
-            logging.debug(
+            print(
                 f"""\t(Iteration {_iter+1} of {iterations})
                 Trying parameters: {params}"""
             )
@@ -119,18 +119,24 @@ class TopicModeling(BaseTopicModeling):
             )
             score = self.compute_coherence(model)
 
-            logging.debug(f"\t\tCoherence Score: {score:.2f}")
+            print(f"\t\tCoherence Score: {score:.2f}")
 
             if score > best_score:
                 best_score = score
                 self.optimal_params = params
                 self.lda_model = model
 
-        logging.debug(f"Best Score: {best_score}")
-        logging.debug(f"Best Params: {self.optimal_params}")
+        print(f"Best Score: {best_score}")
+        print(f"Best Params: {self.optimal_params}")
 
         # save model
         self.lda_model.save(os.path.join(MODELED_DATA_PATH, self.save_name))
+
+        # save corpus
+        with open(
+            os.path.join(MODELED_DATA_PATH, f"{self.save_name}corpus.pkl"), "wb"
+        ) as file:
+            pickle.dump(self.corpus, file)
 
     def get_topics(self, num_words: int = 10) -> list:
         """
@@ -173,7 +179,7 @@ class TopicModeling(BaseTopicModeling):
                 "title": self.df["title"],
                 "topics": [
                     self.lda_model[self.dictionary.doc2bow(tokens)]
-                    for tokens in self.df[f"{self.column}"]
+                    for tokens in self.tokens
                 ],
             }
         )
@@ -201,7 +207,8 @@ class TopicModeling(BaseTopicModeling):
         """
         Main method to generate and evaluate the LDA topic model.
         """
-        self.prepare_corpus()
+        if not (self.corpus and self.dictionary):
+            self.prepare_corpus()
 
         if not self.lda_model:
             self.random_search()

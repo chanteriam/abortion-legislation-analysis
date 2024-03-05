@@ -9,15 +9,12 @@ from legislation_analysis.utils.constants import (
     CONGRESS_DATA_CLEANED_FILE_NAME,
     CONGRESS_DATA_FILE,
     CONGRESS_DATA_NER_FILE_NAME,
-    CONGRESS_DATA_POS_TAGGED_FILE_NAME,
-    CONGRESS_DATA_TOKENIZED_FILE,
     CONGRESS_DATA_TOKENIZED_FILE_NAME,
     SCOTUS_DATA_CLEANED_FILE,
     SCOTUS_DATA_CLEANED_FILE_NAME,
     SCOTUS_DATA_FILE,
+    SCOTUS_DATA_FILE_POS_TAGGED_NAME,
     SCOTUS_DATA_NER_FILE_NAME,
-    SCOTUS_DATA_POS_TAGGED_FILE_NAME,
-    SCOTUS_DATA_TOKENIZED_FILE,
     SCOTUS_DATA_TOKENIZED_FILE_NAME,
 )
 from legislation_analysis.utils.functions import save_df_to_file
@@ -92,8 +89,8 @@ def run_pos_tagger() -> None:
     # apply POS tagging to congressional legislation
     logging.info("Applying POS tagging to congressional text...")
     congress_pos = POSTagger(
-        file_path=CONGRESS_DATA_TOKENIZED_FILE,
-        file_name=CONGRESS_DATA_POS_TAGGED_FILE_NAME,
+        file_path=CONGRESS_DATA_CLEANED_FILE,
+        file_name=SCOTUS_DATA_FILE_POS_TAGGED_NAME,
     )
     congress_pos.process(
         cols_to_apply_pos=[
@@ -107,8 +104,8 @@ def run_pos_tagger() -> None:
     # apply POS tagging to SCOTUS opinions
     logging.info("Applying POS tagging to SCOTUS text...")
     scotus_pos = POSTagger(
-        file_path=SCOTUS_DATA_TOKENIZED_FILE,
-        file_name=SCOTUS_DATA_POS_TAGGED_FILE_NAME,
+        file_path=SCOTUS_DATA_CLEANED_FILE,
+        file_name=SCOTUS_DATA_FILE_POS_TAGGED_NAME,
     )
     scotus_pos.process(tags_of_interest=tags_of_interest)
     save_df_to_file(scotus_pos.pos_df, scotus_pos.save_path)
@@ -128,7 +125,7 @@ def run_ner() -> None:
     # apply NER to congressional legislation
     logging.debug("Applying NER to congressional legislation...")
     congress_ner = NER(
-        file_path=CONGRESS_DATA_TOKENIZED_FILE,
+        file_path=CONGRESS_DATA_CLEANED_FILE,
         file_name=CONGRESS_DATA_NER_FILE_NAME,
     )
     congress_ner.process(
@@ -142,7 +139,7 @@ def run_ner() -> None:
     # apply NER to SCOTUS opinions
     logging.debug("Applying NER to SCOTUS opinions...")
     scotus_ner = NER(
-        file_path=SCOTUS_DATA_TOKENIZED_FILE,
+        file_path=SCOTUS_DATA_CLEANED_FILE,
         file_name=SCOTUS_DATA_NER_FILE_NAME,
     )
     scotus_ner.process()

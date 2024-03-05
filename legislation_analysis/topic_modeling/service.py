@@ -8,7 +8,9 @@ import os
 from legislation_analysis.topic_modeling.dynamic_topic_modeling import (
     DynamicTopicModeling,
 )
-from legislation_analysis.topic_modeling.topic_modeling import TopicModeling
+from legislation_analysis.topic_modeling.static_topic_modeling import (
+    StaticTopicModeling,
+)
 from legislation_analysis.utils.constants import (
     CONGRESS_DATA_POS_TAGGED_FILE,
     CONGRESS_DYN_TOPIC_MODEL_FILE,
@@ -19,7 +21,6 @@ from legislation_analysis.utils.constants import (
     MAX_NUM_TOPICS_SCOTUS,
     MIN_NUM_TOPICS_CONGRESS,
     MIN_NUM_TOPICS_SCOTUS,
-    SCOTUS_DATA_POS_TAGGED_FILE,
     SCOTUS_MIN_DF,
     SCOTUS_TOPIC_MODEL_FILE,
     SCOTUS_TOPIC_MODEL_FILE_NAME,
@@ -37,7 +38,7 @@ def run_topic_modeling() -> None:
         if os.path.exists(CONGRESS_TOPIC_MODEL_FILE)
         else None
     )
-    congress_topic_modeling = TopicModeling(
+    congress_topic_modeling = StaticTopicModeling(
         file_path=CONGRESS_DATA_POS_TAGGED_FILE,
         save_name=CONGRESS_TOPIC_MODEL_FILE_NAME,
         topic_ranges=(MIN_NUM_TOPICS_CONGRESS, MAX_NUM_TOPICS_CONGRESS),
@@ -52,8 +53,8 @@ def run_topic_modeling() -> None:
         if os.path.exists(SCOTUS_TOPIC_MODEL_FILE)
         else None
     )
-    scotus_topic_modeling = TopicModeling(
-        file_path=SCOTUS_DATA_POS_TAGGED_FILE,
+    scotus_topic_modeling = StaticTopicModeling(
+        file_path=CONGRESS_DATA_POS_TAGGED_FILE,
         save_name=SCOTUS_TOPIC_MODEL_FILE_NAME,
         topic_ranges=(MIN_NUM_TOPICS_SCOTUS, MAX_NUM_TOPICS_SCOTUS),
         min_df=SCOTUS_MIN_DF,
