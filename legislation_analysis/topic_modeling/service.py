@@ -12,7 +12,6 @@ from legislation_analysis.topic_modeling.static_topic_modeling import (
     StaticTopicModeling,
 )
 from legislation_analysis.utils.constants import (
-    CONGRESS_DATA_FILE_POS_TAGGED,
     CONGRESS_DATA_POS_TAGGED_FILE,
     CONGRESS_DYN_TOPIC_MODEL_FILE,
     CONGRESS_DYN_TOPIC_MODEL_FILE_NAME,
@@ -55,7 +54,7 @@ def run_topic_modeling() -> None:
         else None
     )
     scotus_topic_modeling = StaticTopicModeling(
-        file_path=CONGRESS_DATA_FILE_POS_TAGGED,
+        file_path=CONGRESS_DATA_POS_TAGGED_FILE,
         save_name=SCOTUS_TOPIC_MODEL_FILE_NAME,
         topic_ranges=(MIN_NUM_TOPICS_SCOTUS, MAX_NUM_TOPICS_SCOTUS),
         min_df=SCOTUS_MIN_DF,
