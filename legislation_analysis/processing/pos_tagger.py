@@ -103,7 +103,7 @@ class POSTagger:
         interested_tags = [tag for tag in tags if tag[1] in tags_of_interest]
 
         # keep only the text
-        return [tag[0] for tag in interested_tags]
+        return ", ".join([tag[0] for tag in interested_tags])
 
     @staticmethod
     def _join_numpy_array(arr: np.ndarray) -> str:
@@ -138,7 +138,4 @@ class POSTagger:
 
                 self.pos_df[col_name] = self.pos_df[col[1]].apply(
                     lambda x: self.extract_tags_of_interest(x, tags_of_interest)
-                )
-                self.pos_df["joined_" + col_name] = self.pos_df[col_name].apply(
-                    self._join_numpy_array
                 )

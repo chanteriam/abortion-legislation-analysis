@@ -92,9 +92,7 @@ class NER:
         important_labels = [
             "PERSON",
             "ORG",
-            "GPE",
             "LAW",
-            "DATE",
             "EVENT",
             "CASE",
         ]
@@ -142,7 +140,7 @@ class NER:
             # move to the next chunk
             start = end
 
-        return cls.__post_process(ner)
+        return cls.post_process(ner)
 
     @staticmethod
     def group_ent_by_label(entities: list) -> dict:

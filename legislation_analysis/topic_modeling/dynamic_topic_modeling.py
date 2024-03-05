@@ -4,19 +4,20 @@ congressional legislations.
 """
 
 import os
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
 from gensim.models.coherencemodel import CoherenceModel
 from gensim.models.ldaseqmodel import LdaSeqModel
-from scipy.stats import randint, uniform
 
 from legislation_analysis.topic_modeling.abstract_topic_modeling import (
     BaseTopicModeling,
 )
 from legislation_analysis.utils.constants import (
+    DYNAMIC_TOPIC_MODEL_OPTIMAL_TOPICS,
     MODELED_DATA_PATH,
-    TOPIC_MODEL_TRAINING_ITERATIONS,
+    PLOTTED_DATA_PATH,
 )
 
 
@@ -45,10 +46,8 @@ class DynamicTopicModeling(BaseTopicModeling):
         column: str = "text_pos_tags_of_interest",
         max_df: float = 0.8,
         min_df: int = 5,
-        topic_ranges: tuple = (
-            2,
-            15,
-        ),
+        num_topics: int = DYNAMIC_TOPIC_MODEL_OPTIMAL_TOPICS,
+        topic_ranges=None,
         model_fp: str = None,
     ) -> None:
         super().__init__(
@@ -57,7 +56,9 @@ class DynamicTopicModeling(BaseTopicModeling):
             column=column,
             max_df=max_df,
             min_df=min_df,
-            topic_ranges=topic_ranges,
+            topic_ranges=(num_topics, num_topics)
+            if not topic_ranges
+            else topic_ranges,
             model_fp=model_fp,
         )
 
@@ -72,7 +73,7 @@ class DynamicTopicModeling(BaseTopicModeling):
         self.topics_by_period = {i: {} for i in range(NUM_BILL_PERIODS)}
 
         # model building
-        self.optimal_params = {"num_topics": None, "chain_variance": None}
+        self.optimal_params = {"num_topics": DYNAMIC_TOPIC_MODEL_OPTIMAL_TOPICS}
 
     def append_bill_to_period(self, congress_num: int) -> None:
         """
@@ -94,7 +95,7 @@ class DynamicTopicModeling(BaseTopicModeling):
         self.df.sort_values(by=["congress_num"], inplace=True)
         self.df = self.df.reset_index(drop=True)
 
-    def get_bills_per_congress(self, visualize: bool = False) -> None:
+    def get_bills_per_congress(self) -> None:
         """
         Groups the number of bills per congress.
         """
@@ -104,16 +105,6 @@ class DynamicTopicModeling(BaseTopicModeling):
             .sort_values(by=["congress_num"])
             .rename(columns={"legislation_number": "num_bills"})
         )
-
-        if visualize:
-            plt.title("Number of Bills per Congress")
-            plt.xlabel("Congress Number")
-            plt.ylabel("Number of Bills")
-            plt.xticks(np.arange(self.min_congress, self.max_congress, 2))
-            plt.plot(
-                self.bills_per_congress["congress_num"],
-                self.bills_per_congress["num_bills"],
-            )
 
     def compute_ind_coherence(
         self, model: LdaSeqModel, time: int, num_words: int = 10
@@ -168,51 +159,33 @@ class DynamicTopicModeling(BaseTopicModeling):
             ]
         )
 
-    def random_search(
-        self, iterations: int = TOPIC_MODEL_TRAINING_ITERATIONS
-    ) -> None:
+    def build_model(self) -> None:
         """
-        Performs random search for the optimal number of topics.
+        Builds a dynamic topic model.
         """
-        best_score = float("-inf")
-        for _iter in range(iterations):
-            params = {
-                "num_topics": randint(
-                    self.topic_ranges[0], self.topic_ranges[1]
-                ).rvs(),
-                "chain_variance": uniform(0.005, 0.05).rvs(),
-            }
+        print("Building Dynamic Topic Model...")
 
-            print(
-                f"""\t(Iteration {_iter+1} of {iterations})
-                Trying parameters: {params}"""
-            )
-
-            model = LdaSeqModel(
-                corpus=self.corpus,
-                id2word=self.dictionary,
-                time_slice=self.bills_per_congressional_period,
-                **params,
-            )
-
-            print("\t\tModel Trained")
-
-            score = self.compute_coherence(model)
-
-            print(f"\t\tCoherence Score: {score:.2f}")
-
-            if score > best_score:
-                best_score = score
-                self.optimal_params = params
-                self.lda_model = model
-
-        print(f"Best Score: {best_score}")
-        print(f"Best Params: {self.optimal_params}")
+        # build model
+        num_topics = self.optimal_params["num_topics"]
+        self.lda_model = LdaSeqModel(
+            corpus=self.corpus,
+            id2word=self.dictionary,
+            time_slice=self.bills_per_congressional_period,
+            num_topics=num_topics,
+        )
+        score = self.compute_coherence(self.lda_model)
+        print(f"Dynamic Model Coherence Score: {score}")
 
         # save model
         self.lda_model.save(os.path.join(MODELED_DATA_PATH, self.save_name))
 
-    def get_topics(self, num_words: int = 10) -> None:
+        # save corpus
+        with open(
+            os.path.join(MODELED_DATA_PATH, f"{self.save_name}corpus.pkl"), "wb"
+        ) as file:
+            pickle.dump(self.corpus, file)
+
+    def get_topics(self) -> None:
         """
         Gets the topics for each period, specifically the top words and their
         probabilities.
@@ -231,12 +204,40 @@ class DynamicTopicModeling(BaseTopicModeling):
         """
         Generates the dynamic topic model.
         """
-        self.get_bills_per_congress_period()
-        self.prepare_corpus()
+        # order dataframe
+        self.df = self.df.sort_values(by=["congress_num"])
 
+        # get time series attributes
+        self.get_bills_per_congress()
+        self.get_bills_per_congress_period()
+
+        # prepare corpus
+        if not (self.corpus and self.dictionary):
+            self.prepare_corpus()
+
+        # train model
         if not self.lda_model:
-            self.random_search()
+            self.build_model()
         else:
             self.optimal_params = {
                 "num_topics": self.lda_model.num_topics,
             }
+
+    def plot_bills_per_congress(self) -> None:
+        """
+        Plots the number of bills per congress.
+        """
+        plt.title("Number of Bills per Congress")
+        plt.xlabel("Congress Number")
+        plt.ylabel("Number of Bills")
+        plt.xticks(np.arange(self.min_congress, self.max_congress, 2))
+        plt.plot(
+            self.bills_per_congress["congress_num"],
+            self.bills_per_congress["num_bills"],
+        )
+
+        plt.savefig(
+            os.path.join(PLOTTED_DATA_PATH, "bills_per_congress.png"),
+            bbox_inches="tight",
+        )
+        plt.show()

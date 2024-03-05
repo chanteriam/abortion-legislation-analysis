@@ -10,7 +10,7 @@ from legislation_analysis.api.service import (
 from legislation_analysis.clustering.service import (
     run_hierarchy_complete_clustering,
     run_hierarchy_ward_clustering,
-    run_knn_clustering,
+    run_kmeans_clustering,
 )
 from legislation_analysis.processing.service import (
     run_data_cleaner,
@@ -101,7 +101,7 @@ def main() -> None:
     if args.all or args.cluster:
         run_hierarchy_complete_clustering()
         run_hierarchy_ward_clustering()
-        run_knn_clustering()
+        run_kmeans_clustering()
 
 
 if __name__ == "__main__":

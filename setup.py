@@ -1,4 +1,5 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
 
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
@@ -7,7 +8,8 @@ setup(
     name="legislation_analysis",
     version="0.1",
     packages=find_packages(),
-    description="A computational content analysis/NLP package for analyzing abortion-related legislation and SCOTUS opinions.",
+    description="""A computational content analysis/NLP package for
+    analyzing abortion-related legislation and SCOTUS opinions.""",
     long_description=open("README.md").read(),
     author="Chanteria Milner, Michael Plunkett",
     author_email="chanteria.milner@gmail.com, michplunkett@gmail.com",

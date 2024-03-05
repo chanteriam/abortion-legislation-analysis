@@ -1,5 +1,4 @@
 import logging
-import os
 
 from legislation_analysis.processing.clean import Cleaner
 from legislation_analysis.processing.ner import NER
@@ -9,7 +8,6 @@ from legislation_analysis.utils.constants import (
     CONGRESS_DATA_FILE,
     CONGRESS_DATA_FILE_CLEANED,
     CONGRESS_DATA_POS_TAGGED_FILE_NAME,
-    PROCESSED_DATA_PATH,
     SCOTUS_DATA_FILE,
     SCOTUS_DATA_FILE_CLEANED,
     SCOTUS_DATA_FILE_POS_TAGGED_NAME,
@@ -79,9 +77,7 @@ def run_pos_tagger() -> None:
     # apply POS tagging to congressional legislation
     logging.info("Applying POS tagging to congressional text...")
     congress_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
-        ),
+        file_path=CONGRESS_DATA_FILE_CLEANED,
         file_name=CONGRESS_DATA_POS_TAGGED_FILE_NAME,
     )
     congress_pos.process(
@@ -96,9 +92,7 @@ def run_pos_tagger() -> None:
     # apply POS tagging to SCOTUS opinions
     logging.info("Applying POS tagging to SCOTUS text...")
     scotus_pos = POSTagger(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
+        file_path=SCOTUS_DATA_FILE_CLEANED,
         file_name=SCOTUS_DATA_FILE_POS_TAGGED_NAME,
     )
     scotus_pos.process(tags_of_interest=tags_of_interest)
@@ -119,9 +113,7 @@ def run_ner() -> None:
     # apply NER to congressional legislation
     logging.debug("Applying NER to congressional legislation...")
     congress_ner = NER(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "congress_legislation_tokenized.fea"
-        ),
+        file_path=CONGRESS_DATA_FILE_CLEANED,
         file_name="congress_legislation_ner.fea",
     )
     congress_ner.process(
@@ -135,9 +127,7 @@ def run_ner() -> None:
     # apply NER to SCOTUS opinions
     logging.debug("Applying NER to SCOTUS opinions...")
     scotus_ner = NER(
-        file_path=os.path.join(
-            PROCESSED_DATA_PATH, "scotus_cases_tokenized.fea"
-        ),
+        file_path=SCOTUS_DATA_FILE_CLEANED,
         file_name="scotus_cases_ner.fea",
     )
     scotus_ner.process()

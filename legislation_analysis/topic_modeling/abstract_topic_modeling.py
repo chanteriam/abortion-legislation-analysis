@@ -43,13 +43,16 @@ class BaseTopicModeling(ABC):
         self.lda_model = LdaModel.load(model_fp) if model_fp else None
         self.topic_ranges = topic_ranges
 
+        # grab tokens
+        self.tokens = self.df[self.column].apply(lambda x: x.split(", "))
+
     def prepare_corpus(self):
         """
         Prepares the corpus and dictionary from the DataFrame column containing
         tokenized texts.
         """
         # convert list of pos tokens to strings for TF-IDF vectorization
-        documents = self.df[self.column].apply(" ".join)
+        documents = self.df[self.column]
         tfidf_matrix = self.tfidf_vectorizer.fit_transform(documents)
 
         # get feature names to map back to tokens
@@ -63,6 +66,7 @@ class BaseTopicModeling(ABC):
         # filter tokens based on TF-IDF scores
         filtered_tokens = []
         for doc_idx, _doc in enumerate(documents):
+            print(f"Processing document {doc_idx+1}")
             # find indices of tokens with high TF-IDF score
             high_tfidf_indices = np.where(
                 tfidf_matrix[doc_idx].toarray().flatten() > high_tfidf_threshold
@@ -73,9 +77,9 @@ class BaseTopicModeling(ABC):
 
             # filter original tokens based on high TF-IDF tokens
             filtered_doc_tokens = [
-                token
-                for token in self.df[self.column][doc_idx]
-                if token in high_tfidf_tokens
+                token.strip()
+                for token in self.tokens[doc_idx]
+                if token.strip() in high_tfidf_tokens
             ]
             filtered_tokens.append(filtered_doc_tokens)
 
@@ -94,10 +98,6 @@ class BaseTopicModeling(ABC):
 
     @abstractmethod
     def compute_coherence(self, model) -> float:
-        pass
-
-    @abstractmethod
-    def random_search(self, iterations: int) -> None:
         pass
 
     @abstractmethod

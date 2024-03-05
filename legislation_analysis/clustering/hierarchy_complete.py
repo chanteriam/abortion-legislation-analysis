@@ -10,6 +10,7 @@ from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
     OPTIMAL_CONGRESS_CLUSTERS,
     OPTIMAL_SCOTUS_CLUSTERS,
+    PLOTTED_DATA_PATH,
 )
 from legislation_analysis.utils.functions import (
     load_file_to_df,
@@ -49,7 +50,7 @@ class HierarchyComplete(BaseClustering):
     def cluster_parts_of_speech(self) -> None:
         logging.debug("Starting Hierarchy Complete clustering...")
         vectors = self.__vectorizer.fit_transform(
-            self.__df["joined_text_pos_tags_of_interest"]
+            self.__df["text_pos_tags_of_interest"]
         )
 
         vectors.todense()
@@ -75,7 +76,7 @@ class HierarchyComplete(BaseClustering):
         )
         plt.xlabel("Cluster Size")
         vectors = self.__vectorizer.fit_transform(
-            self.__df["joined_text_pos_tags_of_interest"]
+            self.__df["text_pos_tags_of_interest"]
         )
 
         vectors.todense()
@@ -87,5 +88,12 @@ class HierarchyComplete(BaseClustering):
         )
         scipy.cluster.hierarchy.dendrogram(
             linkage_matrix, p=5, truncate_mode="level"
+        )
+
+        plt.savefig(
+            os.path.join(
+                PLOTTED_DATA_PATH,
+                f"hierarchy_complete_{self.__title_suffix}.png",
+            )
         )
         plt.show()

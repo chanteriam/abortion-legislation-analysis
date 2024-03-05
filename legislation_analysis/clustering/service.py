@@ -2,10 +2,10 @@ import logging
 
 from legislation_analysis.clustering.hierarchy_complete import HierarchyComplete
 from legislation_analysis.clustering.hierarchy_ward import HierarchyWard
-from legislation_analysis.clustering.knn import KNN
+from legislation_analysis.clustering.kmeans import KMeansClustering
 from legislation_analysis.utils.constants import (
     CONGRESS_DATA_CLUSTERED_FILE_NAME,
-    CONGRESS_DATA_POS_TAGGED_FILE,
+    CONGRESS_DATA_FILE_POS_TAGGED,
     SCOTUS_DATA_FILE_CLUSTERED_NAME,
     SCOTUS_DATA_FILE_POS_TAGGED,
 )
@@ -20,7 +20,7 @@ def run_hierarchy_complete_clustering() -> None:
         "Congressional legislation..."
     )
     congress_hc = HierarchyComplete(
-        CONGRESS_DATA_POS_TAGGED_FILE, CONGRESS_DATA_CLUSTERED_FILE_NAME
+        CONGRESS_DATA_FILE_POS_TAGGED, CONGRESS_DATA_CLUSTERED_FILE_NAME
     )
     congress_hc.cluster_parts_of_speech()
     logging.info(
@@ -49,7 +49,7 @@ def run_hierarchy_ward_clustering() -> None:
         "Starting Hierarchy Ward clustering for Congressional legislation..."
     )
     congress_hw = HierarchyWard(
-        CONGRESS_DATA_POS_TAGGED_FILE, CONGRESS_DATA_CLUSTERED_FILE_NAME
+        CONGRESS_DATA_FILE_POS_TAGGED, CONGRESS_DATA_CLUSTERED_FILE_NAME
     )
     congress_hw.cluster_parts_of_speech()
     logging.info(
@@ -64,30 +64,24 @@ def run_hierarchy_ward_clustering() -> None:
     logging.info("Finished Hierarchy Ward clustering for SCOTUS decisions...")
 
 
-def run_knn_clustering() -> None:
+def run_kmeans_clustering() -> None:
     """
-    Runs K-Nearest Neighbor clustering.
+    Runs K-Means clustering.
     """
     logging.info(
-        "Starting K-Nearest Neighbor clustering for "
-        "Congressional legislation..."
+        "Starting K-Means clustering for " "Congressional legislation..."
     )
-    congress_knn = KNN(
-        CONGRESS_DATA_POS_TAGGED_FILE, CONGRESS_DATA_CLUSTERED_FILE_NAME
+    congress_kmeans = KMeansClustering(
+        CONGRESS_DATA_FILE_POS_TAGGED, CONGRESS_DATA_CLUSTERED_FILE_NAME
     )
-    congress_knn.cluster_parts_of_speech()
+    congress_kmeans.cluster_parts_of_speech()
     logging.info(
-        "Finished K-Nearest Neighbor clustering for "
-        "Congressional legislation..."
+        "Finished K-Means clustering for " "Congressional legislation..."
     )
 
-    logging.info(
-        "Starting K-Nearest Neighbor clustering for SCOTUS decisions..."
-    )
-    scotus_knn = KNN(
+    logging.info("Starting K-Means clustering for SCOTUS decisions...")
+    scotus_kmeans = KMeansClustering(
         SCOTUS_DATA_FILE_POS_TAGGED, SCOTUS_DATA_FILE_CLUSTERED_NAME
     )
-    scotus_knn.cluster_parts_of_speech()
-    logging.info(
-        "Finished K-Nearest Neighbor clustering for SCOTUS decisions..."
-    )
+    scotus_kmeans.cluster_parts_of_speech()
+    logging.info("Finished K-Means clustering for SCOTUS decisions...")
