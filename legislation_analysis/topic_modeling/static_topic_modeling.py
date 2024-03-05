@@ -21,9 +21,9 @@ from legislation_analysis.utils.constants import (
 )
 
 
-class TopicModeling(BaseTopicModeling):
+class StaticTopicModeling(BaseTopicModeling):
     """
-    TopicModeling class for applying LDA topic modeling techniques to
+    StaticTopicModeling class for applying LDA topic modeling techniques to
     pre-tokenized textual data.
 
     parameters:
