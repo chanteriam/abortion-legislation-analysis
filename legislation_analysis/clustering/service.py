@@ -3,7 +3,7 @@ import os.path
 
 from legislation_analysis.clustering.hierarchy_complete import HierarchyComplete
 from legislation_analysis.clustering.hierarchy_ward import HierarchyWard
-from legislation_analysis.clustering.kmeans import KMeansClustering
+from legislation_analysis.clustering.k_means import KMeansClustering
 from legislation_analysis.utils.constants import (
     CONGRESS_DATA_CLUSTERED_FILE,
     CONGRESS_DATA_CLUSTERED_FILE_NAME,
