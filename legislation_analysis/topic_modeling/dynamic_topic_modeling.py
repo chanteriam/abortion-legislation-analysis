@@ -1,6 +1,6 @@
 """
 Implements the TopicModeling class, which applies dynamic topic modeling to
-congressional legislations.
+congressional pieces of legislation.
 """
 
 import os
@@ -11,7 +11,7 @@ import numpy as np
 from gensim.models.coherencemodel import CoherenceModel
 from gensim.models.ldaseqmodel import LdaSeqModel
 
-from legislation_analysis.topic_modeling.abstract_topic_modeling import (
+from legislation_analysis.topic_modeling.base_topic_modeling import (
     BaseTopicModeling,
 )
 from legislation_analysis.utils.constants import (

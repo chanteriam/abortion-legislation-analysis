@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import scipy
 import sklearn
 
-from legislation_analysis.clustering.abstract_clustering import BaseClustering
+from legislation_analysis.clustering.base_clustering import BaseClustering
 from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
     OPTIMAL_CONGRESS_CLUSTERS,

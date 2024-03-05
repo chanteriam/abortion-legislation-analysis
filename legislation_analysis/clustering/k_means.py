@@ -6,7 +6,7 @@ import numpy as np
 import sklearn
 import sklearn.cluster
 
-from legislation_analysis.clustering.abstract_clustering import BaseClustering
+from legislation_analysis.clustering.base_clustering import BaseClustering
 from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
     OPTIMAL_CONGRESS_CLUSTERS,
