@@ -15,7 +15,12 @@ from legislation_analysis.clustering.service import (
 from legislation_analysis.processing.service import (
     run_data_cleaner,
     run_data_tokenizer,
+    run_ner,
     run_pos_tagger,
+)
+from legislation_analysis.topic_modeling.service import (
+    run_dynamic_topic_modeling,
+    run_topic_modeling,
 )
 
 
@@ -63,9 +68,21 @@ def main() -> None:
     )
 
     parser.add_argument(
+        "--ner",
+        action="store_true",
+        help="NER the data",
+    )
+
+    parser.add_argument(
         "--cluster",
         action="store_true",
         help="cluster the data",
+    )
+
+    parser.add_argument(
+        "--model",
+        action="store_true",
+        help="model the data",
     )
 
     parser.add_argument(
@@ -98,10 +115,17 @@ def main() -> None:
     if args.all or args.pos_tag:
         run_pos_tagger()
 
+    if args.all or args.ner:
+        run_ner()
+
     if args.all or args.cluster:
         run_hierarchy_complete_clustering()
         run_hierarchy_ward_clustering()
         run_kmeans_clustering()
+
+    if args.all or args.model:
+        run_topic_modeling()
+        run_dynamic_topic_modeling()
 
 
 if __name__ == "__main__":

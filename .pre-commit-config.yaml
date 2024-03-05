@@ -41,9 +41,12 @@ repos:
           - --ignore=E721,E722
       - id: nbqa-black
         exclude: data/
+        args:
+          - --line-length=80
       - id: nbqa-isort
         exclude: data/
-
+        args:
+          - --profile=black
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0

@@ -48,7 +48,7 @@ class NER:
 
         Parameters:
             text (str): Chunk of text to apply NER to.
-            ner_dict (dict): Dictionary of Named Entity Recognition (NER) data.
+            ner_lst (list): List of Named Entity Recognition (NER) data.
 
         Returns:
             ner_lst (list): Updated NER data with entities from the chunk.
@@ -159,7 +159,7 @@ class NER:
         return entities_by_label
 
     @classmethod
-    def aggregate_ner(cls, entities: list) -> dict:
+    def aggregate_ner(cls, entities: list) -> list:
         """
         Aggregates Named Entity Recognition (NER) data.
         Conductions aggregation by embedding NER into sentence vectors,
@@ -167,10 +167,10 @@ class NER:
         similar NERs using the longest entity name.
 
         Parameters:
-            ner_lst (list): List of Named Entity Recognition (NER) data.
+            entities (list): List of Named Entity Recognition (NER) data.
 
         Returns:
-            ner_dict (dict): Aggregated Named Entity Recognition (NER) data.
+            ner_list (list): Aggregated Named Entity Recognition (NER) data.
         """
         # group entities by their label
         entities_by_label = cls.group_ent_by_label(entities)

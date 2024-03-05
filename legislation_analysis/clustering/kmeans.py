@@ -1,7 +1,6 @@
 import logging
 import os
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import sklearn
@@ -9,10 +8,10 @@ import sklearn.cluster
 
 from legislation_analysis.clustering.abstract_clustering import BaseClustering
 from legislation_analysis.utils.constants import (
-    PLOTTED_DATA_PATH,
     CLUSTERED_DATA_PATH,
     OPTIMAL_CONGRESS_CLUSTERS,
     OPTIMAL_SCOTUS_CLUSTERS,
+    PLOTTED_DATA_PATH,
 )
 from legislation_analysis.utils.functions import (
     load_file_to_df,
@@ -61,16 +60,21 @@ class KMeansClustering(BaseClustering):
         save_df_to_file(self.__df, self._save_path)
 
     def visualize(self) -> None:
-        # First, we need to fit_transform the text data again (or you could store the vectorized data from `cluster_parts_of_speech` to reuse here)
+        # First, we need to fit_transform the text data again
+        # (or you could store the vectorized data from `cluster_parts_of_speech`
+        # to reuse here)
         vectors = self.__vectorizer.fit_transform(
             self.__df["text_pos_tags_of_interest"]
         ).toarray()
         cluster_labels = self.__df["kmeans_clusters"]
 
         # Compute the silhouette score to evaluate the quality of clusters
-        silhouette_avg = sklearn.metrics.silhouette_score(vectors, cluster_labels)
+        silhouette_avg = sklearn.metrics.silhouette_score(
+            vectors, cluster_labels
+        )
         print(
-            f"For n_clusters = {self.__n_clusters}, The average silhouette_score is : {silhouette_avg:.3f}"
+            f"""For n_clusters = {self.__n_clusters},
+            The average silhouette_score is : {silhouette_avg:.3f}"""
         )
 
         # Compute the silhouette scores for each sample
@@ -84,7 +88,8 @@ class KMeansClustering(BaseClustering):
         y_lower = 10
 
         for i in range(self.__n_clusters):
-            # Aggregate the silhouette scores for samples belonging to cluster i, and sort them
+            # Aggregate the silhouette scores for samples belonging to cluster
+            # i, and sort them
             ith_cluster_silhouette_values = sample_silhouette_values[
                 cluster_labels == i
             ]
@@ -103,7 +108,8 @@ class KMeansClustering(BaseClustering):
                 alpha=0.7,
             )
 
-            # Label the silhouette plots with their cluster numbers at the middle
+            # Label the silhouette plots with their cluster numbers at the
+            # middle
             ax1.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
 
             y_lower = y_upper + 10  # 10 for the 0 samples
@@ -121,7 +127,9 @@ class KMeansClustering(BaseClustering):
         # 2nd Plot showing the actual clusters formed
         pca = sklearn.decomposition.PCA(n_components=2)
         reduced_data = pca.fit_transform(vectors)
-        colors = plt.cm.nipy_spectral(cluster_labels.astype(float) / self.__n_clusters)
+        colors = plt.cm.nipy_spectral(
+            cluster_labels.astype(float) / self.__n_clusters
+        )
         ax2.scatter(
             reduced_data[:, 0],
             reduced_data[:, 1],
@@ -134,7 +142,7 @@ class KMeansClustering(BaseClustering):
         )
 
         # Labeling the clusters
-        # Before performing PCA transformation, ensure that the aggregation 
+        # Before performing PCA transformation, ensure that the aggregation
         # results in strings
         agg_texts = (
             self.__df.groupby("kmeans_clusters")["text_pos_tags_of_interest"]
@@ -154,12 +162,15 @@ class KMeansClustering(BaseClustering):
         )
 
         for i, c in enumerate(centers):
-            ax2.scatter(c[0], c[1], marker="$%d$" % i, alpha=1, s=50, edgecolor="k")
+            ax2.scatter(
+                c[0], c[1], marker="$%d$" % i, alpha=1, s=50, edgecolor="k"
+            )
 
         ax2.set_title("The visualization of the clustered data.")
         ax2.set_xlabel("Feature space for the 1st feature")
         ax2.set_ylabel("Feature space for the 2nd feature")
 
+        # ruff: noqa: E501
         plt.suptitle(
             (
                 "Silhouette analysis for KMeans clustering on sample data with n_clusters = %d"
