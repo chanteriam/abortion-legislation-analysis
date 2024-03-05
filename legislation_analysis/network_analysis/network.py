@@ -15,12 +15,12 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from legislation_analysis.utils.constants import (
-    CONGRESS_DATA_FILE_NER_NAME,
+    CONGRESS_DATA_NER_FILE_NAME,
     PLOTTED_DATA_PATH,
     PROCESSED_DATA_PATH,
     PROJECT_PATH,
     SCOTUS_ABBREVS,
-    SCOTUS_DATA_FILE_NER_NAME,
+    SCOTUS_DATA_NER_FILE_NAME,
 )
 from legislation_analysis.utils.functions import load_file_to_df
 
@@ -37,10 +37,10 @@ class NetworkAnalysis:
     def __init__(
         self,
         congress_file: str = os.path.join(
-            PROCESSED_DATA_PATH, CONGRESS_DATA_FILE_NER_NAME
+            PROCESSED_DATA_PATH, CONGRESS_DATA_NER_FILE_NAME
         ),
         scotus_file: str = os.path.join(
-            PROCESSED_DATA_PATH, SCOTUS_DATA_FILE_NER_NAME
+            PROCESSED_DATA_PATH, SCOTUS_DATA_NER_FILE_NAME
         ),
     ):
         self.congress_df = load_file_to_df(congress_file)

@@ -10,10 +10,10 @@ import pandas as pd
 
 from legislation_analysis.network_analysis.network import NetworkAnalysis
 from legislation_analysis.utils.constants import (
-    CONGRESS_DATA_FILE_NER_NAME,
+    CONGRESS_DATA_NER_FILE_NAME,
     NETWORK_DATA_PATH,
     PROCESSED_DATA_PATH,
-    SCOTUS_DATA_FILE_NER_NAME,
+    SCOTUS_DATA_NER_FILE_NAME,
 )
 from legislation_analysis.utils.functions import save_df_to_file
 
@@ -25,10 +25,10 @@ def run_network_analysis() -> None:
     logging.debug("Starting network analysis...")
     legislation_network = NetworkAnalysis(
         congress_file=os.path.join(
-            PROCESSED_DATA_PATH, CONGRESS_DATA_FILE_NER_NAME
+            PROCESSED_DATA_PATH, CONGRESS_DATA_NER_FILE_NAME
         ),
         scotus_file=os.path.join(
-            PROCESSED_DATA_PATH, SCOTUS_DATA_FILE_NER_NAME
+            PROCESSED_DATA_PATH, SCOTUS_DATA_NER_FILE_NAME
         ),
     )
     legislation_network.process()
