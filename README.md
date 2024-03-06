@@ -7,9 +7,10 @@ opinions from 13 pivotal Supreme Court cases.
 
 Our main research questions are as follows:
 
-1. How, if at all, has abortion discourse evolved between the two landmark decisions?
-2. What congressional legislation came as a direct result of, or in contradiction to, abortion-related SCOTUS decisions?
-3. What are the main arguments used in favor of and opposed to abortion?
+1. What are the main arguments used in favor of and opposed to abortion?
+2. How, if at all, has abortion discourse evolved between the two landmark decisions?
+3. What Supreme Court cases exert the most influence on congressional legislation?
+
 
 This project will focus on two main datasets: abortion-related SCOTUS opinions and abortion-related congressional
 legislation. For congressional legislation, we will explore all legislation from 1973 until 2024. We sourced this
