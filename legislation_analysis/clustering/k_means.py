@@ -9,8 +9,8 @@ import sklearn.cluster
 from legislation_analysis.clustering.base_clustering import BaseClustering
 from legislation_analysis.utils.constants import (
     CLUSTERED_DATA_PATH,
-    OPTIMAL_CONGRESS_CLUSTERS,
-    OPTIMAL_SCOTUS_CLUSTERS,
+    OPTIMAL_CLUSTERS_CONGRESS,
+    OPTIMAL_CLUSTERS_SCOTUS,
     PLOTTED_DATA_PATH,
 )
 from legislation_analysis.utils.functions import (
@@ -27,9 +27,9 @@ class KMeansClustering(BaseClustering):
     def __init__(self, file_path: str, file_name: str):
         self.__df = load_file_to_df(file_path)
         self.__n_clusters = (
-            OPTIMAL_CONGRESS_CLUSTERS
+            OPTIMAL_CLUSTERS_CONGRESS
             if "congress" in file_name
-            else OPTIMAL_SCOTUS_CLUSTERS
+            else OPTIMAL_CLUSTERS_SCOTUS
         )
         self.__title_suffix = (
             "Congressional Legislation"
