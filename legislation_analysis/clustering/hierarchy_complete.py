@@ -3,7 +3,7 @@ import os
 
 import matplotlib.pyplot as plt
 import scipy
-import sklearn
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from legislation_analysis.clustering.base_clustering import BaseClustering
 from legislation_analysis.utils.constants import (
@@ -39,7 +39,7 @@ class HierarchyComplete(BaseClustering):
         # This vectorizer is configured so that a word cannot show up in more
         # than half the documents, must show up at least 3x, and the model can
         # only have a maximum of 1000 features.
-        self.__vectorizer = sklearn.feature_extraction.text.TfidfVectorizer(
+        self.__vectorizer = TfidfVectorizer(
             max_df=0.5,
             max_features=1000,
             min_df=3,
@@ -86,8 +86,11 @@ class HierarchyComplete(BaseClustering):
         linkage_matrix = scipy.cluster.hierarchy.complete(
             vector_matrix.toarray()
         )
+
+        truncate_p = 3 if self.__title_suffix == "SCOTUS Decisions" else 5
+
         scipy.cluster.hierarchy.dendrogram(
-            linkage_matrix, p=5, truncate_mode="level"
+            linkage_matrix, p=truncate_p, truncate_mode="level"
         )
 
         plt.savefig(
