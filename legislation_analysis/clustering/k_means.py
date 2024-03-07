@@ -3,6 +3,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import sklearn
 import sklearn.cluster
 
@@ -44,17 +45,17 @@ class KMeansClustering(BaseClustering):
             stop_words="english",
             norm="l2",
         )
+        self.__cluster_algo = sklearn.cluster.KMeans(
+            n_clusters=self.__n_clusters, init="k-means++"
+        )
 
     def cluster_parts_of_speech(self) -> None:
         logging.debug("Starting K-Means clustering...")
         vectors = self.__vectorizer.fit_transform(
             self.__df["text_pos_tags_of_interest"]
         )
-        cluster_algo = sklearn.cluster.KMeans(
-            n_clusters=self.__n_clusters, init="k-means++"
-        )
-        cluster_algo.fit(vectors)
-        self.__df["kmeans_clusters"] = cluster_algo.labels_
+        self.__cluster_algo.fit(vectors)
+        self.__df["kmeans_clusters"] = self.__cluster_algo.labels_
         logging.debug("Finished K-Means clustering...")
         logging.debug("Saving K-Means assignments...")
         save_df_to_file(self.__df, self._save_path)
@@ -184,3 +185,16 @@ class KMeansClustering(BaseClustering):
             os.path.join(PLOTTED_DATA_PATH, f"kmeans_{self.__title_suffix}.png")
         )
         plt.show()
+
+    def get_top_words(self):
+        terms = self.__vectorizer.get_feature_names_out()
+        centroids = self.__cluster_algo.cluster_centers_.argsort()[:, ::-1]
+
+        return pd.DataFrame.from_dict(
+            {
+                "top_words": [
+                    " ".join([terms[ind] for ind in centroids[i, :5]])
+                    for i in range(self.__n_clusters)
+                ]
+            }
+        )
