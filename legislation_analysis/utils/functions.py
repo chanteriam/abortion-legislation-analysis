@@ -6,9 +6,14 @@ from io import BytesIO
 
 import pandas as pd
 import requests
-import sklearn
 from bs4 import BeautifulSoup
 from PyPDF2 import PdfReader
+from sklearn.metrics import (
+    adjusted_rand_score,
+    completeness_score,
+    homogeneity_score,
+    v_measure_score,
+)
 
 from legislation_analysis.utils.constants import (
     GPO_ABBREVS_FILE,
@@ -194,19 +199,9 @@ def save_df_to_file(df: pd.DataFrame, file_path: str) -> None:
 def score_clusters_from_titles(df_column: pd.Series, labels: pd.Series) -> None:
     # Using print since it's for the notebooks
     print("Cluster scoring:")
+    print(f"\tHomogeneity: {homogeneity_score(df_column, labels):0.3f}")
+    print(f"\tCompleteness: {completeness_score(df_column, labels):0.3f}")
+    print(f"\tV-measure: {v_measure_score(df_column, labels):0.3f}")
     print(
-        f"\tHomogeneity: "
-        f"{sklearn.metrics.homogeneity_score(df_column, labels):0.3f}"
-    )
-    print(
-        f"\tCompleteness: "
-        f"{sklearn.metrics.completeness_score(df_column, labels):0.3f}"
-    )
-    print(
-        f"\tV-measure: "
-        f"{sklearn.metrics.v_measure_score(df_column, labels):0.3f}"
-    )
-    print(
-        "\tAdjusted Rand Score: "
-        f"{sklearn.metrics.adjusted_rand_score(df_column, labels):0.3f}"
+        f"\tAdjusted Rand Score: {adjusted_rand_score(df_column, labels):0.3f}"
     )
