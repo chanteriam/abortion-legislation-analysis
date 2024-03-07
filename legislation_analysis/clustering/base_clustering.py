@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
 
-import numpy as np
-import sklearn
-
 
 class BaseClustering(ABC):
     """
@@ -16,24 +13,3 @@ class BaseClustering(ABC):
     @abstractmethod
     def visualize(self) -> None:
         pass
-
-    @staticmethod
-    def cluster_scoring(df_column: str, labels: np.ndarray) -> None:
-        # Using print since it's for the notebooks
-        print("Cluster scoring:")
-        print(
-            f"\tHomogeneity: "
-            f"{sklearn.metrics.homogeneity_score(df_column, labels):0.3f}"
-        )
-        print(
-            f"\tCompleteness: "
-            f"{sklearn.metrics.completeness_score(df_column, labels):0.3f}"
-        )
-        print(
-            f"\tV-measure: "
-            f"{sklearn.metrics.v_measure_score(df_column, labels):0.3f}"
-        )
-        print(
-            "\tAdjusted Rand Score: "
-            f"{sklearn.metrics.adjusted_rand_score(df_column, labels):0.3f}"
-        )
