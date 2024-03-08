@@ -12,6 +12,7 @@ from legislation_analysis.clustering.service import (
     run_hierarchy_ward_clustering,
     run_k_means_clustering,
 )
+from legislation_analysis.network_analysis.service import run_network_analysis
 from legislation_analysis.processing.service import (
     run_data_cleaner,
     run_data_tokenizer,
@@ -86,6 +87,12 @@ def main() -> None:
     )
 
     parser.add_argument(
+        "--network",
+        action="store_true",
+        help="do network analysis",
+    )
+
+    parser.add_argument(
         "--debug",
         "-d",
         action="store_true",
@@ -126,6 +133,9 @@ def main() -> None:
     if args.all or args.model:
         run_topic_modeling()
         run_dynamic_topic_modeling()
+
+    if args.all or args.network:
+        run_network_analysis()
 
 
 if __name__ == "__main__":
