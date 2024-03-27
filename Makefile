@@ -46,6 +46,10 @@ cluster-data:
 model-data:
 	python -m legislation_analysis --model -d
 
+.PHONY: network-data
+network-data:
+	python -m legislation_analysis --network -d
+
 # run all commands
 .PHONY: run
 run:
